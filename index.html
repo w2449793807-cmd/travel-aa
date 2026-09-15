@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>旅行 AA 分摊器 · 赛肯德工具箱</title>
 <meta name="description" content="出国玩也好、国内玩也好，谁垫的钱、这笔怎么分、最后谁转给谁多少，自动算汇率，还能生成一张能直接发群的结算图。" />
-<meta name="theme-color" content="#2f6bd8" media="(prefers-color-scheme: light)" />
-<meta name="theme-color" content="#131b25" media="(prefers-color-scheme: dark)" />
+<meta name="theme-color" content="#4a8c82" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#171917" media="(prefers-color-scheme: dark)" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -22,7 +22,7 @@
     /* ── 设计令牌 ──
        依据：Ant Design 字体/色彩规范、微信小程序设计指南、TDesign 按钮尺寸、Apple HIG 触控下限 */
     /* 字阶：全站只允许 5 档 */
-    --fs-hero: 34px;
+    --fs-hero: 40px;
     --fs-title: 17px;
     --fs-body: 15px;
     --fs-sub: 13px;
@@ -33,42 +33,42 @@
     --r-card: 16px; --r-control: 12px; --r-pill: 999px;
     /* 触控与按钮尺寸阶（最小点击区 44） */
     --tap-min: 44px; --btn-lg: 48px; --btn-md: 44px; --btn-sm: 36px;
-    /* 主色：Ant Design 品牌蓝 */
-    --accent: #1677ff;
-    --accent: light-dark(#1677ff, #4096ff);
-    --accent-2: #4096ff;
-    --accent-2: light-dark(#4096ff, #69b1ff);
-    --accent-soft: #e6f4ff;
-    --accent-soft: light-dark(#e6f4ff, rgba(22, 119, 255, .16));
+    /* 主色：雾青（暖调、低饱和，长时间看不刺眼） */
+    --accent: #4a8c82;
+    --accent: light-dark(#4a8c82, #7fbcb0);
+    --accent-2: #6aa79b;
+    --accent-2: light-dark(#6aa79b, #9ccfc4);
+    --accent-soft: #e9f2ef;
+    --accent-soft: light-dark(#e9f2ef, rgba(127, 188, 176, .16));
     --accent-ink: #ffffff;
-    --accent-ink: light-dark(#ffffff, #ffffff);
-    /* 功能色：Ant 功能色 */
-    --plus: #52c41a;
-    --plus: light-dark(#389e0d, #73d13d);
-    --minus: #ff4d4f;
-    --minus: light-dark(#cf1322, #ff7875);
-    /* 中性色：透明度体系 */
-    --text: rgba(0, 0, 0, .88);
-    --text: light-dark(rgba(0, 0, 0, .88), rgba(255, 255, 255, .92));
-    --muted: rgba(0, 0, 0, .45);
-    --muted: light-dark(rgba(0, 0, 0, .45), rgba(255, 255, 255, .5));
-    --line: rgba(0, 0, 0, .08);
-    --line: light-dark(rgba(0, 0, 0, .08), rgba(255, 255, 255, .12));
+    --accent-ink: light-dark(#ffffff, #10181a);
+    /* 功能色：同样降饱和 */
+    --plus: #5b9370;
+    --plus: light-dark(#4a8261, #86c39c);
+    --minus: #c1705f;
+    --minus: light-dark(#a95f50, #e0a094);
+    /* 中性色：暖灰，避免纯黑纯白的高对比 */
+    --text: rgba(42, 42, 38, .92);
+    --text: light-dark(rgba(42, 42, 38, .92), rgba(238, 237, 233, .94));
+    --muted: rgba(42, 42, 38, .5);
+    --muted: light-dark(rgba(42, 42, 38, .5), rgba(238, 237, 233, .56));
+    --line: rgba(42, 42, 38, .08);
+    --line: light-dark(rgba(42, 42, 38, .08), rgba(255, 255, 255, .1));
     --surface: #ffffff;
-    --surface: light-dark(#ffffff, #171a1f);
-    --surface-2: #fafbfc;
-    --surface-2: light-dark(#fafbfc, #1c2027);
-    --soft: rgba(0, 0, 0, .04);
-    --soft: light-dark(rgba(0, 0, 0, .04), rgba(255, 255, 255, .06));
-    --bg: #f5f6f8;
-    --bg: light-dark(#f5f6f8, #0f1216);
-    --danger-soft: rgba(255, 77, 79, .08);
-    --danger-soft: light-dark(rgba(255, 77, 79, .08), rgba(255, 77, 79, .16));
-    --danger-line: rgba(255, 77, 79, .3);
-    --danger-line: light-dark(rgba(255, 77, 79, .3), rgba(255, 77, 79, .4));
-    /* 阴影：只用一档 */
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, .04);
-    --shadow-md: 0 2px 8px rgba(0, 0, 0, .06);
+    --surface: light-dark(#ffffff, #1c1e1d);
+    --surface-2: #faf9f5;
+    --surface-2: light-dark(#faf9f5, #222524);
+    --soft: rgba(42, 42, 38, .04);
+    --soft: light-dark(rgba(42, 42, 38, .04), rgba(255, 255, 255, .06));
+    --bg: #f2f1ec;
+    --bg: light-dark(#f2f1ec, #171917);
+    --danger-soft: rgba(193, 112, 95, .1);
+    --danger-soft: light-dark(rgba(193, 112, 95, .1), rgba(224, 160, 148, .16));
+    --danger-line: rgba(193, 112, 95, .3);
+    --danger-line: light-dark(rgba(193, 112, 95, .3), rgba(224, 160, 148, .4));
+    /* 阴影：更轻，减少"浮起来"的刺眼感 */
+    --shadow-sm: 0 1px 2px rgba(42, 42, 38, .03);
+    --shadow-md: 0 2px 8px rgba(42, 42, 38, .05);
     --page: var(--bg);
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -91,8 +91,7 @@
   }
   .tb-left { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
   .tb-brand { font-size: var(--fs-cap); font-weight: 600; letter-spacing: .06em; color: var(--accent); margin: 0 0 3px; }
-  .tb-label { font-size: var(--fs-cap); color: var(--muted); }
-  .tb-total { font-size: var(--fs-hero); font-weight: 600; color: var(--accent); font-variant-numeric: tabular-nums; line-height: 1.14; }
+  .tb-total { font-size: var(--fs-hero); font-weight: var(--fw-semibold); margin-top: 2px; color: var(--accent); font-variant-numeric: tabular-nums; line-height: 1.14; }
   .tb-sub { font-size: var(--fs-cap); color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .mode-switch { display: flex; gap: 4px; background: var(--soft); padding: 4px; border-radius: var(--r-control); flex: 0 0 auto; }
   .mode {
@@ -132,10 +131,11 @@
   }
   /* ── 新增：项目选择 / 只读账单行 / 记账弹层 / 统计 ── */
   .proj-btn {
-    font: inherit; font-size: var(--fs-cap); font-weight: var(--fw-medium); color: var(--accent);
-    background: transparent; border: 0; padding: var(--sp-1) var(--sp-1) var(--sp-1) 0; cursor: pointer;
-    display: inline-flex; align-items: center; gap: 2px; text-align: left; max-width: 100%;
+    font: inherit; font-size: var(--fs-body); font-weight: var(--fw-medium); color: var(--accent);
+    background: transparent; border: 0; padding: 0; cursor: pointer; min-height: var(--btn-sm);
+    display: inline-flex; align-items: center; gap: var(--sp-1); text-align: left; max-width: 100%;
   }
+  .proj-caret { font-size: var(--fs-cap); color: var(--muted); }
   .proj-btn span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ex-main {
     display: flex; align-items: center; gap: var(--sp-3); width: 100%; text-align: left;
@@ -243,11 +243,11 @@
   .btn-soft-on {
     font-size: var(--fs-sub); min-height: var(--btn-md); padding: 9px 16px; color: var(--accent-ink);
     background: var(--accent); border-color: transparent;
-    box-shadow: 0 6px 16px rgba(22, 119, 255, .22);
+    box-shadow: 0 6px 16px rgba(74, 140, 130, .24);
   }
   .btn-primary {
     color: var(--accent-ink); border-color: transparent;
-    background: var(--accent); box-shadow: 0 6px 16px rgba(22, 119, 255, .22);
+    background: var(--accent); box-shadow: 0 6px 16px rgba(74, 140, 130, .24);
   }
   /* 破坏性操作不做成主按钮（Apple HIG）：淡红底 + 红字，可见但不抢主 CTA */
   .btn-danger {
@@ -485,7 +485,7 @@
   .ocr-msg { font-size: var(--fs-sub); color: var(--muted); line-height: 1.6; }
   .card { border-radius: var(--r-card); overflow: hidden; background: #ffffff; color: #16202b; box-shadow: 0 20px 48px rgba(6, 12, 20, .4); }
   .card-hero {
-    background: linear-gradient(135deg, #2f6bd8 0%, #4f8ef7 55%, #74adff 100%);
+    background: linear-gradient(135deg, #4a8c82 0%, #6aa79b 55%, #8fc4b8 100%);
     color: #ffffff; padding: 21px 20px 19px; display: flex; flex-direction: column; gap: 3px;
   }
   .card-brand { font-size: var(--fs-cap); letter-spacing: .05em; opacity: .9; }
@@ -501,7 +501,7 @@
   .card-sec::after { content: ""; flex: 1; height: 1px; background: #eef2f6; }
   .card-day {
     display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
-    font-size: var(--fs-sub); font-weight: 600; color: #2f6bd8; margin-top: 3px;
+    font-size: var(--fs-sub); font-weight: 600; color: #3f7a70; margin-top: 3px;
   }
   .card-day span:last-child { font-weight: 400; color: #8a96a3; font-variant-numeric: tabular-nums; }
   .card-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: baseline; }
@@ -538,9 +538,8 @@
     <div class="topbar">
       <div class="tb-left">
         <button type="button" class="proj-btn" id="openProjects">
-          <span id="projName">行程</span><span aria-hidden="true">▾</span>
+          <span id="projName">行程</span><span class="proj-caret" aria-hidden="true">▾</span>
         </button>
-        <div class="tb-label" id="heroLabel">本次总支出</div>
         <div class="tb-total" id="total">¥0</div>
         <div class="tb-sub" id="heroSub"></div>
       </div>
@@ -734,6 +733,7 @@
         <div class="proj-list" id="projList"></div>
         <div class="sheet-actions">
           <button type="button" class="btn btn-primary btn-block" id="projNew">新建行程</button>
+          <button type="button" class="btn btn-block" id="projRename">重命名当前行程</button>
         </div>
       </div>
     </div>
@@ -1008,14 +1008,14 @@
       var rateSource = 'builtin';
       var els = {};
       ['people', 'expenses', 'rows', 'transfers', 'sheet', 'ocrSheet', 'rateSheet', 'legalSheet', 'card', 'toast', 'total', 'heroSub',
-        'heroLabel', 'count', 'roundNote', 'saveState', 'ocrMsg', 'ocrList', 'ocrAdd',
+        'count', 'roundNote', 'saveState', 'ocrMsg', 'ocrList', 'ocrAdd',
         'ocrHead', 'ocrCount', 'dayStrip', 'baseCur', 'rateStatus', 'rateList',
         'rateCard', 'foreignBanner', 'foreignText'].forEach(function (id) {
           els[id] = document.getElementById(id);
         });
       ['projName', 'openProjects', 'editSheet', 'editHead', 'editClose', 'editAmount', 'editName', 'editDate',
         'editCat', 'editCurrency', 'editCur', 'editCurField', 'editPayers', 'editPayerAmounts', 'editShares',
-        'editSave', 'editCopy', 'editDelete', 'projSheet', 'projClose', 'projList', 'projNew',
+        'editSave', 'editCopy', 'editDelete', 'projSheet', 'projClose', 'projList', 'projNew', 'projRename',
         'shareSheet', 'shareClose', 'shareCode', 'shareInfo', 'shareCreate', 'shareJoin', 'shareSync', 'shareLeave',
         'openShare', 'shareStatus', 'shareHint', 'statGrid', 'statCats', 'statDays', 'statPeople'].forEach(function (id) {
         els[id] = document.getElementById(id);
@@ -1571,9 +1571,6 @@
 
         setTotal(res.total);
         els.projName.textContent = P().name;
-        els.heroLabel.textContent = P().mode === 'abroad'
-          ? '本次总支出（' + cur(base()).name + '）'
-          : '本次总支出';
         var perHead = Math.round(res.total / peopleCount / 100) * 100;
         els.heroSub.textContent = P().days.length + ' 天 · ' + peopleCount + ' 人 · ' +
           P().expenses.length + ' 笔 · 人均约 ' + fmt(perHead, base()) + ' · ' + dateRange();
@@ -2020,6 +2017,15 @@
         renderAll();
         toast('已切到「' + P().name + '」');
       });
+      els.projRename.addEventListener('click', function () {
+        var pr = P();
+        var name = window.prompt('给这个行程改个名字：', pr.name);
+        if (name === null) return;
+        pr.name = (name || '').trim() || pr.name;
+        renderProjects();
+        render();
+        toast('已改名为「' + pr.name + '」');
+      });
       els.projNew.addEventListener('click', function () {
         var name = window.prompt('这次行程叫什么？（例如：2026 云南 7 天）', '新的行程');
         if (name === null) return;
@@ -2367,13 +2373,7 @@
         renderAll();
       });
       document.getElementById('addExpense').addEventListener('click', function () {
-        var fresh = {
-          id: nid('e'), title: '新的支出', amount: 0, currency: base(), category: 'other',
-          date: currentDay(), payer: P().people[0].id, shares: null
-        };
-        P().expenses.push(fresh);
-        animateId = fresh.id;
-        renderAll();
+        openEdit(null);
       });
       document.getElementById('makeCard').addEventListener('click', function () {
         render();
