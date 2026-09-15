@@ -262,6 +262,11 @@
   .actions { display: flex; flex-direction: column; gap: 9px; margin-top: 2px; }
   .ft { font-size: 11.5px; color: var(--muted); display: flex; flex-direction: column; gap: 6px; line-height: 1.6; }
   .ft-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .legal h4 { font-size: 13.5px; font-weight: 600; margin: 14px 0 6px; }
+  .legal h4:first-of-type { margin-top: 4px; }
+  .legal p, .legal li { font-size: 12.5px; color: var(--muted); line-height: 1.75; margin: 0 0 7px; }
+  .legal ul { margin: 0 0 7px; padding-left: 18px; }
+  .legal .legal-foot { font-size: 11.5px; color: var(--muted); margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--line); }
   .sheet {
     position: fixed; inset: 0; background: rgba(8, 13, 20, .72); z-index: 20; overflow: auto;
     -webkit-overflow-scrolling: touch; padding: 18px 14px calc(22px + env(safe-area-inset-bottom));
@@ -437,8 +442,35 @@
 
     <footer class="ft">
       <div id="saveState">数据存在这台设备上，退出也不丢。</div>
-      <div class="ft-row"><span>由 赛肯德工具箱 出品</span></div>
+      <div class="ft-row">
+        <span>© 2026 赛肯德工具箱 · 保留所有权利</span>
+        <button type="button" class="link-btn" id="openLegal">版权与隐私</button>
+      </div>
     </footer>
+  </div>
+
+  <div class="sheet" id="legalSheet" hidden>
+    <div class="sheet-inner">
+      <div class="panel legal">
+        <h3>版权与隐私</h3>
+        <h4>版权</h4>
+        <p>本工具（页面、文案、界面与结算图样式）由「赛肯德工具箱」独立开发，著作权归开发方所有。未经许可，不得复制、转售、二次分发，或去除页面与结算图上的署名。</p>
+        <p>你购买后获得的使用授权是：在自己的一次旅行或自己的团队内使用，并按需要修改成员、金额与日期。</p>
+        <h4>隐私</h4>
+        <ul>
+          <li>不收集、不上传、不共享你的任何数据。</li>
+          <li>成员名字、金额、日期只保存在你打开它的这台设备上（浏览器本地存储）。换设备、清空浏览器数据会一并消失。</li>
+          <li>唯一会联网的动作是查询汇率，只发送"要查哪种货币"，不发送任何账目内容。</li>
+          <li>没有账号体系、没有统计埋点、没有广告。</li>
+        </ul>
+        <h4>免责</h4>
+        <p>汇率来自公开数据源，每天更新一次，仅供参考，实际结算请以银行或支付平台为准。分摊金额仅用于记账，请自行核对；本工具不构成财务、税务或法律建议。</p>
+        <p class="legal-foot">最后更新：2026 年 9 月 15 日</p>
+        <div class="sheet-actions">
+          <button type="button" class="btn btn-block" id="closeLegal">知道了</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="sheet" id="sheet" hidden>
@@ -655,7 +687,7 @@
       var rateCache = { date: '', toCNY: {}, fetchedAt: 0 };
       var rateSource = 'builtin';
       var els = {};
-      ['people', 'expenses', 'rows', 'transfers', 'sheet', 'ocrSheet', 'rateSheet', 'card', 'toast', 'total', 'heroSub',
+      ['people', 'expenses', 'rows', 'transfers', 'sheet', 'ocrSheet', 'rateSheet', 'legalSheet', 'card', 'toast', 'total', 'heroSub',
         'heroPill', 'heroLabel', 'count', 'roundNote', 'saveState', 'ocrMsg', 'ocrList', 'ocrAdd',
         'ocrHead', 'ocrCount', 'dayStrip', 'baseCur', 'rateStatus', 'rateList'].forEach(function (id) {
         els[id] = document.getElementById(id);
@@ -1429,6 +1461,14 @@
       });
       document.getElementById('copyText').addEventListener('click', copySummary);
       document.getElementById('copyText2').addEventListener('click', copySummary);
+      document.getElementById('openLegal').addEventListener('click', function () {
+        els.legalSheet.hidden = false;
+        document.body.style.overflow = 'hidden';
+      });
+      document.getElementById('closeLegal').addEventListener('click', function () {
+        els.legalSheet.hidden = true;
+        document.body.style.overflow = '';
+      });
       document.getElementById('clearAll').addEventListener('click', function () {
         if (!window.confirm('清空以后现在填的内容就没了（无法恢复），确定要重来吗？')) return;
         var snap = snapshot();
