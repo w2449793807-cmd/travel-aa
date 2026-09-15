@@ -22,7 +22,7 @@
     /* ── 设计令牌 ──
        依据：Ant Design 字体/色彩规范、微信小程序设计指南、TDesign 按钮尺寸、Apple HIG 触控下限 */
     /* 字阶：全站只允许 5 档 */
-    --fs-hero: 28px;
+    --fs-hero: 34px;
     --fs-title: 17px;
     --fs-body: 15px;
     --fs-sub: 13px;
@@ -109,7 +109,8 @@
   .view.view-in { animation: viewIn .22s cubic-bezier(.2, .8, .2, 1); }
   @keyframes viewIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
   .view-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: var(--btn-md); }
-  .view-head h2 { font-size: var(--fs-body); font-weight: 600; letter-spacing: -.01em; }
+  /* 区块标题降为"分组标签"，让全页唯一的主角（总支出）站住 */
+  .view-head h2 { font-size: var(--fs-sub); font-weight: var(--fw-medium); color: var(--muted); letter-spacing: .01em; }
   .tabbar {
     position: fixed; left: 50%; transform: translateX(-50%); bottom: 0; z-index: 12;
     width: 100%; max-width: 560px; display: flex; gap: var(--sp-1);
@@ -238,6 +239,7 @@
   .day-wrap { position: relative; flex: 0 0 auto; scroll-snap-align: start; }
   .day {
     display: flex; flex-direction: column; gap: 1px; min-width: 92px; cursor: pointer;
+    flex: 0 0 auto; scroll-snap-align: start;
     border: 1px solid var(--line); background: var(--surface); color: var(--text);
     border-radius: var(--r-card); padding: 9px 12px; text-align: left; box-shadow: var(--shadow-sm);
     transition: transform .16s ease, box-shadow .16s ease, background .16s ease, color .16s ease;
@@ -251,13 +253,15 @@
     background: var(--accent-soft); box-shadow: none;
   }
   .day.is-active .day-week, .day.is-active .day-sum { color: var(--accent); opacity: .7; }
-  .day-wrap.is-active .day-del { opacity: 1; transform: scale(1); }
-  .day-del {
-    position: absolute; top: -6px; right: -6px; width: 26px; height: 26px; border-radius: 50%;
-    border: 1px solid var(--danger-line); background: var(--danger-soft); color: var(--minus);
-    font: inherit; font-size: var(--fs-body); line-height: 1; display: flex; align-items: center; justify-content: center;
-    cursor: pointer; opacity: 0; transform: scale(.6); transition: opacity .16s ease, transform .16s ease;
+  /* 日期管理挪到「设置」页，主界面不再出现小叉 */
+  .day-manage { display: flex; flex-direction: column; gap: var(--sp-2); }
+  .dm-row {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto 44px; gap: var(--sp-2); align-items: center;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-control);
+    padding: var(--sp-1) var(--sp-1) var(--sp-1) var(--sp-3);
   }
+  .dm-label { font-size: var(--fs-sub); }
+  .dm-sum { font-size: var(--fs-sub); color: var(--muted); }
   .day-add {
     display: flex; align-items: center; justify-content: center; position: relative;
     border: 1.5px dashed var(--line); background: var(--surface-2); color: var(--accent);
@@ -285,12 +289,12 @@
   .amt-wrap span.amt-code { font-size: var(--fs-cap); font-weight: 600; color: var(--accent); letter-spacing: .02em; }
   .amt-wrap input {
     flex: 0 0 auto; width: 88px; border: 0; background: transparent; padding: var(--sp-2) 0; text-align: right;
-    min-height: var(--btn-md); font-weight: var(--fw-medium); font-variant-numeric: tabular-nums;
+    min-height: var(--btn-md); font-size: var(--fs-title); font-weight: var(--fw-semibold); font-variant-numeric: tabular-nums;
   }
   .amt-wrap input:focus-visible { outline: none; }
   /* 列表行观感：输入框默认无边框，聚焦时才出现一条主色下划线 */
   .ex .e-title, .ex .e-amount { border: 0; background: transparent; padding: var(--sp-2) 0; }
-  .ex .e-title { font-size: var(--fs-title); font-weight: var(--fw-medium); }
+  .ex .e-title { font-size: var(--fs-body); font-weight: var(--fw-medium); }
   .ex .e-title:focus-visible, .ex .e-amount:focus-visible {
     outline: none; box-shadow: inset 0 -2px 0 var(--accent);
   }
@@ -517,6 +521,12 @@
         <button type="button" class="btn btn-soft" id="addPerson">+ 加人</button>
       </div>
       <div class="people" id="people"></div>
+
+      <div class="view-head">
+        <h2>日期</h2>
+        <span class="hint" id="dayCount"></span>
+      </div>
+      <div class="day-manage" id="dayManage"></div>
 
       <div class="rate-card" id="rateCard">
         <div class="rate-row">
@@ -801,7 +811,7 @@
       ['people', 'expenses', 'rows', 'transfers', 'sheet', 'ocrSheet', 'rateSheet', 'legalSheet', 'card', 'toast', 'total', 'heroSub',
         'heroLabel', 'count', 'roundNote', 'saveState', 'ocrMsg', 'ocrList', 'ocrAdd',
         'ocrHead', 'ocrCount', 'dayStrip', 'baseCur', 'rateStatus', 'rateList',
-        'rateCard', 'foreignBanner', 'foreignText'].forEach(function (id) {
+        'rateCard', 'foreignBanner', 'foreignText', 'dayManage', 'dayCount'].forEach(function (id) {
         els[id] = document.getElementById(id);
       });
 
@@ -1159,21 +1169,18 @@
 
       function renderDays() {
         var all = state.expenses.reduce(function (s, e) { return s + baseCentsOf(e); }, 0);
-        var html = '<div class="day-wrap' + (state.selected === 'all' ? ' is-active' : '') + '">' +
-          '<button type="button" class="day' + (state.selected === 'all' ? ' is-active' : '') + '" data-day="all" aria-pressed="' +
+        var html = '<button type="button" class="day' + (state.selected === 'all' ? ' is-active' : '') + '" data-day="all" aria-pressed="' +
           (state.selected === 'all' ? 'true' : 'false') + '">' +
           '<span class="day-top">全部</span><span class="day-week">' + state.days.length + ' 天</span>' +
-          '<span class="day-sum">' + fmt(all, base()) + '</span></button></div>';
+          '<span class="day-sum">' + fmt(all, base()) + '</span></button>';
 
         html += state.days.map(function (d) {
           var active = state.selected === d;
-          return '<div class="day-wrap' + (active ? ' is-active' : '') + '">' +
-            '<button type="button" class="day' + (active ? ' is-active' : '') + '" data-day="' + d + '" aria-pressed="' +
+          return '<button type="button" class="day' + (active ? ' is-active' : '') + '" data-day="' + d + '" aria-pressed="' +
             (active ? 'true' : 'false') + '">' +
             '<span class="day-top">' + shortDate(d) + '</span>' +
             '<span class="day-week">' + weekOf(d) + '</span>' +
-            '<span class="day-sum">' + fmt(dayTotal(d), base()) + '</span></button>' +
-            '<button type="button" class="day-del" data-del-day="' + d + '" aria-label="删除这天">×</button></div>';
+            '<span class="day-sum">' + fmt(dayTotal(d), base()) + '</span></button>';
         }).join('');
 
         html += '<label class="day-add">+ 加一天<input type="date" id="dayPicker" value="' +
@@ -1188,6 +1195,19 @@
             '<button type="button" class="x" data-del-person="' + p.id + '" aria-label="删除成员">×</button>' +
             '</div>';
         }).join('');
+      }
+
+      /* 日期管理：放在设置页，主界面不再出现删除小叉 */
+      function renderDayManage() {
+        if (!els.dayManage) return;
+        els.dayManage.innerHTML = state.days.map(function (d) {
+          return '<div class="dm-row">' +
+            '<span class="dm-label">' + shortDate(d) + ' ' + weekOf(d) + '</span>' +
+            '<span class="dm-sum num">' + fmt(dayTotal(d), base()) + '</span>' +
+            '<button type="button" class="x" data-del-day="' + d + '" aria-label="删除' + shortDate(d) + '">×</button>' +
+            '</div>';
+        }).join('');
+        if (els.dayCount) els.dayCount.textContent = '共 ' + state.days.length + ' 天';
       }
 
       function currencyOptions(sel) {
@@ -1297,7 +1317,6 @@
             '<div class="card-sec">支出明细</div>' + detail +
             '<div class="card-sec">每人结果' + (state.mode === 'abroad' ? '（' + esc(cur(base()).name) + '）' : '') + '</div>' + lines +
             '<div class="card-sec">' + (res.transfers.length ? '转账方案 · ' + res.transfers.length + ' 笔结清' : '转账方案 · 已结清') + '</div>' + transfers +
-            (res.smooth ? '<div class="card-item-note" style="margin-top:5px">零头算在垫付人头上，方便直接转。</div>' : '') +
             (note ? '<div class="card-item-note" style="margin-top:3px">' + esc(note) + '</div>' : '') +
           '</div>' +
           '<div class="card-foot"><span>同款工具看主页</span><span>@赛肯德工具箱</span></div>';
@@ -1428,6 +1447,7 @@
         normalizeDays();
         renderDays();
         renderPeople();
+        renderDayManage();
         renderExpenses();
         render();
       }
@@ -1445,20 +1465,6 @@
       document.getElementById('refreshRates').addEventListener('click', function () { fetchRates(true); });
 
       els.dayStrip.addEventListener('click', function (ev) {
-        var del = ev.target.closest('[data-del-day]');
-        if (del) {
-          var day = del.getAttribute('data-del-day');
-          var n = state.expenses.filter(function (e) { return e.date === day; }).length;
-          var msg = n ? '删除 ' + shortDate(day) + ' 和这天的 ' + n + ' 笔支出？' : '删除 ' + shortDate(day) + '？';
-          if (!window.confirm(msg)) return;
-          var snap = snapshot();
-          state.expenses = state.expenses.filter(function (e) { return e.date !== day; });
-          state.days = state.days.filter(function (d) { return d !== day; });
-          if (state.selected === day) state.selected = 'all';
-          renderAll();
-          toast('已删除 ' + shortDate(day), '撤销', function () { undo(snap, '已恢复那天'); });
-          return;
-        }
         var btn = ev.target.closest('[data-day]');
         if (!btn) return;
         state.selected = btn.getAttribute('data-day');
@@ -1466,6 +1472,20 @@
         renderExpenses();
         pulse(els.expenses, 'fade');
         render();
+      });
+      els.dayManage.addEventListener('click', function (ev) {
+        var del = ev.target.closest('[data-del-day]');
+        if (!del) return;
+        var day = del.getAttribute('data-del-day');
+        var n = state.expenses.filter(function (e) { return e.date === day; }).length;
+        var msg = n ? '删除 ' + shortDate(day) + ' 和这天的 ' + n + ' 笔支出？' : '删除 ' + shortDate(day) + '？';
+        if (!window.confirm(msg)) return;
+        var snap = snapshot();
+        state.expenses = state.expenses.filter(function (e) { return e.date !== day; });
+        state.days = state.days.filter(function (d) { return d !== day; });
+        if (state.selected === day) state.selected = 'all';
+        renderAll();
+        toast('已删除 ' + shortDate(day), '撤销', function () { undo(snap, '已恢复那天'); });
       });
       els.dayStrip.addEventListener('change', function (ev) {
         if (ev.target.id !== 'dayPicker') return;
