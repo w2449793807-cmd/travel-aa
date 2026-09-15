@@ -1,0 +1,17 @@
+{
+  "name": "旅行 AA 分摊器 · 赛肯德工具箱",
+  "short_name": "旅行AA",
+  "description": "谁垫付了钱、谁该给谁多少，填完自动算，还能生成一张可以直接发群的结算图。",
+  "lang": "zh-CN",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f4f7fb",
+  "theme_color": "#2f6bd8",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
