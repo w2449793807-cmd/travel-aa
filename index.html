@@ -208,6 +208,7 @@
   .date-chip input { position: absolute; inset: 0; opacity: 0; cursor: pointer; min-height: 0; padding: 0; border: 0; }
   .e-cur { font-size: 14px; padding: 8px 6px; min-height: 44px; }
   .conv { font-size: 11.5px; color: var(--muted); margin-top: -2px; }
+  .conv b { color: var(--accent); font-weight: 600; }
   .cats { display: flex; flex-wrap: wrap; gap: 5px; }
   .shares { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
   .shares-label { font-size: 11.5px; color: var(--muted); }
@@ -630,11 +631,11 @@
       function baseCentsOf(e) {
         var cents = Math.max(0, Math.round((Number(e.amount) || 0) * 100));
         if (!cents) return 0;
-        var code = e.currency || state.base || 'CNY';
+        var code = e.currency || 'CNY';
         var converted = Math.round((cents * baseRate(code)) / 100) * 100;
         return converted > 0 ? converted : 100;
       }
-      function isForeign(e) { return (e.currency || state.base) !== (state.base || 'CNY'); }
+      function isForeign(e) { return (e.currency || 'CNY') !== (state.base || 'CNY'); }
       function personById(id) {
         for (var i = 0; i < state.people.length; i++) { if (state.people[i].id === id) return state.people[i]; }
         return null;
@@ -659,7 +660,12 @@
       function normalizeDays() {
         var set = {};
         (state.days || []).forEach(function (d) { if (d) set[d] = true; });
-        state.expenses.forEach(function (e) { if (!e.date) e.date = currentDay(); set[e.date] = true; });
+        state.expenses.forEach(function (e) {
+          /* 老数据没记币种时，一律按人民币认，绝不跟着"结算货币"漂移 */
+          if (!e.currency) e.currency = 'CNY';
+          if (!e.date) e.date = currentDay();
+          set[e.date] = true;
+        });
         state.days = Object.keys(set).sort();
         if (!state.days.length) state.days = [today()];
         if (state.selected !== 'all' && state.days.indexOf(state.selected) === -1) state.selected = 'all';
@@ -880,6 +886,13 @@
         var list = codes.slice(0, 3).map(function (c) { return '1 ' + c + '≈' + Number(toCNY(c).toFixed(4)) + ' CNY'; });
         return head + ' · ' + list.join(' · ') + (codes.length > 3 ? ' 等' : '');
       }
+      function rateSentence() {
+        var b = state.base || 'CNY';
+        if (b !== 'CNY') return '1 CNY ≈ ' + Number(baseRate('CNY').toFixed(4)) + ' ' + b;
+        var codes = rateLines();
+        if (!codes.length) return '';
+        return '1 ' + codes[0] + ' ≈ ' + Number(toCNY(codes[0]).toFixed(4)) + ' CNY';
+      }
 
       function renderDays() {
         var all = state.expenses.reduce(function (s, e) { return s + baseCentsOf(e); }, 0);
@@ -929,7 +942,7 @@
           return;
         }
         els.expenses.innerHTML = list.map(function (e) {
-          var code = e.currency || state.base;
+          var code = e.currency || 'CNY';
           var opts = state.people.map(function (p) {
             return '<option value="' + p.id + '"' + (p.id === e.payer ? ' selected' : '') + '>' + esc(p.name) + ' 垫付</option>';
           }).join('');
@@ -944,7 +957,7 @@
               (on ? 'true' : 'false') + '">' + esc(p.name) + '</button>';
           }).join('');
           var conv = (code !== state.base)
-            ? '<div class="conv">≈ ' + fmt(baseCentsOf(e), state.base) + '（按' + (state.manualRates && state.manualRates[code] ? '手动' : '当前') + '汇率）</div>'
+            ? '<div class="conv">折合 <b>' + fmt(baseCentsOf(e), state.base) + '</b> · 原币 ' + fmt(Math.round((Number(e.amount) || 0) * 100), code) + '（' + code + '）</div>'
             : '';
           return '<div class="ex" data-expense="' + e.id + '">' +
             '<div class="ex-top">' +
@@ -1140,7 +1153,8 @@
       els.baseCur.addEventListener('change', function () {
         state.base = els.baseCur.value;
         renderAll();
-        toast('结算货币改为 ' + cur(state.base).name);
+        var s = rateSentence();
+        toast('已按' + cur(state.base).name + '结算' + (s ? ' · ' + s : ''));
       });
       document.getElementById('refreshRates').addEventListener('click', function () { fetchRates(true); });
 
@@ -1216,7 +1230,12 @@
         var e = expenseById(holder.getAttribute('data-expense'));
         if (!e) return;
         if (ev.target.classList.contains('e-payer')) { e.payer = ev.target.value; render(); }
-        if (ev.target.classList.contains('e-cur')) { e.currency = ev.target.value; renderExpenses(); render(); }
+        if (ev.target.classList.contains('e-cur')) {
+          e.currency = ev.target.value;
+          renderExpenses();
+          render();
+          toast('这笔已标为' + cur(e.currency).name + '，金额数字保留，折算按汇率算');
+        }
         if (ev.target.classList.contains('e-date')) { renderExpenses(); render(); }
       });
       els.expenses.addEventListener('click', function (ev) {
