@@ -198,6 +198,7 @@
   }
   .amt-wrap:focus-within { border-color: var(--accent); outline: 2px solid var(--accent); outline-offset: 1px; }
   .amt-wrap span { font-size: 13.5px; color: var(--muted); white-space: nowrap; }
+  .amt-wrap span.amt-code { font-size: 12px; font-weight: 600; color: var(--accent); letter-spacing: .02em; }
   .amt-wrap input { border: 0; background: transparent; padding: 10px 0; text-align: right; min-height: 40px; font-variant-numeric: tabular-nums; }
   .amt-wrap input:focus-visible { outline: none; }
   .date-chip {
@@ -220,6 +221,14 @@
   }
   .chip:active { transform: scale(.96); }
   .chip.is-on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+  .mini {
+    margin-left: auto; font: inherit; font-size: 12px; color: var(--muted);
+    background: transparent; border: 0; padding: 6px 4px; cursor: pointer;
+  }
+  .mini:hover { color: var(--accent); }
+  .ex.is-new { animation: cardIn .32s cubic-bezier(.2, .8, .2, 1); }
+  @keyframes cardIn { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
+  .expenses.fade { animation: fadeIn .2s ease; }
   .empty {
     font-size: 12.5px; color: var(--muted); border: 1px dashed var(--line); border-radius: 16px;
     padding: 20px 16px; text-align: center; background: var(--surface); line-height: 1.7;
@@ -274,10 +283,13 @@
   .drop input { display: none; }
   .ocr-list, .rate-list { display: flex; flex-direction: column; gap: 8px; }
   .ocr-row {
-    display: grid; grid-template-columns: 28px minmax(0, 1fr) 92px; gap: 8px; align-items: center;
+    display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 8px; align-items: start;
     border: 1px solid var(--line); border-radius: 13px; padding: 7px 10px; background: var(--surface-2);
   }
   .ocr-row input[type="checkbox"] { width: 22px; height: 22px; min-height: 22px; }
+  .ocr-main { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .ocr-sub { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+  .ocr-row select { min-height: 36px; font-size: 13px; padding: 6px 8px; }
   .ocr-row input[type="text"] { border: 0; background: transparent; padding: 6px 4px; font-size: 14.5px; min-height: 36px; }
   .ocr-row input[type="number"] { border: 0; background: transparent; padding: 6px 4px; font-size: 14.5px; text-align: right; min-height: 36px; }
   .rate-item {
@@ -333,8 +345,9 @@
     position: fixed; left: 50%; bottom: calc(26px + env(safe-area-inset-bottom)); transform: translateX(-50%);
     background: rgba(12, 18, 26, .93); color: #ffffff; font-size: 13px; padding: 10px 16px;
     border-radius: 999px; z-index: 30; max-width: 88vw; text-align: center; line-height: 1.5;
-    animation: riseIn .2s ease;
+    display: flex; align-items: center; gap: 8px; animation: riseIn .2s ease;
   }
+  .toast button { font: inherit; font-size: 13px; font-weight: 600; color: #9cc0ff; background: transparent; border: 0; padding: 2px 2px; cursor: pointer; }
   @media (min-width: 560px) { .title { font-size: 29px; } .hero-value { font-size: 42px; } }
 </style>
 </head>
@@ -460,7 +473,7 @@
     <div class="sheet-inner">
       <div class="panel">
         <h3>截图识别</h3>
-        <p class="panel-hint">选一张账单截图，它把项目、金额、日期抠出来。谁垫付、几个人分，加入后点一下就好。</p>
+        <p class="panel-hint">选一张账单截图，它把项目、金额、日期抠出来，币种会尽量从「$、฿、欧元、日元」这类字样里认。认不出（比如中日共用的 ¥）就按结算货币记，加入前扫一眼。谁垫付、几个人分，加入后再点。</p>
         <label class="drop">
           <strong>点这里选截图</strong>
           <span id="ocrPickHint">图片不会上传，只在本机识别</span>
@@ -534,6 +547,9 @@
       var seq = 100;
       var toastTimer = null;
       var ocrRows = [];
+      var animateId = null;
+      var shownTotal = null;
+      var shownBase = null;
 
       function nid(p) { seq += 1; return p + seq; }
       function cat(key) {
@@ -575,6 +591,45 @@
           }
         }
         return 'other';
+      }
+      /* 截图里能认出的货币线索（认不出就返回 null，不瞎猜） */
+      var CUR_WORDS = [
+        { code: 'USD', words: ['美元', '美金', 'usd', 'us$'] },
+        { code: 'JPY', words: ['日元', '日币', '円', 'jpy'] },
+        { code: 'EUR', words: ['欧元', 'eur'] },
+        { code: 'GBP', words: ['英镑', 'gbp'] },
+        { code: 'HKD', words: ['港币', '港元', 'hkd', 'hk$'] },
+        { code: 'MOP', words: ['澳门币', '葡币', 'mop'] },
+        { code: 'TWD', words: ['新台币', '台币', 'twd', 'nt$'] },
+        { code: 'KRW', words: ['韩元', 'krw', '₩'] },
+        { code: 'SGD', words: ['新加坡元', '新币', 'sgd', 's$'] },
+        { code: 'THB', words: ['泰铢', 'thb', '฿'] },
+        { code: 'MYR', words: ['马币', '林吉特', 'myr'] },
+        { code: 'VND', words: ['越南盾', 'vnd', '₫'] },
+        { code: 'IDR', words: ['印尼盾', 'idr'] },
+        { code: 'PHP', words: ['菲律宾比索', '比索', 'php', '₱'] },
+        { code: 'AUD', words: ['澳元', '澳币', 'aud', 'a$'] },
+        { code: 'NZD', words: ['新西兰元', '纽币', 'nzd', 'nz$'] },
+        { code: 'CAD', words: ['加元', '加币', 'cad', 'c$'] },
+        { code: 'CHF', words: ['瑞士法郎', '瑞郎', 'chf'] },
+        { code: 'AED', words: ['迪拉姆', 'aed'] },
+        { code: 'TRY', words: ['里拉', 'try'] },
+        { code: 'RUB', words: ['卢布', 'rub'] },
+        { code: 'INR', words: ['印度卢比', 'inr', '₹'] },
+        { code: 'CNY', words: ['人民币', 'rmb', 'cny', '￥', '元'] }
+      ];
+      function detectCurrency(line) {
+        var low = String(line).toLowerCase();
+        for (var i = 0; i < CUR_WORDS.length; i++) {
+          var words = CUR_WORDS[i].words;
+          for (var j = 0; j < words.length; j++) {
+            if (low.indexOf(words[j]) !== -1) return CUR_WORDS[i].code;
+          }
+        }
+        if (low.indexOf('$') !== -1) return 'USD';
+        if (low.indexOf('€') !== -1) return 'EUR';
+        if (low.indexOf('£') !== -1) return 'GBP';
+        return null;
       }
 
       function sampleState() {
@@ -728,11 +783,65 @@
         } catch (e) { /* 用示例数据 */ }
         normalizeDays();
       }
-      function toast(msg) {
-        els.toast.textContent = msg;
+      function toast(msg, actionLabel, actionFn) {
+        els.toast.innerHTML = '';
+        var span = document.createElement('span');
+        span.textContent = msg;
+        els.toast.appendChild(span);
+        if (actionLabel && actionFn) {
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.textContent = actionLabel;
+          btn.addEventListener('click', function () {
+            els.toast.hidden = true;
+            actionFn();
+          });
+          els.toast.appendChild(btn);
+        }
         els.toast.hidden = false;
         if (toastTimer) window.clearTimeout(toastTimer);
-        toastTimer = window.setTimeout(function () { els.toast.hidden = true; }, 2000);
+        toastTimer = window.setTimeout(function () { els.toast.hidden = true; }, actionLabel ? 6000 : 2000);
+      }
+      function snapshot() {
+        try { return JSON.stringify(state); } catch (e) { return null; }
+      }
+      function undo(snap, msg) {
+        if (!snap) return;
+        try {
+          state = JSON.parse(snap);
+          renderAll();
+          toast(msg || '已撤销');
+        } catch (e) { }
+      }
+      function reduceMotion() {
+        return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+      }
+      function pulse(el, cls) {
+        if (!el || !el.classList) return;
+        el.classList.remove(cls);
+        void el.offsetWidth;
+        el.classList.add(cls);
+      }
+      function setTotal(cents) {
+        var code = state.base;
+        if (shownTotal === null || shownBase !== code || reduceMotion() || !window.requestAnimationFrame) {
+          els.total.textContent = fmt(cents, code);
+          shownTotal = cents;
+          shownBase = code;
+          return;
+        }
+        var from = shownTotal;
+        var to = cents;
+        var start = null;
+        shownTotal = to;
+        window.requestAnimationFrame(function step(ts) {
+          if (start === null) start = ts;
+          var p = Math.min(1, (ts - start) / 320);
+          var eased = 1 - Math.pow(1 - p, 3);
+          els.total.textContent = fmt(Math.round(from + (to - from) * eased), code);
+          if (p < 1) window.requestAnimationFrame(step);
+          else els.total.textContent = fmt(to, code);
+        });
       }
 
       /* ---------- 汇率 ---------- */
@@ -935,6 +1044,8 @@
 
       function renderExpenses() {
         var list = visibleExpenses();
+        var newId = animateId;
+        animateId = null;
         if (!list.length) {
           els.expenses.innerHTML = '<div class="empty">' +
             (state.selected === 'all' ? '还没有支出' : shortDate(state.selected) + ' 还没记账') +
@@ -959,10 +1070,10 @@
           var conv = (code !== state.base)
             ? '<div class="conv">折合 <b>' + fmt(baseCentsOf(e), state.base) + '</b> · 原币 ' + fmt(Math.round((Number(e.amount) || 0) * 100), code) + '（' + code + '）</div>'
             : '';
-          return '<div class="ex" data-expense="' + e.id + '">' +
+          return '<div class="ex' + (e.id === newId ? ' is-new' : '') + '" data-expense="' + e.id + '">' +
             '<div class="ex-top">' +
               '<input type="text" class="e-title" value="' + esc(e.title) + '" aria-label="支出项目" />' +
-              '<div class="amt-wrap"><span>' + esc(cur(code).symbol) + '</span>' +
+              '<div class="amt-wrap"><span class="amt-code">' + esc(code) + '</span>' +
                 '<input type="number" class="e-amount" min="0" step="10" inputmode="decimal" value="' + (Number(e.amount) || 0) + '" aria-label="金额" /></div>' +
               '<button type="button" class="x" data-del-expense="' + e.id + '" aria-label="删除这笔">×</button>' +
             '</div>' +
@@ -973,7 +1084,8 @@
               '<select class="e-cur" aria-label="这笔的货币">' + currencyOptions(code) + '</select>' +
               '<select class="e-payer" aria-label="谁垫付了这笔">' + opts + '</select>' +
             '</div>' + conv +
-            '<div class="shares"><span class="shares-label">分摊给</span>' + chips + '</div>' +
+            '<div class="shares"><span class="shares-label">分摊给</span>' + chips +
+              '<button type="button" class="mini" data-copy-expense="' + e.id + '">复制一笔</button></div>' +
             '</div>';
         }).join('');
       }
@@ -1034,10 +1146,11 @@
         var res = compute();
         var peopleCount = state.people.length || 1;
 
-        els.total.textContent = fmt(res.total, state.base);
+        setTotal(res.total);
         els.heroLabel.textContent = '本次总支出（' + cur(state.base).name + '）';
         els.heroPill.textContent = state.days.length + ' 天 · ' + peopleCount + ' 人';
-        els.heroSub.textContent = state.expenses.length + ' 笔 · 人均约 ' + fmt(Math.round(res.total / peopleCount), state.base) + ' · ' + dateRange();
+        var perHead = Math.round(res.total / peopleCount / 100) * 100;
+        els.heroSub.textContent = state.expenses.length + ' 笔 · 人均约 ' + fmt(perHead, state.base) + ' · ' + dateRange();
         els.roundNote.textContent = res.smooth ? '零头已抹平，最多差 1 元' : '';
 
         els.rows.innerHTML = res.rows.map(function (r) {
@@ -1165,10 +1278,12 @@
           var n = state.expenses.filter(function (e) { return e.date === day; }).length;
           var msg = n ? '删除 ' + shortDate(day) + ' 和这天的 ' + n + ' 笔支出？' : '删除 ' + shortDate(day) + '？';
           if (!window.confirm(msg)) return;
+          var snap = snapshot();
           state.expenses = state.expenses.filter(function (e) { return e.date !== day; });
           state.days = state.days.filter(function (d) { return d !== day; });
           if (state.selected === day) state.selected = 'all';
           renderAll();
+          toast('已删除 ' + shortDate(day), '撤销', function () { undo(snap, '已恢复那天'); });
           return;
         }
         var btn = ev.target.closest('[data-day]');
@@ -1176,6 +1291,7 @@
         state.selected = btn.getAttribute('data-day');
         renderDays();
         renderExpenses();
+        pulse(els.expenses, 'fade');
         render();
       });
       els.dayStrip.addEventListener('change', function (ev) {
@@ -1199,6 +1315,8 @@
         if (!btn) return;
         if (state.people.length <= 1) { toast('至少要留一个人'); return; }
         var id = btn.getAttribute('data-del-person');
+        var snap = snapshot();
+        var gone = nameOf(id);
         state.people = state.people.filter(function (p) { return p.id !== id; });
         state.expenses.forEach(function (e) {
           if (e.payer === id) e.payer = state.people[0].id;
@@ -1208,6 +1326,7 @@
           }
         });
         renderAll();
+        toast('已移除 ' + gone, '撤销', function () { undo(snap, '已恢复' + gone); });
       });
 
       els.expenses.addEventListener('input', function (ev) {
@@ -1256,10 +1375,27 @@
         }
         var chip = ev.target.closest('[data-pid]');
         if (chip && holder) { toggleShareChip(chip); return; }
+        var copyBtn = ev.target.closest('[data-copy-expense]');
+        if (copyBtn) {
+          var src = expenseById(copyBtn.getAttribute('data-copy-expense'));
+          if (src) {
+            var copy = JSON.parse(JSON.stringify(src));
+            copy.id = nid('e');
+            var at = state.expenses.indexOf(src);
+            state.expenses.splice(at + 1, 0, copy);
+            animateId = copy.id;
+            renderAll();
+            toast('已复制这一笔，改金额就行');
+          }
+          return;
+        }
         var del = ev.target.closest('[data-del-expense]');
         if (del) {
+          var target = expenseById(del.getAttribute('data-del-expense'));
+          var snap = snapshot();
           state.expenses = state.expenses.filter(function (e) { return e.id !== del.getAttribute('data-del-expense'); });
           renderAll();
+          toast('已删除「' + (target ? target.title : '这笔') + '」', '撤销', function () { undo(snap, '已恢复'); });
         }
       });
 
@@ -1268,10 +1404,12 @@
         renderAll();
       });
       document.getElementById('addExpense').addEventListener('click', function () {
-        state.expenses.push({
+        var fresh = {
           id: nid('e'), title: '新的支出', amount: 0, currency: state.base, category: 'other',
           date: currentDay(), payer: state.people[0].id, shares: null
-        });
+        };
+        state.expenses.push(fresh);
+        animateId = fresh.id;
         renderAll();
       });
       document.getElementById('makeCard').addEventListener('click', function () {
@@ -1288,6 +1426,7 @@
       document.getElementById('copyText2').addEventListener('click', copySummary);
       document.getElementById('clearAll').addEventListener('click', function () {
         if (!window.confirm('清空以后现在填的内容就没了（无法恢复），确定要重来吗？')) return;
+        var snap = snapshot();
         var base = state.base;
         state = {
           people: [{ id: nid('p'), name: '朋友A' }, { id: nid('p'), name: '朋友B' }],
@@ -1298,7 +1437,7 @@
           expenses: []
         };
         renderAll();
-        toast('已清空，可以开始记你自己的账了');
+        toast('已清空，可以重新开始', '撤销清空', function () { undo(snap, '已恢复到清空前'); });
       });
 
       /* ---------- 汇率面板 ---------- */
@@ -1423,7 +1562,10 @@
               date = String(parts[0]) + '-' + String(mm).padStart(2, '0') + '-' + String(dd).padStart(2, '0');
             }
           }
-          out.push({ checked: true, title: title, amount: amount, date: date, category: guessCategory(line) });
+          out.push({
+            checked: true, title: title, amount: amount, date: date,
+            category: guessCategory(line), currency: detectCurrency(line)
+          });
         });
         return out.slice(0, 12);
       }
@@ -1431,8 +1573,14 @@
         els.ocrList.innerHTML = ocrRows.map(function (row, idx) {
           return '<div class="ocr-row">' +
             '<input type="checkbox" data-idx="' + idx + '"' + (row.checked ? ' checked' : '') + ' aria-label="是否加入这笔" />' +
-            '<input type="text" data-idx="' + idx + '" data-role="title" value="' + esc(row.title) + '" aria-label="识别到的项目" />' +
-            '<input type="number" data-idx="' + idx + '" data-role="amount" min="0" step="1" inputmode="decimal" value="' + row.amount + '" aria-label="识别到的金额" />' +
+            '<div class="ocr-main">' +
+              '<input type="text" data-idx="' + idx + '" data-role="title" value="' + esc(row.title) + '" aria-label="识别到的项目" />' +
+              '<div class="ocr-sub">' +
+                '<input type="number" data-idx="' + idx + '" data-role="amount" min="0" step="1" inputmode="decimal" value="' + row.amount + '" aria-label="识别到的金额" />' +
+                '<select data-idx="' + idx + '" data-role="currency" aria-label="这笔的货币">' +
+                  currencyOptions(row.currency || state.base) + '</select>' +
+              '</div>' +
+            '</div>' +
             '</div>';
         }).join('');
         els.ocrAdd.hidden = !ocrRows.length;
@@ -1452,6 +1600,12 @@
         if (ev.target.type === 'checkbox') row.checked = ev.target.checked;
         if (ev.target.getAttribute('data-role') === 'title') row.title = ev.target.value;
         if (ev.target.getAttribute('data-role') === 'amount') row.amount = ev.target.value;
+        if (ev.target.getAttribute('data-role') === 'currency') row.currency = ev.target.value;
+      });
+      els.ocrList.addEventListener('change', function (ev) {
+        if (ev.target.getAttribute('data-role') !== 'currency') return;
+        var idx = Number(ev.target.getAttribute('data-idx'));
+        if (ocrRows[idx]) ocrRows[idx].currency = ev.target.value;
       });
       els.ocrAdd.addEventListener('click', function () {
         var picked = ocrRows.filter(function (r) { return r.checked && Number(r.amount) > 0; });
@@ -1460,7 +1614,7 @@
           var day = r.date || currentDay();
           if (state.days.indexOf(day) === -1) state.days.push(day);
           state.expenses.push({
-            id: nid('e'), title: r.title || '截图记的支出', amount: r.amount, currency: state.base,
+            id: nid('e'), title: r.title || '截图记的支出', amount: r.amount, currency: r.currency || state.base,
             category: r.category || 'other', date: day, payer: state.people[0].id, shares: null
           });
         });
