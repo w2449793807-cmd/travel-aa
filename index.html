@@ -1,0 +1,653 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>旅行 AA 分摊器 · 赛肯德工具箱</title>
+<meta name="description" content="一起旅行、吃饭、合租，谁垫付了钱、谁该给谁多少，填完自动算，还能生成一张可以直接发群的结算图。" />
+<meta name="theme-color" content="#2f6bd8" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#151c25" media="(prefers-color-scheme: dark)" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="旅行AA" />
+<meta name="format-detection" content="telephone=no" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="icon" href="icon-192.png" sizes="192x192" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<style>
+  :root {
+    color-scheme: light dark;
+    --text: #101822;
+    --text: light-dark(#101822, #e8eef6);
+    --muted: #5f6d7d;
+    --muted: light-dark(#5f6d7d, #97a5b5);
+    --line: #e2e8f0;
+    --line: light-dark(#e2e8f0, #2b3543);
+    --surface: #ffffff;
+    --surface: light-dark(#ffffff, #151c25);
+    --surface-2: #f4f7fb;
+    --surface-2: light-dark(#f4f7fb, #1b232e);
+    --soft: #eceff4;
+    --soft: light-dark(#eceff4, #232c38);
+    --accent: #2f6bd8;
+    --accent: light-dark(#2f6bd8, #6ea1fb);
+    --accent-soft: #e9f0ff;
+    --accent-soft: light-dark(#e9f0ff, #1c2942);
+    --accent-ink: #ffffff;
+    --accent-ink: light-dark(#ffffff, #0b1220);
+    --plus: #157f45;
+    --plus: light-dark(#157f45, #4ec98a);
+    --minus: #b8452f;
+    --minus: light-dark(#b8452f, #ff9d85);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    color: var(--text);
+    background: var(--surface-2);
+    -webkit-text-size-adjust: 100%;
+  }
+  .app {
+    max-width: 520px; margin: 0 auto; padding: 20px 16px calc(28px + env(safe-area-inset-bottom));
+    display: flex; flex-direction: column; gap: 18px;
+  }
+  .brand { font-size: 12px; color: var(--muted); letter-spacing: .04em; }
+  .title { font-size: 24px; font-weight: 600; margin: 4px 0 4px; }
+  .sub { font-size: 13px; color: var(--muted); margin: 0; line-height: 1.5; }
+  .hero {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
+    padding: 16px; display: flex; flex-direction: column; gap: 3px;
+  }
+  .hero-label { font-size: 12px; color: var(--muted); }
+  .hero-value { font-size: 34px; font-weight: 600; color: var(--accent); font-variant-numeric: tabular-nums; line-height: 1.15; }
+  .hero-sub { font-size: 12px; color: var(--muted); }
+  .sec { display: flex; flex-direction: column; gap: 10px; }
+  .sec-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  h2 { font-size: 14px; font-weight: 600; margin: 0; }
+  .hint { font-size: 12px; color: var(--muted); }
+  input, select {
+    font: inherit; font-size: 16px; color: var(--text); background: var(--surface);
+    border: 1px solid var(--line); border-radius: 11px; padding: 11px 12px; width: 100%;
+    -webkit-appearance: none; appearance: none;
+  }
+  select { background-image: none; }
+  input:focus-visible, select:focus-visible, .btn:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent);
+  }
+  .btn {
+    font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; min-height: 44px;
+    border-radius: 12px; padding: 10px 14px; border: 1px solid var(--line);
+    background: var(--surface); color: var(--text); white-space: nowrap;
+  }
+  .btn-soft { font-size: 13px; font-weight: 600; color: var(--accent); background: var(--accent-soft); border-color: transparent; min-height: 34px; padding: 6px 12px; }
+  .btn-primary { color: var(--accent-ink); background: var(--accent); border-color: transparent; }
+  .btn-block { width: 100%; }
+  .people { display: flex; flex-wrap: wrap; gap: 8px; }
+  .person {
+    display: grid; grid-template-columns: minmax(0, 1fr) 34px; gap: 2px; align-items: center;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 2px 2px 2px 4px;
+    width: 152px;
+  }
+  .person input { border: 0; background: transparent; padding: 9px 6px; font-size: 15px; }
+  .x {
+    font: inherit; font-size: 17px; line-height: 1; color: var(--muted); cursor: pointer;
+    background: transparent; border: 0; border-radius: 9px; min-height: 34px; padding: 4px 8px;
+  }
+  .x:hover { background: var(--soft); color: var(--text); }
+  .expenses { display: flex; flex-direction: column; gap: 10px; }
+  .card-item {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+    padding: 12px; display: flex; flex-direction: column; gap: 10px;
+  }
+  .card-top { display: grid; grid-template-columns: minmax(0, 1fr) 108px; gap: 8px; }
+  .card-mid { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+  .card-mid .btn { font-size: 13px; font-weight: 500; color: var(--muted); min-height: 38px; }
+  .shares { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .shares-label { font-size: 12px; color: var(--muted); }
+  .chip {
+    font: inherit; font-size: 13.5px; cursor: pointer; white-space: nowrap;
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--muted);
+    border-radius: 999px; padding: 7px 13px; min-height: 36px;
+  }
+  .chip.is-on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+  .empty { font-size: 13px; color: var(--muted); border: 1px dashed var(--line); border-radius: 14px; padding: 16px; text-align: center; }
+  .rows-head, .row {
+    display: grid; grid-template-columns: minmax(0, 1fr) 72px 72px 84px; gap: 8px; align-items: baseline;
+  }
+  .rows-head { font-size: 12px; color: var(--muted); padding-bottom: 3px; border-bottom: 1px solid var(--line); }
+  .rows-head span:not(:first-child), .row > span:not(:first-child) { text-align: right; }
+  .rows { display: flex; flex-direction: column; gap: 9px; }
+  .row { font-size: 14px; font-variant-numeric: tabular-nums; }
+  .row-name { font-size: 14.5px; overflow-wrap: anywhere; }
+  .row-pay, .row-paid { color: var(--muted); }
+  .row-diff.is-plus { color: var(--plus); font-weight: 600; }
+  .row-diff.is-minus { color: var(--minus); font-weight: 600; }
+  .row-diff.is-flat { color: var(--muted); }
+  .transfers { display: flex; flex-direction: column; gap: 8px; }
+  .transfer {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: baseline;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 13px;
+    font-size: 14.5px; font-variant-numeric: tabular-nums;
+  }
+  .transfer-people { overflow-wrap: anywhere; }
+  .transfer-people i { font-style: normal; color: var(--muted); }
+  .transfer-amount { font-weight: 600; white-space: nowrap; }
+  .none { font-size: 13px; color: var(--muted); background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 13px; }
+  .actions { display: flex; flex-direction: column; gap: 10px; }
+  .ft { font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 8px; line-height: 1.6; }
+  .ft-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .link { font: inherit; font-size: 12px; color: var(--muted); background: transparent; border: 0; padding: 6px 0; cursor: pointer; text-decoration: underline; }
+  .sheet {
+    position: fixed; inset: 0; background: rgba(10, 16, 24, .72); z-index: 20;
+    overflow: auto; -webkit-overflow-scrolling: touch; padding: 18px 14px calc(20px + env(safe-area-inset-bottom));
+  }
+  .sheet-inner { max-width: 420px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
+  .card {
+    border-radius: 20px; overflow: hidden; background: #ffffff; color: #16202b;
+    box-shadow: 0 18px 44px rgba(6, 12, 20, .38);
+  }
+  .card-hero {
+    background: linear-gradient(135deg, #2f6bd8 0%, #4f8ef7 55%, #6aa6ff 100%);
+    color: #ffffff; padding: 20px 18px 18px; display: flex; flex-direction: column; gap: 4px;
+  }
+  .card-brand { font-size: 12px; letter-spacing: .04em; opacity: .88; }
+  .card-title { font-size: 17px; font-weight: 600; margin-top: 2px; }
+  .card-total { font-size: 36px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.15; }
+  .card-meta { font-size: 12px; opacity: .88; }
+  .card-body { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 8px; }
+  .card-sec { font-size: 12px; color: #8a96a3; margin-top: 6px; }
+  .card-sec:first-child { margin-top: 0; }
+  .card-line {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: baseline;
+    font-size: 15px; font-variant-numeric: tabular-nums;
+  }
+  .card-line span:first-child { overflow-wrap: anywhere; }
+  .card-line .plus { color: #157f45; font-weight: 600; white-space: nowrap; }
+  .card-line .minus { color: #b8452f; font-weight: 600; white-space: nowrap; }
+  .card-line .amt { font-weight: 600; white-space: nowrap; }
+  .card-foot {
+    border-top: 1px dashed #e6ebf1; padding: 12px 18px 15px;
+    font-size: 12px; color: #8a96a3; display: flex; justify-content: space-between; gap: 10px;
+  }
+  .sheet-tip { font-size: 12.5px; color: rgba(255, 255, 255, .88); text-align: center; line-height: 1.6; }
+  .sheet-actions { display: flex; flex-direction: column; gap: 10px; }
+  .toast {
+    position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translateX(-50%);
+    background: rgba(12, 18, 26, .92); color: #ffffff; font-size: 13.5px;
+    padding: 10px 16px; border-radius: 999px; z-index: 30; max-width: 88vw; text-align: center;
+  }
+  @media (min-width: 560px) {
+    .title { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="brand">赛肯德工具箱</div>
+      <h1 class="title">旅行 AA 分摊器</h1>
+      <p class="sub">谁垫付了钱、谁该给谁多少，填完自动算，最后给出一张可以直接发群的结算图。</p>
+    </header>
+
+    <section class="hero">
+      <div class="hero-label">本次总支出</div>
+      <div class="hero-value" id="total">¥0</div>
+      <div class="hero-sub" id="heroSub"></div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head">
+        <h2>一起旅行的人</h2>
+        <button type="button" class="btn btn-soft" id="addPerson">+ 加人</button>
+      </div>
+      <div class="people" id="people"></div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head">
+        <h2>花了哪些钱</h2>
+        <button type="button" class="btn btn-soft" id="addExpense">+ 记一笔</button>
+      </div>
+      <div class="expenses" id="expenses"></div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2>每人结果</h2></div>
+      <div class="rows-head" aria-hidden="true">
+        <span>成员</span><span>应付</span><span>已垫付</span><span>差额</span>
+      </div>
+      <div class="rows" id="rows" aria-label="每人结算明细"></div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head">
+        <h2>转账方案</h2>
+        <span class="hint" id="count"></span>
+      </div>
+      <div class="transfers" id="transfers" aria-live="polite"></div>
+    </section>
+
+    <div class="actions">
+      <button type="button" class="btn btn-primary btn-block" id="makeCard">生成结算图</button>
+      <button type="button" class="btn btn-block" id="copyText">复制群聊文案</button>
+    </div>
+
+    <footer class="ft">
+      <div>数据只保存在你自己的手机里，不上传、不需要注册。</div>
+      <div class="ft-row">
+        <span>由 赛肯德工具箱 出品</span>
+        <button type="button" class="link" id="clearAll">清空示例数据，从头记</button>
+      </div>
+    </footer>
+  </div>
+
+  <div class="sheet" id="sheet" hidden>
+    <div class="sheet-inner">
+      <div class="card" id="card"></div>
+      <div class="sheet-tip">在手机上截图或长按保存，发到群里大家都看得见</div>
+      <div class="sheet-actions">
+        <button type="button" class="btn btn-primary btn-block" id="copyText2">复制群聊文案</button>
+        <button type="button" class="btn btn-block" id="closeSheet">返回修改</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <script>
+    (function () {
+      var STORAGE_KEY = 'saikende-aa-splitter-v1';
+      var seq = 100;
+      var toastTimer = null;
+
+      function nid(prefix) { seq += 1; return prefix + seq; }
+
+      function sampleState() {
+        return {
+          people: [
+            { id: 'p1', name: '我' },
+            { id: 'p2', name: '小林' },
+            { id: 'p3', name: '阿 May' },
+            { id: 'p4', name: '老王' }
+          ],
+          expenses: [
+            { id: 'e1', title: '民宿 3 晚', amount: 1800, payer: 'p1', shares: null },
+            { id: 'e2', title: '租车 + 油费', amount: 960, payer: 'p2', shares: null },
+            { id: 'e3', title: '景区门票', amount: 640, payer: 'p1', shares: ['p1', 'p2', 'p4'] },
+            { id: 'e4', title: '老王单独买的酒', amount: 180, payer: 'p4', shares: ['p4'] }
+          ]
+        };
+      }
+
+      var state = sampleState();
+      var peopleBox = document.getElementById('people');
+      var expensesBox = document.getElementById('expenses');
+      var rowsBox = document.getElementById('rows');
+      var transfersBox = document.getElementById('transfers');
+      var sheet = document.getElementById('sheet');
+      var cardBox = document.getElementById('card');
+      var toastEl = document.getElementById('toast');
+
+      function esc(s) {
+        return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+      function money(cents) {
+        var opts = { maximumFractionDigits: 2 };
+        if (Math.abs(cents) % 100 !== 0) opts.minimumFractionDigits = 2;
+        return '¥' + (Math.abs(cents) / 100).toLocaleString('zh-CN', opts);
+      }
+      function personById(id) {
+        for (var i = 0; i < state.people.length; i++) {
+          if (state.people[i].id === id) return state.people[i];
+        }
+        return null;
+      }
+      function expenseById(id) {
+        for (var i = 0; i < state.expenses.length; i++) {
+          if (state.expenses[i].id === id) return state.expenses[i];
+        }
+        return null;
+      }
+      function save() {
+        try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* 隐私模式下忽略 */ }
+      }
+      function load() {
+        try {
+          var raw = window.localStorage.getItem(STORAGE_KEY);
+          if (!raw) return;
+          var data = JSON.parse(raw);
+          if (!data || !data.people || !data.people.length || !data.expenses) return;
+          state = data;
+          var maxId = 100;
+          state.people.concat(state.expenses).forEach(function (item) {
+            var n = parseInt(String(item.id).replace(/[^0-9]/g, ''), 10);
+            if (!isNaN(n) && n > maxId) maxId = n;
+          });
+          seq = maxId;
+        } catch (e) { /* 数据损坏时用示例数据 */ }
+      }
+      function toast(msg) {
+        toastEl.textContent = msg;
+        toastEl.hidden = false;
+        if (toastTimer) window.clearTimeout(toastTimer);
+        toastTimer = window.setTimeout(function () { toastEl.hidden = true; }, 1800);
+      }
+
+      function compute() {
+        var paid = {}, share = {}, total = 0;
+        state.people.forEach(function (p) { paid[p.id] = 0; share[p.id] = 0; });
+        var ids = state.people.map(function (p) { return p.id; });
+
+        state.expenses.forEach(function (e) {
+          var cents = Math.max(0, Math.round((Number(e.amount) || 0) * 100));
+          if (ids.indexOf(e.payer) === -1) e.payer = ids[0];
+          paid[e.payer] += cents;
+          total += cents;
+          var who = e.shares ? e.shares.filter(function (id) { return ids.indexOf(id) !== -1; }) : ids.slice();
+          if (!who.length) who = ids.slice();
+          var base = Math.floor(cents / who.length);
+          var rest = cents - base * who.length;
+          who.forEach(function (id, i) { share[id] += base + (i < rest ? 1 : 0); });
+        });
+
+        var rows = state.people.map(function (p) {
+          return { id: p.id, name: p.name, pay: share[p.id], paid: paid[p.id], diff: paid[p.id] - share[p.id] };
+        });
+        return { total: total, rows: rows, transfers: settle(rows) };
+      }
+
+      function settle(rows) {
+        var creditors = rows.filter(function (r) { return r.diff > 0; })
+          .map(function (r) { return { name: r.name, bal: r.diff }; })
+          .sort(function (a, b) { return b.bal - a.bal; });
+        var debtors = rows.filter(function (r) { return r.diff < 0; })
+          .map(function (r) { return { name: r.name, bal: -r.diff }; })
+          .sort(function (a, b) { return b.bal - a.bal; });
+        var out = [], i = 0, j = 0;
+        while (i < debtors.length && j < creditors.length) {
+          var d = debtors[i], c = creditors[j];
+          var amt = Math.min(d.bal, c.bal);
+          if (amt > 0) out.push({ from: d.name, to: c.name, amount: amt });
+          d.bal -= amt;
+          c.bal -= amt;
+          if (d.bal <= 0) i += 1;
+          if (c.bal <= 0) j += 1;
+        }
+        return out;
+      }
+
+      function renderPeople() {
+        peopleBox.innerHTML = state.people.map(function (p) {
+          return '<div class="person">' +
+            '<input type="text" class="p-name" data-person="' + p.id + '" value="' + esc(p.name) + '" aria-label="成员名字" />' +
+            '<button type="button" class="x" data-del-person="' + p.id + '" aria-label="删除成员">×</button>' +
+            '</div>';
+        }).join('');
+      }
+
+      function renderExpenses() {
+        if (!state.expenses.length) {
+          expensesBox.innerHTML = '<div class="empty">还没有记账，点上面的「+ 记一笔」开始</div>';
+          return;
+        }
+        expensesBox.innerHTML = state.expenses.map(function (e) {
+          var opts = state.people.map(function (p) {
+            return '<option value="' + p.id + '"' + (p.id === e.payer ? ' selected' : '') + '>' + esc(p.name) + ' 垫付</option>';
+          }).join('');
+          var chips = state.people.map(function (p) {
+            var on = !e.shares || e.shares.indexOf(p.id) !== -1;
+            return '<button type="button" class="chip' + (on ? ' is-on' : '') + '" data-pid="' + p.id + '"' +
+              ' aria-pressed="' + (on ? 'true' : 'false') + '">' + esc(p.name) + '</button>';
+          }).join('');
+          return '<div class="card-item" data-expense="' + e.id + '">' +
+            '<div class="card-top">' +
+              '<input type="text" class="e-title" value="' + esc(e.title) + '" aria-label="支出项目" />' +
+              '<input type="number" class="e-amount" min="0" step="10" inputmode="decimal" value="' + (Number(e.amount) || 0) + '" aria-label="金额" />' +
+            '</div>' +
+            '<div class="card-mid">' +
+              '<select class="e-payer" aria-label="谁垫付了这笔">' + opts + '</select>' +
+              '<button type="button" class="btn" data-del-expense="' + e.id + '">删除</button>' +
+            '</div>' +
+            '<div class="shares"><span class="shares-label">分摊给</span>' + chips + '</div>' +
+            '</div>';
+        }).join('');
+      }
+
+      function renderCard(res) {
+        var peopleCount = state.people.length || 1;
+        var lines = res.rows.map(function (r) {
+          var cls = r.diff > 0 ? 'plus' : (r.diff < 0 ? 'minus' : '');
+          var diff = r.diff === 0 ? '刚好' : (r.diff > 0 ? '+' : '−') + money(r.diff);
+          return '<div class="card-line"><span>' + esc(r.name) + '</span><span class="' + cls + '">' + diff + '</span></div>';
+        }).join('');
+        var transfers = res.transfers.length
+          ? res.transfers.map(function (t) {
+              return '<div class="card-line"><span>' + esc(t.from) + ' → ' + esc(t.to) + '</span>' +
+                '<span class="amt">' + money(t.amount) + '</span></div>';
+            }).join('')
+          : '<div class="card-line"><span>每个人出的钱和该出的钱正好相等</span><span class="amt">无需转账</span></div>';
+
+        cardBox.innerHTML =
+          '<div class="card-hero">' +
+            '<div class="card-brand">赛肯德工具箱</div>' +
+            '<div class="card-title">本次旅行 AA 结算</div>' +
+            '<div class="card-total">' + money(res.total) + '</div>' +
+            '<div class="card-meta">' + peopleCount + ' 人同行 · ' + state.expenses.length + ' 笔支出 · ' + today() + '</div>' +
+          '</div>' +
+          '<div class="card-body">' +
+            '<div class="card-sec">每人结果</div>' + lines +
+            '<div class="card-sec">转账方案 · ' + (res.transfers.length ? res.transfers.length + ' 笔结清' : '已结清') + '</div>' + transfers +
+          '</div>' +
+          '<div class="card-foot"><span>同款工具看主页</span><span>@赛肯德工具箱</span></div>';
+      }
+
+      function today() {
+        var d = new Date();
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      }
+
+      function render() {
+        var res = compute();
+        var peopleCount = state.people.length || 1;
+
+        document.getElementById('total').textContent = money(res.total);
+        document.getElementById('heroSub').textContent =
+          peopleCount + ' 人 · ' + state.expenses.length + ' 笔支出 · 人均约 ' + money(Math.round(res.total / peopleCount));
+
+        rowsBox.innerHTML = res.rows.map(function (r) {
+          var cls = r.diff > 0 ? 'is-plus' : (r.diff < 0 ? 'is-minus' : 'is-flat');
+          var diff = r.diff === 0 ? '—' : (r.diff > 0 ? '+' : '−') + money(r.diff);
+          return '<div class="row">' +
+            '<span class="row-name">' + esc(r.name) + '</span>' +
+            '<span class="row-pay">' + money(r.pay) + '</span>' +
+            '<span class="row-paid">' + money(r.paid) + '</span>' +
+            '<span class="row-diff ' + cls + '">' + diff + '</span>' +
+            '</div>';
+        }).join('');
+
+        transfersBox.innerHTML = res.transfers.length
+          ? res.transfers.map(function (t) {
+              return '<div class="transfer">' +
+                '<span class="transfer-people">' + esc(t.from) + ' <i>转给</i> ' + esc(t.to) + '</span>' +
+                '<span class="transfer-amount">' + money(t.amount) + '</span>' +
+                '</div>';
+            }).join('')
+          : '<div class="none">每个人出的钱和该出的钱正好相等，不用转账</div>';
+        document.getElementById('count').textContent = res.transfers.length ? res.transfers.length + ' 笔' : '';
+
+        renderCard(res);
+        save();
+      }
+
+      function summaryText() {
+        var res = compute();
+        var lines = res.transfers.map(function (t) {
+          return t.from + ' → ' + t.to + ' ' + money(t.amount);
+        });
+        return '本次 ' + (state.people.length || 1) + ' 人旅行，总支出 ' + money(res.total) + '。' +
+          (lines.length ? '结算：' + lines.join('；') + '。转完就清了。' : '大家已经结清。') +
+          '（用「赛肯德工具箱」的旅行 AA 分摊器算的）';
+      }
+
+      function copySummary() {
+        var text = summaryText();
+        function fallback() {
+          var ta = document.createElement('textarea');
+          ta.value = text;
+          ta.setAttribute('readonly', '');
+          ta.style.position = 'fixed';
+          ta.style.top = '-1000px';
+          document.body.appendChild(ta);
+          ta.select();
+          var ok = false;
+          try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+          document.body.removeChild(ta);
+          toast(ok ? '已复制，去群里粘贴就行' : '复制失败，手动长按选中文字吧');
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(function () {
+            toast('已复制，去群里粘贴就行');
+          }, fallback);
+        } else {
+          fallback();
+        }
+      }
+
+      function toggleChip(chip) {
+        var holder = chip.closest('[data-expense]');
+        var e = expenseById(holder.getAttribute('data-expense'));
+        if (!e) return;
+        var pid = chip.getAttribute('data-pid');
+        var all = state.people.map(function (p) { return p.id; });
+        var current = e.shares ? e.shares.slice() : all.slice();
+        var idx = current.indexOf(pid);
+        if (idx === -1) current.push(pid); else current.splice(idx, 1);
+        if (!current.length) current = [pid];
+        e.shares = current.length === all.length ? null : all.filter(function (id) { return current.indexOf(id) !== -1; });
+
+        Array.prototype.forEach.call(holder.querySelectorAll('.chip'), function (item) {
+          var on = !e.shares || e.shares.indexOf(item.getAttribute('data-pid')) !== -1;
+          item.classList.toggle('is-on', on);
+          item.setAttribute('aria-pressed', on ? 'true' : 'false');
+        });
+        render();
+      }
+
+      function refreshNames() {
+        Array.prototype.forEach.call(peopleBox.querySelectorAll('.p-name'), function (input) {
+          var p = personById(input.getAttribute('data-person'));
+          if (p) p.name = input.value;
+        });
+        Array.prototype.forEach.call(expensesBox.querySelectorAll('.e-payer'), function (select) {
+          Array.prototype.forEach.call(select.options, function (opt) {
+            var p = personById(opt.value);
+            if (p) opt.textContent = p.name + ' 垫付';
+          });
+        });
+        Array.prototype.forEach.call(expensesBox.querySelectorAll('.card-item'), function (holder) {
+          Array.prototype.forEach.call(holder.querySelectorAll('.chip'), function (chip) {
+            var p = personById(chip.getAttribute('data-pid'));
+            if (p) chip.textContent = p.name;
+          });
+        });
+      }
+
+      function renderAll() {
+        renderPeople();
+        renderExpenses();
+        render();
+      }
+
+      peopleBox.addEventListener('input', function (ev) {
+        if (!ev.target.classList.contains('p-name')) return;
+        refreshNames();
+        render();
+      });
+
+      peopleBox.addEventListener('click', function (ev) {
+        var btn = ev.target.closest('[data-del-person]');
+        if (!btn) return;
+        if (state.people.length <= 1) { toast('至少要留一个人'); return; }
+        var id = btn.getAttribute('data-del-person');
+        state.people = state.people.filter(function (p) { return p.id !== id; });
+        state.expenses.forEach(function (e) {
+          if (e.payer === id) e.payer = state.people[0].id;
+          if (e.shares) {
+            e.shares = e.shares.filter(function (x) { return x !== id; });
+            if (!e.shares.length) e.shares = null;
+          }
+        });
+        renderAll();
+      });
+
+      expensesBox.addEventListener('input', function (ev) {
+        var holder = ev.target.closest('[data-expense]');
+        if (!holder) return;
+        var e = expenseById(holder.getAttribute('data-expense'));
+        if (!e) return;
+        if (ev.target.classList.contains('e-title')) e.title = ev.target.value;
+        if (ev.target.classList.contains('e-amount')) e.amount = ev.target.value;
+        render();
+      });
+
+      expensesBox.addEventListener('change', function (ev) {
+        if (!ev.target.classList.contains('e-payer')) return;
+        var holder = ev.target.closest('[data-expense]');
+        var e = expenseById(holder.getAttribute('data-expense'));
+        if (e) e.payer = ev.target.value;
+        render();
+      });
+
+      expensesBox.addEventListener('click', function (ev) {
+        var chip = ev.target.closest('.chip');
+        if (chip) { toggleChip(chip); return; }
+        var del = ev.target.closest('[data-del-expense]');
+        if (del) {
+          state.expenses = state.expenses.filter(function (e) { return e.id !== del.getAttribute('data-del-expense'); });
+          renderAll();
+        }
+      });
+
+      document.getElementById('addPerson').addEventListener('click', function () {
+        state.people.push({ id: nid('p'), name: '新成员' });
+        renderAll();
+      });
+
+      document.getElementById('addExpense').addEventListener('click', function () {
+        state.expenses.push({ id: nid('e'), title: '新的支出', amount: 0, payer: state.people[0].id, shares: null });
+        renderAll();
+      });
+
+      document.getElementById('makeCard').addEventListener('click', function () {
+        render();
+        sheet.hidden = false;
+        document.body.style.overflow = 'hidden';
+        window.scrollTo(0, 0);
+      });
+
+      document.getElementById('closeSheet').addEventListener('click', function () {
+        sheet.hidden = true;
+        document.body.style.overflow = '';
+      });
+
+      document.getElementById('copyText').addEventListener('click', copySummary);
+      document.getElementById('copyText2').addEventListener('click', copySummary);
+
+      document.getElementById('clearAll').addEventListener('click', function () {
+        state = {
+          people: [{ id: nid('p'), name: '我' }, { id: nid('p'), name: '朋友 A' }],
+          expenses: []
+        };
+        renderAll();
+        toast('已清空，可以开始记你自己的账了');
+      });
+
+      load();
+      renderAll();
+    })();
+  </script>
+</body>
+</html>
