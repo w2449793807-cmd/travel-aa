@@ -53,6 +53,7 @@
     --shadow-md: 0 6px 18px rgba(15, 23, 32, .06);
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  [hidden] { display: none !important; }
   html, body { margin: 0; padding: 0; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
@@ -353,7 +354,7 @@
     position: fixed; left: 50%; bottom: calc(26px + env(safe-area-inset-bottom)); transform: translateX(-50%);
     background: rgba(12, 18, 26, .93); color: #ffffff; font-size: 13px; padding: 10px 16px;
     border-radius: 999px; z-index: 30; max-width: 88vw; text-align: center; line-height: 1.5;
-    display: flex; align-items: center; gap: 8px; animation: riseIn .2s ease;
+    display: flex; align-items: center; gap: 8px; cursor: pointer; animation: riseIn .16s ease;
   }
   .toast button { font: inherit; font-size: 13px; font-weight: 600; color: #9cc0ff; background: transparent; border: 0; padding: 2px 2px; cursor: pointer; }
   @media (min-width: 560px) { .title { font-size: 29px; } .hero-value { font-size: 42px; } }
@@ -818,8 +819,12 @@
         }
         els.toast.hidden = false;
         if (toastTimer) window.clearTimeout(toastTimer);
-        toastTimer = window.setTimeout(function () { els.toast.hidden = true; }, actionLabel ? 6000 : 2000);
+        toastTimer = window.setTimeout(function () { els.toast.hidden = true; }, actionLabel ? 5000 : 1800);
       }
+      els.toast.addEventListener('click', function () {
+        if (toastTimer) window.clearTimeout(toastTimer);
+        els.toast.hidden = true;
+      });
       function snapshot() {
         try { return JSON.stringify(state); } catch (e) { return null; }
       }
