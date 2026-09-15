@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>旅行 AA 分摊器 · 赛肯德工具箱</title>
-<meta name="description" content="几个人出去玩，谁垫的钱、这笔怎么分、最后谁转给谁多少，填完自动算，还能生成一张能直接发群的结算图。" />
+<meta name="description" content="出国玩也好、国内玩也好，谁垫的钱、这笔怎么分、最后谁转给谁多少，自动算汇率，还能生成一张能直接发群的结算图。" />
 <meta name="theme-color" content="#2f6bd8" media="(prefers-color-scheme: light)" />
 <meta name="theme-color" content="#131b25" media="(prefers-color-scheme: dark)" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -106,6 +106,19 @@
   }
   .btn-danger { color: var(--minus); background: var(--danger-soft); border-color: var(--danger-line); }
   .btn-block { width: 100%; }
+  .link-btn {
+    font: inherit; font-size: 12px; color: var(--accent); background: transparent; border: 0;
+    padding: 4px 0; cursor: pointer; text-decoration: underline;
+  }
+  .rate-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 18px;
+    padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; box-shadow: var(--shadow-sm);
+  }
+  .rate-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 9px; align-items: center; }
+  .rate-label { font-size: 12.5px; color: var(--muted); white-space: nowrap; }
+  .rate-row select { min-height: 40px; font-size: 14.5px; padding: 8px 10px; }
+  .rate-note { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 11.5px; color: var(--muted); }
+  .rate-note span { line-height: 1.5; }
   .guide {
     background: var(--surface); border: 1px solid var(--line); border-radius: 18px;
     padding: 13px 16px; font-size: 13px; line-height: 1.7; box-shadow: var(--shadow-sm);
@@ -165,7 +178,7 @@
     cursor: pointer; opacity: 0; transform: scale(.6); transition: opacity .16s ease, transform .16s ease;
   }
   .day-add {
-    display: flex; align-items: center; justify-content: center; gap: 4px; position: relative;
+    display: flex; align-items: center; justify-content: center; position: relative;
     border: 1.5px dashed var(--line); background: var(--surface-2); color: var(--accent);
     border-radius: 15px; min-width: 84px; padding: 9px 12px; font-size: 13px; font-weight: 600; cursor: pointer;
   }
@@ -177,15 +190,24 @@
     transition: border-color .16s ease;
   }
   .ex:focus-within { border-color: var(--accent); }
-  .ex-top { display: grid; grid-template-columns: minmax(0, 1fr) 104px 32px; gap: 7px; }
-  .ex-mid { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 7px; }
-  .ex-amt { text-align: right; font-variant-numeric: tabular-nums; }
+  .ex-top { display: grid; grid-template-columns: minmax(0, 1fr) 118px 32px; gap: 7px; }
+  .ex-mid { display: grid; grid-template-columns: auto 88px minmax(0, 1fr); gap: 7px; }
+  .amt-wrap {
+    display: flex; align-items: center; gap: 4px; background: var(--surface);
+    border: 1px solid var(--line); border-radius: 12px; padding: 0 10px 0 10px; min-height: 44px;
+  }
+  .amt-wrap:focus-within { border-color: var(--accent); outline: 2px solid var(--accent); outline-offset: 1px; }
+  .amt-wrap span { font-size: 13.5px; color: var(--muted); white-space: nowrap; }
+  .amt-wrap input { border: 0; background: transparent; padding: 10px 0; text-align: right; min-height: 40px; font-variant-numeric: tabular-nums; }
+  .amt-wrap input:focus-visible { outline: none; }
   .date-chip {
     position: relative; display: inline-flex; align-items: center; justify-content: center;
     border: 1px solid var(--line); background: var(--surface-2); color: var(--muted);
-    border-radius: 12px; min-height: 44px; padding: 0 12px; font-size: 13px; white-space: nowrap;
+    border-radius: 12px; min-height: 44px; padding: 0 12px; font-size: 12.5px; white-space: nowrap;
   }
   .date-chip input { position: absolute; inset: 0; opacity: 0; cursor: pointer; min-height: 0; padding: 0; border: 0; }
+  .e-cur { font-size: 14px; padding: 8px 6px; min-height: 44px; }
+  .conv { font-size: 11.5px; color: var(--muted); margin-top: -2px; }
   .cats { display: flex; flex-wrap: wrap; gap: 5px; }
   .shares { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
   .shares-label { font-size: 11.5px; color: var(--muted); }
@@ -201,7 +223,7 @@
     font-size: 12.5px; color: var(--muted); border: 1px dashed var(--line); border-radius: 16px;
     padding: 20px 16px; text-align: center; background: var(--surface); line-height: 1.7;
   }
-  .rows-head, .row { display: grid; grid-template-columns: minmax(0, 1fr) 72px 72px 86px; gap: 8px; align-items: baseline; }
+  .rows-head, .row { display: grid; grid-template-columns: minmax(0, 1fr) 74px 74px 86px; gap: 8px; align-items: baseline; }
   .rows-head { font-size: 11.5px; color: var(--muted); padding-bottom: 4px; border-bottom: 1px solid var(--line); }
   .rows-head span:not(:first-child), .row > span:not(:first-child) { text-align: right; }
   .rows { display: flex; flex-direction: column; gap: 9px; }
@@ -249,7 +271,7 @@
   }
   .drop strong { display: block; color: var(--accent); font-size: 14.5px; margin-bottom: 3px; }
   .drop input { display: none; }
-  .ocr-list { display: flex; flex-direction: column; gap: 8px; }
+  .ocr-list, .rate-list { display: flex; flex-direction: column; gap: 8px; }
   .ocr-row {
     display: grid; grid-template-columns: 28px minmax(0, 1fr) 92px; gap: 8px; align-items: center;
     border: 1px solid var(--line); border-radius: 13px; padding: 7px 10px; background: var(--surface-2);
@@ -257,6 +279,12 @@
   .ocr-row input[type="checkbox"] { width: 22px; height: 22px; min-height: 22px; }
   .ocr-row input[type="text"] { border: 0; background: transparent; padding: 6px 4px; font-size: 14.5px; min-height: 36px; }
   .ocr-row input[type="number"] { border: 0; background: transparent; padding: 6px 4px; font-size: 14.5px; text-align: right; min-height: 36px; }
+  .rate-item {
+    display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 8px; align-items: center;
+    border: 1px solid var(--line); border-radius: 13px; padding: 8px 11px; background: var(--surface-2);
+  }
+  .rate-item span { font-size: 13px; color: var(--muted); }
+  .rate-item input { border: 0; background: transparent; padding: 6px 4px; text-align: right; font-variant-numeric: tabular-nums; min-height: 36px; }
   .ocr-msg { font-size: 12.5px; color: var(--muted); line-height: 1.6; }
   .bar { height: 6px; border-radius: 999px; background: var(--soft); overflow: hidden; }
   .bar > i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width .2s ease; }
@@ -284,7 +312,8 @@
   .card-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: baseline; }
   .card-item-name { font-size: 14px; overflow-wrap: anywhere; }
   .card-item-note { font-size: 11.5px; color: #8a96a3; }
-  .card-item-amt { font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .card-item-amt { font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; }
+  .card-item-amt em { display: block; font-style: normal; font-size: 11px; font-weight: 400; color: #8a96a3; margin-top: 1px; }
   .card-line {
     display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: baseline;
     font-size: 15px; font-variant-numeric: tabular-nums;
@@ -313,29 +342,41 @@
     <header>
       <div class="brand">赛肯德工具箱</div>
       <h1 class="title">旅行 AA 分摊器</h1>
-      <p class="sub">谁垫的钱、这笔怎么分、最后谁转给谁，填完自动算。</p>
+      <p class="sub">多国货币混着花也没关系，自动折算成一种货币算清楚谁该转谁。</p>
     </header>
 
     <button type="button" class="btn btn-block btn-danger" id="clearAll">清空全部</button>
 
     <section class="hero">
       <div class="hero-top">
-        <span>本次总支出</span>
+        <span id="heroLabel">本次总支出</span>
         <span class="hero-pill" id="heroPill"></span>
       </div>
       <div class="hero-value" id="total">¥0</div>
       <div class="hero-sub" id="heroSub"></div>
     </section>
 
+    <div class="rate-card">
+      <div class="rate-row">
+        <span class="rate-label">结算货币</span>
+        <select id="baseCur" aria-label="结算货币"></select>
+        <button type="button" class="btn btn-soft" id="refreshRates">刷新</button>
+      </div>
+      <div class="rate-note">
+        <span id="rateStatus">汇率加载中…</span>
+        <button type="button" class="link-btn" id="openRates">手动改汇率</button>
+      </div>
+    </div>
+
     <details class="guide">
       <summary>怎么用 · 30 秒学会</summary>
       <ul>
         <li><b>1</b><span>改名字：把「朋友A～D」换成真名，人多点「+ 加人」。</span></li>
-        <li><b>2</b><span>选日期：上面加几天，像日历一样一天天往下记。</span></li>
-        <li><b>3</b><span>记一笔：填项目、金额、分类，选谁垫付，再点这笔钱谁分。</span></li>
-        <li><b>4</b><span>出结果：看每人应付和怎么转，然后生成结算图发群。</span></li>
+        <li><b>2</b><span>加日期：像日历一样一天天往下记。</span></li>
+        <li><b>3</b><span>记一笔：填金额，旁边切货币（日币、美金都行），选谁垫付，再点这笔钱谁分。</span></li>
+        <li><b>4</b><span>出结果：所有外币自动折算成结算货币，最后生成结算图发群。</span></li>
       </ul>
-      <p class="guide-note">数据自动存在这台设备上；想重来就点上面的「清空全部」。</p>
+      <p class="guide-note">账目只存在这台设备上；只有查汇率时会联网一次。</p>
     </details>
 
     <section class="sec">
@@ -399,6 +440,21 @@
     </div>
   </div>
 
+  <div class="sheet" id="rateSheet" hidden>
+    <div class="sheet-inner">
+      <div class="panel">
+        <h3>手动汇率</h3>
+        <p class="panel-hint">统一按「1 外币 = 多少人民币」来记。刷卡汇率和公布汇率不一样时，可以改成你实际的数。</p>
+        <div class="rate-list" id="rateList"></div>
+        <div class="sheet-actions">
+          <button type="button" class="btn btn-primary btn-block" id="saveRates">保存</button>
+          <button type="button" class="btn btn-block" id="resetRates">恢复自动汇率</button>
+          <button type="button" class="btn btn-block" id="closeRates">取消</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="sheet" id="ocrSheet" hidden>
     <div class="sheet-inner">
       <div class="panel">
@@ -424,8 +480,10 @@
 
   <script>
     (function () {
+      var KEY_V5 = 'saikende-aa-splitter-v5';
       var KEY_V4 = 'saikende-aa-splitter-v4';
       var KEY_V3 = 'saikende-aa-splitter-v3';
+      var KEY_RATE = 'saikende-aa-rates';
       var CATEGORIES = [
         { key: 'stay', label: '住宿', icon: '🏠', words: ['酒店', '民宿', '住宿', '房费', '客栈', '宾馆'] },
         { key: 'traffic', label: '交通', icon: '🚕', words: ['打车', '出租', '地铁', '高铁', '火车', '机票', '飞机', '油费', '加油', '停车', '租车', '大巴', '船票', '过路'] },
@@ -433,6 +491,43 @@
         { key: 'ticket', label: '门票', icon: '🎫', words: ['门票', '景区', '演出', '展览', '乐园', '索道', '温泉', '滑雪'] },
         { key: 'shop', label: '购物', icon: '🛍️', words: ['超市', '便利', '购物', '特产', '礼品', '商场', '药', '免税'] },
         { key: 'other', label: '其他', icon: '✨', words: [] }
+      ];
+      var CURRENCIES = [
+        { code: 'CNY', name: '人民币', symbol: '¥' },
+        { code: 'JPY', name: '日元', symbol: '¥' },
+        { code: 'USD', name: '美元', symbol: '$' },
+        { code: 'EUR', name: '欧元', symbol: '€' },
+        { code: 'GBP', name: '英镑', symbol: '£' },
+        { code: 'HKD', name: '港币', symbol: 'HK$' },
+        { code: 'MOP', name: '澳门币', symbol: 'MOP$' },
+        { code: 'TWD', name: '新台币', symbol: 'NT$' },
+        { code: 'KRW', name: '韩元', symbol: '₩' },
+        { code: 'SGD', name: '新加坡元', symbol: 'S$' },
+        { code: 'THB', name: '泰铢', symbol: '฿' },
+        { code: 'MYR', name: '马来西亚林吉特', symbol: 'RM' },
+        { code: 'VND', name: '越南盾', symbol: '₫' },
+        { code: 'IDR', name: '印尼盾', symbol: 'Rp' },
+        { code: 'PHP', name: '菲律宾比索', symbol: '₱' },
+        { code: 'AUD', name: '澳元', symbol: 'A$' },
+        { code: 'NZD', name: '新西兰元', symbol: 'NZ$' },
+        { code: 'CAD', name: '加元', symbol: 'C$' },
+        { code: 'CHF', name: '瑞士法郎', symbol: 'CHF' },
+        { code: 'AED', name: '迪拉姆', symbol: 'AED' },
+        { code: 'TRY', name: '土耳其里拉', symbol: '₺' },
+        { code: 'RUB', name: '卢布', symbol: '₽' },
+        { code: 'INR', name: '印度卢比', symbol: '₹' }
+      ];
+      /* 离线兜底：1 单位该货币 = 多少人民币（大致参考值，联网后自动覆盖） */
+      var FALLBACK_TO_CNY = {
+        CNY: 1, JPY: 0.04354, USD: 6.70808, EUR: 7.75973, GBP: 9.05923, HKD: 0.85529, MOP: 0.83038,
+        TWD: 0.2115, KRW: 0.00499, SGD: 5.28609, THB: 0.20227, MYR: 1.64957, VND: 0.000259,
+        IDR: 0.00038, PHP: 0.10674, AUD: 4.79617, NZD: 3.88006, CAD: 4.83506, CHF: 8.19722,
+        AED: 1.82657, TRY: 0.13798, RUB: 0.07935, INR: 0.07011
+      };
+      var RATE_SRC = [
+        'https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/cny.json',
+        'https://latest.currency-api.pages.dev/v1/currencies/cny.json',
+        'https://open.er-api.com/v6/latest/CNY'
       ];
       var WEEK = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
       var seq = 100;
@@ -443,6 +538,10 @@
       function cat(key) {
         for (var i = 0; i < CATEGORIES.length; i++) { if (CATEGORIES[i].key === key) return CATEGORIES[i]; }
         return CATEGORIES[CATEGORIES.length - 1];
+      }
+      function cur(code) {
+        for (var i = 0; i < CURRENCIES.length; i++) { if (CURRENCIES[i].code === code) return CURRENCIES[i]; }
+        return CURRENCIES[0];
       }
       function isoDay(offset) {
         var d = new Date();
@@ -487,31 +586,55 @@
           ],
           days: [isoDay(-2), isoDay(-1)],
           selected: 'all',
+          base: 'CNY',
+          manualRates: {},
           expenses: [
-            { id: 'e1', title: '民宿 3 晚', amount: 1800, category: 'stay', date: isoDay(-2), payer: 'p1', shares: null },
-            { id: 'e2', title: '租车 + 油费', amount: 960, category: 'traffic', date: isoDay(-2), payer: 'p2', shares: null },
-            { id: 'e3', title: '景区门票', amount: 640, category: 'ticket', date: isoDay(-1), payer: 'p1', shares: ['p1', 'p2', 'p4'] },
-            { id: 'e4', title: '单独买的酒', amount: 180, category: 'food', date: isoDay(-1), payer: 'p4', shares: ['p4'] }
+            { id: 'e1', title: '往返机票', amount: 2400, currency: 'CNY', category: 'traffic', date: isoDay(-2), payer: 'p1', shares: null },
+            { id: 'e2', title: '民宿 2 晚', amount: 1800, currency: 'CNY', category: 'stay', date: isoDay(-2), payer: 'p2', shares: null },
+            { id: 'e3', title: '当地晚餐', amount: 8800, currency: 'JPY', category: 'food', date: isoDay(-1), payer: 'p1', shares: ['p1', 'p2', 'p3'] },
+            { id: 'e4', title: '免税店买酒', amount: 45, currency: 'USD', category: 'shop', date: isoDay(-1), payer: 'p4', shares: ['p4'] }
           ]
         };
       }
 
       var state = sampleState();
+      var rateCache = { date: '', toCNY: {}, fetchedAt: 0 };
+      var rateSource = 'builtin';
       var els = {};
-      ['people', 'expenses', 'rows', 'transfers', 'sheet', 'ocrSheet', 'card', 'toast', 'total', 'heroSub', 'heroPill',
-        'count', 'roundNote', 'saveState', 'ocrFile', 'ocrMsg', 'ocrBar', 'ocrList', 'ocrAdd', 'ocrPickHint',
-        'dayStrip', 'dayPicker'].forEach(function (id) {
+      ['people', 'expenses', 'rows', 'transfers', 'sheet', 'ocrSheet', 'rateSheet', 'card', 'toast', 'total', 'heroSub',
+        'heroPill', 'heroLabel', 'count', 'roundNote', 'saveState', 'ocrFile', 'ocrMsg', 'ocrBar', 'ocrList', 'ocrAdd',
+        'ocrPickHint', 'dayStrip', 'baseCur', 'rateStatus', 'rateList'].forEach(function (id) {
         els[id] = document.getElementById(id);
       });
 
       function esc(s) {
         return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
       }
-      function money(cents) {
+      function num(cents) {
         var opts = { maximumFractionDigits: 2 };
         if (Math.abs(cents) % 100 !== 0) opts.minimumFractionDigits = 2;
-        return '¥' + (Math.abs(cents) / 100).toLocaleString('zh-CN', opts);
+        return (Math.abs(cents) / 100).toLocaleString('zh-CN', opts);
       }
+      function fmt(cents, code) {
+        return (cur(code || 'CNY').symbol || '') + num(cents);
+      }
+      function toCNY(code) {
+        if (state.manualRates && state.manualRates[code]) return state.manualRates[code];
+        if (rateCache.toCNY[code]) return rateCache.toCNY[code];
+        return FALLBACK_TO_CNY[code] || 1;
+      }
+      function baseRate(code) {
+        var b = toCNY(state.base || 'CNY');
+        return toCNY(code) / (b || 1);
+      }
+      function baseCentsOf(e) {
+        var cents = Math.max(0, Math.round((Number(e.amount) || 0) * 100));
+        if (!cents) return 0;
+        var code = e.currency || state.base || 'CNY';
+        var converted = Math.round((cents * baseRate(code)) / 100) * 100;
+        return converted > 0 ? converted : 100;
+      }
+      function isForeign(e) { return (e.currency || state.base) !== (state.base || 'CNY'); }
       function personById(id) {
         for (var i = 0; i < state.people.length; i++) { if (state.people[i].id === id) return state.people[i]; }
         return null;
@@ -521,9 +644,8 @@
         return null;
       }
       function nameOf(id) { var p = personById(id); return p ? p.name : '已删除'; }
-      function centsOf(e) { return Math.max(0, Math.round((Number(e.amount) || 0) * 100)); }
       function dayTotal(day) {
-        return state.expenses.reduce(function (sum, e) { return e.date === day ? sum + centsOf(e) : sum; }, 0);
+        return state.expenses.reduce(function (sum, e) { return e.date === day ? sum + baseCentsOf(e) : sum; }, 0);
       }
       function visibleExpenses() {
         return state.selected === 'all'
@@ -541,10 +663,12 @@
         state.days = Object.keys(set).sort();
         if (!state.days.length) state.days = [today()];
         if (state.selected !== 'all' && state.days.indexOf(state.selected) === -1) state.selected = 'all';
+        if (!state.base) state.base = 'CNY';
+        if (!state.manualRates) state.manualRates = {};
       }
       function save() {
         try {
-          window.localStorage.setItem(KEY_V4, JSON.stringify(state));
+          window.localStorage.setItem(KEY_V5, JSON.stringify(state));
           var d = new Date();
           els.saveState.textContent = '已保存 · ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') + ' · 退出再打开还在。';
         } catch (e) { /* 隐私模式忽略 */ }
@@ -559,11 +683,14 @@
           people: old.people,
           days: days,
           selected: 'all',
+          base: old.base || 'CNY',
+          manualRates: old.manualRates || {},
           expenses: old.expenses.map(function (e) {
             return {
               id: e.id,
               title: e.title,
               amount: e.amount,
+              currency: e.currency || 'CNY',
               category: e.category || guessCategory(String(e.title || '')),
               date: e.date || days[0],
               payer: e.payer,
@@ -574,20 +701,26 @@
       }
       function load() {
         try {
-          var raw = window.localStorage.getItem(KEY_V4);
-          if (!raw) raw = window.localStorage.getItem(KEY_V3);
-          if (!raw) return;
-          var data = migrate(JSON.parse(raw));
-          if (!data) return;
-          state = data;
-          var maxId = 100;
-          state.people.concat(state.expenses).forEach(function (item) {
-            var n = parseInt(String(item.id).replace(/[^0-9]/g, ''), 10);
-            if (!isNaN(n) && n > maxId) maxId = n;
-          });
-          seq = maxId;
-          normalizeDays();
-        } catch (e) { /* 数据损坏用示例 */ }
+          var raw = window.localStorage.getItem(KEY_V5) || window.localStorage.getItem(KEY_V4) || window.localStorage.getItem(KEY_V3);
+          if (raw) {
+            var data = migrate(JSON.parse(raw));
+            if (data) {
+              state = data;
+              var maxId = 100;
+              state.people.concat(state.expenses).forEach(function (item) {
+                var n = parseInt(String(item.id).replace(/[^0-9]/g, ''), 10);
+                if (!isNaN(n) && n > maxId) maxId = n;
+              });
+              seq = maxId;
+            }
+          }
+          var cached = JSON.parse(window.localStorage.getItem(KEY_RATE) || 'null');
+          if (cached && cached.toCNY) {
+            rateCache = cached;
+            rateSource = 'cache';
+          }
+        } catch (e) { /* 用示例数据 */ }
+        normalizeDays();
       }
       function toast(msg) {
         els.toast.textContent = msg;
@@ -596,13 +729,94 @@
         toastTimer = window.setTimeout(function () { els.toast.hidden = true; }, 2000);
       }
 
+      /* ---------- 汇率 ---------- */
+      function rateStatusText() {
+        var manual = state.manualRates && Object.keys(state.manualRates).length;
+        if (manual) return '手动汇率 · ' + Object.keys(state.manualRates).length + ' 种外币';
+        if (rateSource === 'builtin') return '离线参考汇率（点刷新联网更新）';
+        return '汇率 ' + (rateCache.date ? shortDate(rateCache.date) : '最近') +
+          (rateCache.fetchedAt && Date.now() - rateCache.fetchedAt < 86400000 ? ' · 已更新' : ' · 来自缓存');
+      }
+      function renderRateStatus() { els.rateStatus.textContent = rateStatusText(); }
+
+      function fetchRates(force) {
+        var fresh = rateCache.fetchedAt && (Date.now() - rateCache.fetchedAt < 12 * 3600 * 1000);
+        if (!force && fresh) { renderRateStatus(); return Promise.resolve(); }
+        els.rateStatus.textContent = '正在更新汇率…';
+        var i = 0;
+        function tryNext() {
+          if (i >= RATE_SRC.length) throw new Error('rate-failed');
+          var url = RATE_SRC[i];
+          i += 1;
+          return fetch(url).then(function (r) {
+            if (!r.ok) throw new Error('bad');
+            return r.json();
+          }).then(function (data) {
+            var map = {};
+            if (data && data.cny) {
+              Object.keys(data.cny).forEach(function (k) {
+                var v = Number(data.cny[k]);
+                if (v > 0) map[k.toUpperCase()] = 1 / v;
+              });
+              map.CNY = 1;
+              return { date: data.date || today(), toCNY: map };
+            }
+            if (data && data.rates) {
+              Object.keys(data.rates).forEach(function (k) {
+                var v = Number(data.rates[k]);
+                if (v > 0) map[k.toUpperCase()] = 1 / v;
+              });
+              map.CNY = 1;
+              return { date: today(), toCNY: map };
+            }
+            throw new Error('bad-data');
+          }).catch(function () { return tryNext(); });
+        }
+        return tryNext().then(function (res) {
+          rateCache = { date: res.date, toCNY: res.toCNY, fetchedAt: Date.now() };
+          rateSource = 'auto';
+          try { window.localStorage.setItem(KEY_RATE, JSON.stringify(rateCache)); } catch (e) { }
+          renderRateStatus();
+          render();
+          return true;
+        }).catch(function () {
+          rateSource = rateCache.fetchedAt ? 'cache' : 'builtin';
+          renderRateStatus();
+          toast('没拿到最新汇率，先用' + (rateSource === 'cache' ? '上次的汇率' : '内置参考汇率'));
+          render();
+          return false;
+        });
+      }
+
+      function rateLines() {
+        var codes = {};
+        state.expenses.forEach(function (e) {
+          var c = e.currency || state.base;
+          if (c && c !== 'CNY') codes[c] = true;
+        });
+        return Object.keys(codes).sort();
+      }
+      function renderRateList() {
+        var lines = rateLines();
+        if (!lines.length) {
+          els.rateList.innerHTML = '<div class="rate-item"><span>暂无外币</span><input value="—" readonly /></div>';
+          return;
+        }
+        els.rateList.innerHTML = lines.map(function (code) {
+          var v = state.manualRates[code] || rateCache.toCNY[code] || FALLBACK_TO_CNY[code] || 1;
+          return '<div class="rate-item"><span>1 ' + code + ' =</span>' +
+            '<input type="number" step="0.0001" min="0" inputmode="decimal" data-rate="' + code + '" value="' + Number(v.toFixed(4)) + '" aria-label="' + code + ' 汇率" /></div>';
+        }).join('');
+      }
+
+      /* ---------- 计算 ---------- */
       function compute() {
         var paid = {}, share = {}, total = 0, smooth = false;
         state.people.forEach(function (p) { paid[p.id] = 0; share[p.id] = 0; });
         var ids = state.people.map(function (p) { return p.id; });
 
         state.expenses.forEach(function (e) {
-          var cents = centsOf(e);
+          var cents = baseCentsOf(e);
           if (ids.indexOf(e.payer) === -1) e.payer = ids[0];
           paid[e.payer] += cents;
           total += cents;
@@ -658,14 +872,22 @@
         if (days.length === 1) return shortDate(days[0]);
         return shortDate(days[0]) + '–' + shortDate(days[days.length - 1]);
       }
+      function rateFootnote() {
+        var codes = rateLines();
+        if (!codes.length) return '';
+        var manual = state.manualRates && Object.keys(state.manualRates).length;
+        var head = manual ? '手动汇率' : (rateSource === 'builtin' ? '参考汇率' : '汇率 ' + (rateCache.date ? shortDate(rateCache.date) : ''));
+        var list = codes.slice(0, 3).map(function (c) { return '1 ' + c + '≈' + Number(toCNY(c).toFixed(4)) + ' CNY'; });
+        return head + ' · ' + list.join(' · ') + (codes.length > 3 ? ' 等' : '');
+      }
 
       function renderDays() {
-        var all = state.expenses.reduce(function (s, e) { return s + centsOf(e); }, 0);
+        var all = state.expenses.reduce(function (s, e) { return s + baseCentsOf(e); }, 0);
         var html = '<div class="day-wrap' + (state.selected === 'all' ? ' is-active' : '') + '">' +
           '<button type="button" class="day' + (state.selected === 'all' ? ' is-active' : '') + '" data-day="all" aria-pressed="' +
           (state.selected === 'all' ? 'true' : 'false') + '">' +
           '<span class="day-top">全部</span><span class="day-week">' + state.days.length + ' 天</span>' +
-          '<span class="day-sum">' + money(all) + '</span></button></div>';
+          '<span class="day-sum">' + fmt(all, state.base) + '</span></button></div>';
 
         html += state.days.map(function (d) {
           var active = state.selected === d;
@@ -674,11 +896,12 @@
             (active ? 'true' : 'false') + '">' +
             '<span class="day-top">' + shortDate(d) + '</span>' +
             '<span class="day-week">' + weekOf(d) + '</span>' +
-            '<span class="day-sum">' + money(dayTotal(d)) + '</span></button>' +
+            '<span class="day-sum">' + fmt(dayTotal(d), state.base) + '</span></button>' +
             '<button type="button" class="day-del" data-del-day="' + d + '" aria-label="删除这天">×</button></div>';
         }).join('');
 
-        html += '<label class="day-add">+ 加一天<input type="date" id="dayPicker" value="' + addDays(state.days[state.days.length - 1] || today(), 1) + '" aria-label="选择日期" /></label>';
+        html += '<label class="day-add">+ 加一天<input type="date" id="dayPicker" value="' +
+          addDays(state.days[state.days.length - 1] || today(), 1) + '" aria-label="选择日期" /></label>';
         els.dayStrip.innerHTML = html;
       }
 
@@ -691,6 +914,12 @@
         }).join('');
       }
 
+      function currencyOptions(sel) {
+        return CURRENCIES.map(function (c) {
+          return '<option value="' + c.code + '"' + (c.code === sel ? ' selected' : '') + '>' + c.code + ' ' + c.name + '</option>';
+        }).join('');
+      }
+
       function renderExpenses() {
         var list = visibleExpenses();
         if (!list.length) {
@@ -700,6 +929,7 @@
           return;
         }
         els.expenses.innerHTML = list.map(function (e) {
+          var code = e.currency || state.base;
           var opts = state.people.map(function (p) {
             return '<option value="' + p.id + '"' + (p.id === e.payer ? ' selected' : '') + '>' + esc(p.name) + ' 垫付</option>';
           }).join('');
@@ -713,18 +943,23 @@
             return '<button type="button" class="chip' + (on ? ' is-on' : '') + '" data-pid="' + p.id + '" aria-pressed="' +
               (on ? 'true' : 'false') + '">' + esc(p.name) + '</button>';
           }).join('');
+          var conv = (code !== state.base)
+            ? '<div class="conv">≈ ' + fmt(baseCentsOf(e), state.base) + '（按' + (state.manualRates && state.manualRates[code] ? '手动' : '当前') + '汇率）</div>'
+            : '';
           return '<div class="ex" data-expense="' + e.id + '">' +
             '<div class="ex-top">' +
               '<input type="text" class="e-title" value="' + esc(e.title) + '" aria-label="支出项目" />' +
-              '<input type="number" class="e-amount ex-amt" min="0" step="10" inputmode="decimal" value="' + (Number(e.amount) || 0) + '" aria-label="金额" />' +
+              '<div class="amt-wrap"><span>' + esc(cur(code).symbol) + '</span>' +
+                '<input type="number" class="e-amount" min="0" step="10" inputmode="decimal" value="' + (Number(e.amount) || 0) + '" aria-label="金额" /></div>' +
               '<button type="button" class="x" data-del-expense="' + e.id + '" aria-label="删除这笔">×</button>' +
             '</div>' +
             '<div class="cats">' + cats + '</div>' +
             '<div class="ex-mid">' +
               '<label class="date-chip">' + shortDate(e.date) +
                 '<input type="date" class="e-date" value="' + esc(e.date || today()) + '" aria-label="日期" /></label>' +
+              '<select class="e-cur" aria-label="这笔的货币">' + currencyOptions(code) + '</select>' +
               '<select class="e-payer" aria-label="谁垫付了这笔">' + opts + '</select>' +
-            '</div>' +
+            '</div>' + conv +
             '<div class="shares"><span class="shares-label">分摊给</span>' + chips + '</div>' +
             '</div>';
         }).join('');
@@ -736,44 +971,48 @@
         state.days.forEach(function (d) {
           var items = state.expenses.filter(function (e) { return e.date === d; });
           if (!items.length) return;
-          detail += '<div class="card-day"><span>' + shortDate(d) + ' ' + weekOf(d) + '</span><span>' + money(dayTotal(d)) + '</span></div>';
+          detail += '<div class="card-day"><span>' + shortDate(d) + ' ' + weekOf(d) + '</span><span>' + fmt(dayTotal(d), state.base) + '</span></div>';
           detail += items.map(function (e) {
             var c = cat(e.category);
             var n = e.shares ? e.shares.filter(function (id) { return personById(id); }).length : peopleCount;
             if (!n) n = peopleCount;
+            var amount = '<div class="card-item-amt">' + fmt(baseCentsOf(e), state.base) +
+              (isForeign(e) ? '<em>' + fmt(Math.round((Number(e.amount) || 0) * 100), e.currency) + '</em>' : '') + '</div>';
             return '<div class="card-item">' +
               '<div><div class="card-item-name">' + c.icon + ' ' + esc(e.title || '未命名支出') + '</div>' +
               '<div class="card-item-note">' + esc(nameOf(e.payer)) + '垫付 · ' + n + ' 人分</div></div>' +
-              '<div class="card-item-amt">' + money(centsOf(e)) + '</div></div>';
+              amount + '</div>';
           }).join('');
         });
         if (!detail) detail = '<div class="card-item"><div class="card-item-note">还没有支出</div><div></div></div>';
 
         var lines = res.rows.map(function (r) {
           var cls = r.diff > 0 ? 'plus' : (r.diff < 0 ? 'minus' : '');
-          var diff = r.diff === 0 ? '刚好' : (r.diff > 0 ? '+' : '−') + money(r.diff);
+          var diff = r.diff === 0 ? '刚好' : (r.diff > 0 ? '+' : '−') + fmt(r.diff, state.base);
           return '<div class="card-line"><span>' + esc(r.name) + '</span><span class="' + cls + '">' + diff + '</span></div>';
         }).join('');
 
         var transfers = res.transfers.length
           ? res.transfers.map(function (t) {
               return '<div class="card-line"><span>' + esc(t.from) + ' → ' + esc(t.to) + '</span>' +
-                '<span class="amt">' + money(t.amount) + '</span></div>';
+                '<span class="amt">' + fmt(t.amount, state.base) + '</span></div>';
             }).join('')
           : '<div class="card-line"><span>大家出的钱刚好平了</span><span class="amt">不用转</span></div>';
 
+        var note = rateFootnote();
         els.card.innerHTML =
           '<div class="card-hero">' +
             '<div class="card-brand">赛肯德工具箱</div>' +
             '<div class="card-title">旅行 AA 结算</div>' +
-            '<div class="card-total">' + money(res.total) + '</div>' +
+            '<div class="card-total">' + fmt(res.total, state.base) + '</div>' +
             '<div class="card-meta">' + esc(dateRange()) + ' · ' + peopleCount + ' 人 · ' + state.expenses.length + ' 笔</div>' +
           '</div>' +
           '<div class="card-body">' +
             '<div class="card-sec">支出明细</div>' + detail +
-            '<div class="card-sec">每人结果</div>' + lines +
+            '<div class="card-sec">每人结果（' + esc(cur(state.base).name) + '）</div>' + lines +
             '<div class="card-sec">' + (res.transfers.length ? '转账方案 · ' + res.transfers.length + ' 笔结清' : '转账方案 · 已结清') + '</div>' + transfers +
             (res.smooth ? '<div class="card-item-note" style="margin-top:5px">零头算在垫付人头上，方便直接转。</div>' : '') +
+            (note ? '<div class="card-item-note" style="margin-top:3px">' + esc(note) + '</div>' : '') +
           '</div>' +
           '<div class="card-foot"><span>同款工具看主页</span><span>@赛肯德工具箱</span></div>';
       }
@@ -782,18 +1021,19 @@
         var res = compute();
         var peopleCount = state.people.length || 1;
 
-        els.total.textContent = money(res.total);
+        els.total.textContent = fmt(res.total, state.base);
+        els.heroLabel.textContent = '本次总支出（' + cur(state.base).name + '）';
         els.heroPill.textContent = state.days.length + ' 天 · ' + peopleCount + ' 人';
-        els.heroSub.textContent = state.expenses.length + ' 笔支出 · 人均约 ' + money(Math.round(res.total / peopleCount)) + ' · ' + dateRange();
+        els.heroSub.textContent = state.expenses.length + ' 笔 · 人均约 ' + fmt(Math.round(res.total / peopleCount), state.base) + ' · ' + dateRange();
         els.roundNote.textContent = res.smooth ? '零头已抹平，最多差 1 元' : '';
 
         els.rows.innerHTML = res.rows.map(function (r) {
           var cls = r.diff > 0 ? 'is-plus' : (r.diff < 0 ? 'is-minus' : 'is-flat');
-          var diff = r.diff === 0 ? '—' : (r.diff > 0 ? '+' : '−') + money(r.diff);
+          var diff = r.diff === 0 ? '—' : (r.diff > 0 ? '+' : '−') + fmt(r.diff, state.base);
           return '<div class="row">' +
             '<span class="row-name">' + esc(r.name) + '</span>' +
-            '<span class="row-pay">' + money(r.pay) + '</span>' +
-            '<span class="row-paid">' + money(r.paid) + '</span>' +
+            '<span class="row-pay">' + fmt(r.pay, state.base) + '</span>' +
+            '<span class="row-paid">' + fmt(r.paid, state.base) + '</span>' +
             '<span class="row-diff ' + cls + '">' + diff + '</span>' +
             '</div>';
         }).join('');
@@ -802,24 +1042,27 @@
           ? res.transfers.map(function (t) {
               return '<div class="transfer">' +
                 '<span class="transfer-people">' + esc(t.from) + ' <i>转给</i> ' + esc(t.to) + '</span>' +
-                '<span class="transfer-amount">' + money(t.amount) + '</span>' +
+                '<span class="transfer-amount">' + fmt(t.amount, state.base) + '</span>' +
                 '</div>';
             }).join('')
           : '<div class="none">大家出的钱刚好平了，不用转账</div>';
         els.count.textContent = res.transfers.length ? res.transfers.length + ' 笔' : '';
 
         renderCard(res);
+        renderRateStatus();
         save();
       }
 
       function summaryText() {
         var res = compute();
-        var lines = res.transfers.map(function (t) { return t.from + ' → ' + t.to + ' ' + money(t.amount); });
-        return '本次 ' + (state.people.length || 1) + ' 人（' + dateRange() + '）共花 ' + money(res.total) + '。' +
+        var lines = res.transfers.map(function (t) { return t.from + ' → ' + t.to + ' ' + fmt(t.amount, state.base); });
+        var note = rateFootnote();
+        return '本次 ' + (state.people.length || 1) + ' 人（' + dateRange() + '）共花 ' + fmt(res.total, state.base) + '，按' + cur(state.base).name + '结算。' +
           (lines.length
-            ? '结算：' + lines.join('；') + '。麻烦大家按这个转一下，有问题随时说～'
+            ? '转账：' + lines.join('；') + '。麻烦大家按这个转一下，有问题随时说～'
             : '大家出的钱刚好平了，不用转账。') +
-          '（赛肯德工具箱 · 旅行 AA 分摊器）';
+          (note ? '（' + note + '）' : '') +
+          '赛肯德工具箱 · 旅行 AA 分摊器';
       }
 
       function copySummary() {
@@ -838,9 +1081,7 @@
           toast(ok ? '已复制，去群里粘贴就行' : '复制失败，手动长按选中文字吧');
         }
         if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(text).then(function () {
-            toast('已复制，去群里粘贴就行');
-          }, fallback);
+          navigator.clipboard.writeText(text).then(function () { toast('已复制，去群里粘贴就行'); }, fallback);
         } else {
           fallback();
         }
@@ -891,6 +1132,17 @@
         renderExpenses();
         render();
       }
+
+      /* ---------- 事件 ---------- */
+      els.baseCur.innerHTML = CURRENCIES.map(function (c) {
+        return '<option value="' + c.code + '">' + c.code + ' · ' + c.name + '</option>';
+      }).join('');
+      els.baseCur.addEventListener('change', function () {
+        state.base = els.baseCur.value;
+        renderAll();
+        toast('结算货币改为 ' + cur(state.base).name);
+      });
+      document.getElementById('refreshRates').addEventListener('click', function () { fetchRates(true); });
 
       els.dayStrip.addEventListener('click', function (ev) {
         var del = ev.target.closest('[data-del-day]');
@@ -964,6 +1216,7 @@
         var e = expenseById(holder.getAttribute('data-expense'));
         if (!e) return;
         if (ev.target.classList.contains('e-payer')) { e.payer = ev.target.value; render(); }
+        if (ev.target.classList.contains('e-cur')) { e.currency = ev.target.value; renderExpenses(); render(); }
         if (ev.target.classList.contains('e-date')) { renderExpenses(); render(); }
       });
       els.expenses.addEventListener('click', function (ev) {
@@ -995,15 +1248,13 @@
         state.people.push({ id: nid('p'), name: '朋友' + String.fromCharCode(64 + state.people.length + 1) });
         renderAll();
       });
-
       document.getElementById('addExpense').addEventListener('click', function () {
         state.expenses.push({
-          id: nid('e'), title: '新的支出', amount: 0, category: 'other',
+          id: nid('e'), title: '新的支出', amount: 0, currency: state.base, category: 'other',
           date: currentDay(), payer: state.people[0].id, shares: null
         });
         renderAll();
       });
-
       document.getElementById('makeCard').addEventListener('click', function () {
         render();
         els.sheet.hidden = false;
@@ -1016,17 +1267,48 @@
       });
       document.getElementById('copyText').addEventListener('click', copySummary);
       document.getElementById('copyText2').addEventListener('click', copySummary);
-
       document.getElementById('clearAll').addEventListener('click', function () {
         if (!window.confirm('清空以后现在填的内容就没了（无法恢复），确定要重来吗？')) return;
+        var base = state.base;
         state = {
           people: [{ id: nid('p'), name: '朋友A' }, { id: nid('p'), name: '朋友B' }],
           days: [today()],
           selected: today(),
+          base: base || 'CNY',
+          manualRates: {},
           expenses: []
         };
         renderAll();
         toast('已清空，可以开始记你自己的账了');
+      });
+
+      /* ---------- 汇率面板 ---------- */
+      document.getElementById('openRates').addEventListener('click', function () {
+        renderRateList();
+        els.rateSheet.hidden = false;
+        document.body.style.overflow = 'hidden';
+      });
+      document.getElementById('closeRates').addEventListener('click', function () {
+        els.rateSheet.hidden = true;
+        document.body.style.overflow = '';
+      });
+      document.getElementById('saveRates').addEventListener('click', function () {
+        Array.prototype.forEach.call(els.rateList.querySelectorAll('[data-rate]'), function (input) {
+          var code = input.getAttribute('data-rate');
+          var v = Number(input.value);
+          if (v > 0) state.manualRates[code] = v;
+        });
+        els.rateSheet.hidden = true;
+        document.body.style.overflow = '';
+        renderAll();
+        toast('已按手动汇率折算');
+      });
+      document.getElementById('resetRates').addEventListener('click', function () {
+        state.manualRates = {};
+        els.rateSheet.hidden = true;
+        document.body.style.overflow = '';
+        renderAll();
+        toast('已恢复自动汇率');
       });
 
       /* ---------- 截图识别 ---------- */
@@ -1035,7 +1317,6 @@
         'https://unpkg.com/tesseract.js@5.1.1/dist/tesseract.min.js'
       ];
       var tessLoading = null;
-
       function loadTesseract() {
         if (window.Tesseract) return Promise.resolve();
         if (tessLoading) return tessLoading;
@@ -1054,38 +1335,31 @@
         });
         return tessLoading;
       }
-
       function ocrStatus(msg, pct) {
-        if (msg) {
-          els.ocrMsg.hidden = false;
-          els.ocrMsg.textContent = msg;
-        }
+        if (msg) { els.ocrMsg.hidden = false; els.ocrMsg.textContent = msg; }
         if (typeof pct === 'number') {
           els.ocrBar.hidden = false;
           els.ocrBar.firstElementChild.style.width = Math.max(0, Math.min(100, pct)) + '%';
         }
       }
-
       function parseAmount(line) {
-        var tokens = line.match(/(?:[¥￥]\s*)?(\d[\d,]*(?:\.\d{1,2})?)\s*(?:元|块)?/g);
+        var tokens = line.match(/(?:[¥￥$€£]\s*)?(\d[\d,]*(?:\.\d{1,2})?)\s*(?:元|块)?/g);
         if (!tokens) return null;
         var best = null;
         for (var i = 0; i < tokens.length; i++) {
           var raw = tokens[i];
-          var hasSymbol = /[¥￥]/.test(raw) || /元|块/.test(raw);
-          var num = parseFloat(raw.replace(/[^\d.]/g, ''));
-          if (isNaN(num) || num <= 0 || num > 200000) continue;
-          var digitsOnly = raw.replace(/[^\d]/g, '');
-          if (!hasSymbol && digitsOnly.length > 7) continue;
+          var hasSymbol = /[¥￥$€£]/.test(raw) || /元|块/.test(raw);
+          var n = parseFloat(raw.replace(/[^\d.]/g, ''));
+          if (isNaN(n) || n <= 0 || n > 200000) continue;
+          if (!hasSymbol && raw.replace(/[^\d]/g, '').length > 7) continue;
           var score = (hasSymbol ? 2 : 0) + (raw.indexOf('.') !== -1 ? 1 : 0);
-          if (!best || score >= best.score) best = { value: num, score: score };
+          if (!best || score >= best.score) best = { value: n, score: score };
         }
         return best ? best.value : null;
       }
-
       function cleanTitle(line, amount) {
         var t = String(line);
-        t = t.replace(/[¥￥]\s*[\d,]+(?:\.\d{1,2})?/g, ' ');
+        t = t.replace(/[¥￥$€£]\s*[\d,]+(?:\.\d{1,2})?/g, ' ');
         t = t.replace(/[\d,]+(?:\.\d{1,2})?\s*[元块]/g, ' ');
         t = t.replace(/\d{4}年\d{1,2}月\d{1,2}日?/g, ' ');
         t = t.replace(/\d{1,2}月\d{1,2}日?/g, ' ');
@@ -1094,10 +1368,9 @@
         if (amount !== undefined && amount !== null) {
           var s = String(amount);
           if (s.indexOf('.') === -1) {
-            t = t.replace(new RegExp('[¥￥]?\\s*' + s + '(?:\\.\\d{1,2})?\\s*[元块]?', 'g'), ' ');
+            t = t.replace(new RegExp('[¥￥$€£]?\\s*' + s + '(?:\\.\\d{1,2})?\\s*[元块]?', 'g'), ' ');
           } else {
-            t = t.replace(new RegExp('[¥￥]?\\s*' + s.replace(/\./g, '\\.') + '\\s*[元块]?', 'g'), ' ');
-            t = t.replace(new RegExp('[¥￥]?\\s*' + s.replace(/\.0+$/, '').replace(/\./g, '\\.') + '\\s*[元块]?', 'g'), ' ');
+            t = t.replace(new RegExp('[¥￥$€£]?\\s*' + s.replace(/\./g, '\\.') + '\\s*[元块]?', 'g'), ' ');
           }
         }
         t = t.replace(/(微信支付|支付宝|支付成功|交易成功|付款成功|收款成功|订单号|交易号|商户|收款方|实付|应付|合计|小计|总计|优惠|已优惠|红包|积分|元)/g, ' ');
@@ -1107,7 +1380,6 @@
         if (t.length > 18) t = t.slice(0, 18);
         return t;
       }
-
       function parseOcr(text) {
         var skip = /(合计|总计|小计|优惠|已减|余额|红包|积分|发票|税额)/;
         var lines = String(text).split(/\n+/).map(function (s) { return s.replace(/\s{2,}/g, ' ').trim(); }).filter(Boolean);
@@ -1136,7 +1408,6 @@
         });
         return out.slice(0, 12);
       }
-
       function renderOcrRows() {
         els.ocrList.innerHTML = ocrRows.map(function (row, idx) {
           return '<div class="ocr-row">' +
@@ -1147,19 +1418,14 @@
         }).join('');
         els.ocrAdd.hidden = !ocrRows.length;
       }
-
-      function openOcr() {
+      document.getElementById('openOcr').addEventListener('click', function () {
         els.ocrSheet.hidden = false;
         document.body.style.overflow = 'hidden';
-      }
-      function closeOcr() {
+      });
+      document.getElementById('ocrClose').addEventListener('click', function () {
         els.ocrSheet.hidden = true;
         document.body.style.overflow = '';
-      }
-
-      document.getElementById('openOcr').addEventListener('click', openOcr);
-      document.getElementById('ocrClose').addEventListener('click', closeOcr);
-
+      });
       els.ocrList.addEventListener('input', function (ev) {
         var idx = Number(ev.target.getAttribute('data-idx'));
         var row = ocrRows[idx];
@@ -1168,7 +1434,6 @@
         if (ev.target.getAttribute('data-role') === 'title') row.title = ev.target.value;
         if (ev.target.getAttribute('data-role') === 'amount') row.amount = ev.target.value;
       });
-
       els.ocrAdd.addEventListener('click', function () {
         var picked = ocrRows.filter(function (r) { return r.checked && Number(r.amount) > 0; });
         if (!picked.length) { toast('先勾选要加入的支出'); return; }
@@ -1176,7 +1441,7 @@
           var day = r.date || currentDay();
           if (state.days.indexOf(day) === -1) state.days.push(day);
           state.expenses.push({
-            id: nid('e'), title: r.title || '截图记的支出', amount: r.amount,
+            id: nid('e'), title: r.title || '截图记的支出', amount: r.amount, currency: state.base,
             category: r.category || 'other', date: day, payer: state.people[0].id, shares: null
           });
         });
@@ -1185,11 +1450,11 @@
         els.ocrList.innerHTML = '';
         els.ocrAdd.hidden = true;
         els.ocrFile.value = '';
-        closeOcr();
+        els.ocrSheet.hidden = true;
+        document.body.style.overflow = '';
         renderAll();
         toast('加入 ' + picked.length + ' 笔，记得选谁垫付');
       });
-
       els.ocrFile.addEventListener('change', function (ev) {
         var file = ev.target.files && ev.target.files[0];
         if (!file) return;
@@ -1231,7 +1496,9 @@
       });
 
       load();
+      els.baseCur.value = state.base;
       renderAll();
+      fetchRates(false);
     })();
   </script>
 </body>
