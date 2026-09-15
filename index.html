@@ -5,17 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>旅行 AA 分摊器 · 赛肯德工具箱</title>
 <meta name="description" content="一起旅行、吃饭、合租，谁垫付了钱、谁该给谁多少，填完自动算，还能生成一张可以直接发群的结算图。" />
-<meta name="theme-color" content="#2f6bd8" media="(prefers-color-scheme: light)" />
-<meta name="theme-color" content="#151c25" media="(prefers-color-scheme: dark)" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="default" />
-<meta name="apple-mobile-web-app-title" content="旅行AA" />
-<meta name="format-detection" content="telephone=no" />
-<link rel="manifest" href="manifest.webmanifest" />
-<link rel="icon" href="icon-192.png" sizes="192x192" />
-<link rel="apple-touch-icon" href="apple-touch-icon.png" />
-<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
 <style>
   :root {
     color-scheme: light dark;
@@ -85,6 +74,22 @@
   .btn-soft { font-size: 13px; font-weight: 600; color: var(--accent); background: var(--accent-soft); border-color: transparent; min-height: 34px; padding: 6px 12px; }
   .btn-primary { color: var(--accent-ink); background: var(--accent); border-color: transparent; }
   .btn-block { width: 100%; }
+  .btn-danger { color: var(--minus); border-color: var(--minus); background: var(--surface); }
+  .guide {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
+    padding: 14px 16px; font-size: 13.5px; line-height: 1.7;
+  }
+  .guide summary {
+    cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between;
+    gap: 8px; font-size: 14px; font-weight: 600; min-height: 28px;
+  }
+  .guide summary::-webkit-details-marker { display: none; }
+  .guide summary::after { content: "收起"; font-size: 12px; font-weight: 400; color: var(--muted); }
+  .guide:not([open]) summary::after { content: "展开"; }
+  .guide ol { margin: 10px 0 0; padding-left: 20px; }
+  .guide li { margin-bottom: 7px; }
+  .guide li:last-child { margin-bottom: 0; }
+  .guide-note { margin: 10px 0 0; font-size: 12.5px; color: var(--muted); }
   .people { display: flex; flex-wrap: wrap; gap: 8px; }
   .person {
     display: grid; grid-template-columns: minmax(0, 1fr) 34px; gap: 2px; align-items: center;
@@ -198,6 +203,17 @@
       <div class="hero-sub" id="heroSub"></div>
     </section>
 
+    <details class="guide" open>
+      <summary>怎么用 · 30 秒学会</summary>
+      <ol>
+        <li><strong>改成你们的名字</strong>：把「朋友A ~ 朋友D」改成真名，人多就点右边的「+ 加人」。</li>
+        <li><strong>一笔一笔记</strong>：填金额，选是谁垫付的，再在「分摊给」里点一下这笔钱该谁出。有人没去就点掉那个人；谁自己花的钱，就只留他自己。</li>
+        <li><strong>看结果</strong>：「每人结果」是每人该出多少、已经垫了多少；「转账方案」告诉你谁转给谁多少，而且转账次数最少。</li>
+        <li><strong>发到群里</strong>：点「生成结算图」截图发群，或者点「复制群聊文案」直接粘贴。</li>
+      </ol>
+      <p class="guide-note">要重新记一次，点最下面的「清空全部，从头记」。</p>
+    </details>
+
     <section class="sec">
       <div class="sec-head">
         <h2>一起旅行的人</h2>
@@ -233,14 +249,12 @@
     <div class="actions">
       <button type="button" class="btn btn-primary btn-block" id="makeCard">生成结算图</button>
       <button type="button" class="btn btn-block" id="copyText">复制群聊文案</button>
+      <button type="button" class="btn btn-block btn-danger" id="clearAll">清空全部，从头记</button>
     </div>
 
     <footer class="ft">
       <div>数据只保存在你自己的手机里，不上传、不需要注册。</div>
-      <div class="ft-row">
-        <span>由 赛肯德工具箱 出品</span>
-        <button type="button" class="link" id="clearAll">清空示例数据，从头记</button>
-      </div>
+      <div class="ft-row"><span>由 赛肯德工具箱 出品</span></div>
     </footer>
   </div>
 
@@ -259,7 +273,7 @@
 
   <script>
     (function () {
-      var STORAGE_KEY = 'saikende-aa-splitter-v1';
+      var STORAGE_KEY = 'saikende-aa-splitter-v2';
       var seq = 100;
       var toastTimer = null;
 
@@ -268,16 +282,16 @@
       function sampleState() {
         return {
           people: [
-            { id: 'p1', name: '我' },
-            { id: 'p2', name: '小林' },
-            { id: 'p3', name: '阿 May' },
-            { id: 'p4', name: '老王' }
+            { id: 'p1', name: '朋友A' },
+            { id: 'p2', name: '朋友B' },
+            { id: 'p3', name: '朋友C' },
+            { id: 'p4', name: '朋友D' }
           ],
           expenses: [
             { id: 'e1', title: '民宿 3 晚', amount: 1800, payer: 'p1', shares: null },
             { id: 'e2', title: '租车 + 油费', amount: 960, payer: 'p2', shares: null },
             { id: 'e3', title: '景区门票', amount: 640, payer: 'p1', shares: ['p1', 'p2', 'p4'] },
-            { id: 'e4', title: '老王单独买的酒', amount: 180, payer: 'p4', shares: ['p4'] }
+            { id: 'e4', title: '朋友D单独买的酒', amount: 180, payer: 'p4', shares: ['p4'] }
           ]
         };
       }
@@ -637,8 +651,9 @@
       document.getElementById('copyText2').addEventListener('click', copySummary);
 
       document.getElementById('clearAll').addEventListener('click', function () {
+        if (!window.confirm('清空以后现在填的内容就没了，确定要重来吗？')) return;
         state = {
-          people: [{ id: nid('p'), name: '我' }, { id: nid('p'), name: '朋友 A' }],
+          people: [{ id: nid('p'), name: '朋友A' }, { id: nid('p'), name: '朋友B' }],
           expenses: []
         };
         renderAll();
