@@ -181,10 +181,10 @@
     color: var(--accent-ink); border-color: transparent;
     background: var(--accent); box-shadow: 0 6px 16px rgba(22, 119, 255, .22);
   }
-  /* 破坏性操作不做成主按钮（Apple HIG）：只保留红字，不用实心块 */
+  /* 破坏性操作不做成主按钮（Apple HIG）：淡红底 + 红字，可见但不抢主 CTA */
   .btn-danger {
-    color: var(--minus); background: transparent; border-color: transparent;
-    font-weight: var(--fw-regular); box-shadow: none;
+    color: var(--minus); background: var(--danger-soft); border-color: transparent;
+    font-weight: var(--fw-medium); box-shadow: none;
   }
   .btn-block { width: 100%; }
   .link-btn {
@@ -238,30 +238,33 @@
   .day-strip::-webkit-scrollbar { display: none; }
   .day-wrap { position: relative; flex: 0 0 auto; scroll-snap-align: start; }
   .day {
-    display: flex; flex-direction: column; gap: 1px; min-width: 92px; cursor: pointer;
+    display: flex; flex-direction: column; gap: 2px; min-width: 108px; cursor: pointer;
     flex: 0 0 auto; scroll-snap-align: start;
     border: 1px solid var(--line); background: var(--surface); color: var(--text);
-    border-radius: var(--r-card); padding: 9px 12px; text-align: left; box-shadow: var(--shadow-sm);
+    border-radius: var(--r-card); padding: var(--sp-3) var(--sp-4); text-align: left; box-shadow: var(--shadow-sm);
     transition: transform .16s ease, box-shadow .16s ease, background .16s ease, color .16s ease;
   }
   .day:active { transform: scale(.97); }
-  .day-top { font-size: var(--fs-sub); font-weight: 600; white-space: nowrap; }
+  .day-top { font-size: var(--fs-body); font-weight: var(--fw-medium); white-space: nowrap; }
   .day-week { font-size: var(--fs-cap); color: var(--muted); }
-  .day-sum { font-size: var(--fs-sub); font-variant-numeric: tabular-nums; margin-top: 2px; }
+  .day-sum { font-size: var(--fs-sub); font-weight: var(--fw-medium); font-variant-numeric: tabular-nums; margin-top: var(--sp-1); }
   .day.is-active {
     color: var(--accent); border-color: var(--accent);
     background: var(--accent-soft); box-shadow: none;
   }
   .day.is-active .day-week, .day.is-active .day-sum { color: var(--accent); opacity: .7; }
-  /* 日期管理挪到「设置」页，主界面不再出现小叉 */
-  .day-manage { display: flex; flex-direction: column; gap: var(--sp-2); }
-  .dm-row {
-    display: grid; grid-template-columns: minmax(0, 1fr) auto 44px; gap: var(--sp-2); align-items: center;
-    background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-control);
-    padding: var(--sp-1) var(--sp-1) var(--sp-1) var(--sp-3);
+  .day-wrap.is-active .day-del { opacity: 1; transform: scale(1); }
+  /* 日期卡上的删除：只在选中的那张上出现，做成干净的圆形按钮而不是裸叉 */
+  .day-del {
+    position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; border-radius: var(--r-pill);
+    background: var(--surface); border: 1px solid var(--line); color: var(--muted);
+    box-shadow: var(--shadow-sm); display: flex; align-items: center; justify-content: center;
+    font: inherit; font-size: var(--fs-sub); line-height: 1; cursor: pointer;
+    opacity: 0; transform: scale(.8);
+    transition: opacity .16s ease, transform .16s ease, color .16s ease, border-color .16s ease;
   }
-  .dm-label { font-size: var(--fs-sub); }
-  .dm-sum { font-size: var(--fs-sub); color: var(--muted); }
+  .day-del::after { content: ""; position: absolute; inset: -10px; }
+  .day-del:hover { color: var(--minus); border-color: var(--danger-line); }
   .day-add {
     display: flex; align-items: center; justify-content: center; position: relative;
     border: 1.5px dashed var(--line); background: var(--surface-2); color: var(--accent);
@@ -478,6 +481,8 @@
     </div>
 
     <section class="view" data-view="record">
+      <button type="button" class="btn btn-block btn-danger btn-lg" id="clearAll">清空全部</button>
+
       <div class="view-head">
         <h2>支出</h2>
         <div class="sec-actions">
@@ -522,12 +527,6 @@
       </div>
       <div class="people" id="people"></div>
 
-      <div class="view-head">
-        <h2>日期</h2>
-        <span class="hint" id="dayCount"></span>
-      </div>
-      <div class="day-manage" id="dayManage"></div>
-
       <div class="rate-card" id="rateCard">
         <div class="rate-row">
           <span class="rate-label">结算货币</span>
@@ -550,8 +549,6 @@
         </ul>
         <p class="guide-note">账目只存在这台设备上；境外模式查汇率时会联网一次。</p>
       </details>
-
-      <button type="button" class="btn btn-block btn-danger btn-lg" id="clearAll">清空全部</button>
 
       <footer class="ft">
         <div id="saveState">数据存在这台设备上，退出也不丢。</div>
@@ -811,7 +808,7 @@
       ['people', 'expenses', 'rows', 'transfers', 'sheet', 'ocrSheet', 'rateSheet', 'legalSheet', 'card', 'toast', 'total', 'heroSub',
         'heroLabel', 'count', 'roundNote', 'saveState', 'ocrMsg', 'ocrList', 'ocrAdd',
         'ocrHead', 'ocrCount', 'dayStrip', 'baseCur', 'rateStatus', 'rateList',
-        'rateCard', 'foreignBanner', 'foreignText', 'dayManage', 'dayCount'].forEach(function (id) {
+        'rateCard', 'foreignBanner', 'foreignText'].forEach(function (id) {
         els[id] = document.getElementById(id);
       });
 
@@ -1169,18 +1166,21 @@
 
       function renderDays() {
         var all = state.expenses.reduce(function (s, e) { return s + baseCentsOf(e); }, 0);
-        var html = '<button type="button" class="day' + (state.selected === 'all' ? ' is-active' : '') + '" data-day="all" aria-pressed="' +
+        var html = '<div class="day-wrap' + (state.selected === 'all' ? ' is-active' : '') + '">' +
+          '<button type="button" class="day' + (state.selected === 'all' ? ' is-active' : '') + '" data-day="all" aria-pressed="' +
           (state.selected === 'all' ? 'true' : 'false') + '">' +
           '<span class="day-top">全部</span><span class="day-week">' + state.days.length + ' 天</span>' +
-          '<span class="day-sum">' + fmt(all, base()) + '</span></button>';
+          '<span class="day-sum">' + fmt(all, base()) + '</span></button></div>';
 
         html += state.days.map(function (d) {
           var active = state.selected === d;
-          return '<button type="button" class="day' + (active ? ' is-active' : '') + '" data-day="' + d + '" aria-pressed="' +
+          return '<div class="day-wrap' + (active ? ' is-active' : '') + '">' +
+            '<button type="button" class="day' + (active ? ' is-active' : '') + '" data-day="' + d + '" aria-pressed="' +
             (active ? 'true' : 'false') + '">' +
             '<span class="day-top">' + shortDate(d) + '</span>' +
             '<span class="day-week">' + weekOf(d) + '</span>' +
-            '<span class="day-sum">' + fmt(dayTotal(d), base()) + '</span></button>';
+            '<span class="day-sum">' + fmt(dayTotal(d), base()) + '</span></button>' +
+            '<button type="button" class="day-del" data-del-day="' + d + '" aria-label="删除' + shortDate(d) + '">×</button></div>';
         }).join('');
 
         html += '<label class="day-add">+ 加一天<input type="date" id="dayPicker" value="' +
@@ -1195,19 +1195,6 @@
             '<button type="button" class="x" data-del-person="' + p.id + '" aria-label="删除成员">×</button>' +
             '</div>';
         }).join('');
-      }
-
-      /* 日期管理：放在设置页，主界面不再出现删除小叉 */
-      function renderDayManage() {
-        if (!els.dayManage) return;
-        els.dayManage.innerHTML = state.days.map(function (d) {
-          return '<div class="dm-row">' +
-            '<span class="dm-label">' + shortDate(d) + ' ' + weekOf(d) + '</span>' +
-            '<span class="dm-sum num">' + fmt(dayTotal(d), base()) + '</span>' +
-            '<button type="button" class="x" data-del-day="' + d + '" aria-label="删除' + shortDate(d) + '">×</button>' +
-            '</div>';
-        }).join('');
-        if (els.dayCount) els.dayCount.textContent = '共 ' + state.days.length + ' 天';
       }
 
       function currencyOptions(sel) {
@@ -1447,7 +1434,6 @@
         normalizeDays();
         renderDays();
         renderPeople();
-        renderDayManage();
         renderExpenses();
         render();
       }
@@ -1465,6 +1451,20 @@
       document.getElementById('refreshRates').addEventListener('click', function () { fetchRates(true); });
 
       els.dayStrip.addEventListener('click', function (ev) {
+        var del = ev.target.closest('[data-del-day]');
+        if (del) {
+          var day = del.getAttribute('data-del-day');
+          var n = state.expenses.filter(function (e) { return e.date === day; }).length;
+          var msg = n ? '删除 ' + shortDate(day) + ' 和这天的 ' + n + ' 笔支出？' : '删除 ' + shortDate(day) + '？';
+          if (!window.confirm(msg)) return;
+          var snap = snapshot();
+          state.expenses = state.expenses.filter(function (e) { return e.date !== day; });
+          state.days = state.days.filter(function (d) { return d !== day; });
+          if (state.selected === day) state.selected = 'all';
+          renderAll();
+          toast('已删除 ' + shortDate(day), '撤销', function () { undo(snap, '已恢复那天'); });
+          return;
+        }
         var btn = ev.target.closest('[data-day]');
         if (!btn) return;
         state.selected = btn.getAttribute('data-day');
@@ -1472,20 +1472,6 @@
         renderExpenses();
         pulse(els.expenses, 'fade');
         render();
-      });
-      els.dayManage.addEventListener('click', function (ev) {
-        var del = ev.target.closest('[data-del-day]');
-        if (!del) return;
-        var day = del.getAttribute('data-del-day');
-        var n = state.expenses.filter(function (e) { return e.date === day; }).length;
-        var msg = n ? '删除 ' + shortDate(day) + ' 和这天的 ' + n + ' 笔支出？' : '删除 ' + shortDate(day) + '？';
-        if (!window.confirm(msg)) return;
-        var snap = snapshot();
-        state.expenses = state.expenses.filter(function (e) { return e.date !== day; });
-        state.days = state.days.filter(function (d) { return d !== day; });
-        if (state.selected === day) state.selected = 'all';
-        renderAll();
-        toast('已删除 ' + shortDate(day), '撤销', function () { undo(snap, '已恢复那天'); });
       });
       els.dayStrip.addEventListener('change', function (ev) {
         if (ev.target.id !== 'dayPicker') return;
