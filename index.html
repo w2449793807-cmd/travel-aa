@@ -282,6 +282,14 @@
   .drop strong { display: block; color: var(--accent); font-size: 14.5px; margin-bottom: 3px; }
   .drop input { display: none; }
   .ocr-list, .rate-list { display: flex; flex-direction: column; gap: 8px; }
+  .seg { display: flex; gap: 6px; background: var(--soft); padding: 4px; border-radius: 12px; }
+  .seg-btn {
+    flex: 1; font: inherit; font-size: 13px; font-weight: 600; padding: 8px 10px; border-radius: 9px;
+    border: 0; background: transparent; color: var(--muted); cursor: pointer; min-height: 38px;
+  }
+  .seg-btn.is-on { background: var(--surface); color: var(--accent); box-shadow: var(--shadow-sm); }
+  .panel textarea { min-height: 118px; font-size: 14.5px; line-height: 1.6; resize: vertical; }
+  .pane-pad { display: flex; flex-direction: column; gap: 10px; }
   .ocr-row {
     display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 8px; align-items: start;
     border: 1px solid var(--line); border-radius: 13px; padding: 7px 10px; background: var(--surface-2);
@@ -356,7 +364,6 @@
     <header>
       <div class="brand">赛肯德工具箱</div>
       <h1 class="title">旅行 AA 分摊器</h1>
-      <p class="sub">多国货币混着花也没关系，自动折算成一种货币算清楚谁该转谁。</p>
     </header>
 
     <button type="button" class="btn btn-block btn-danger" id="clearAll">清空全部</button>
@@ -387,7 +394,7 @@
       <ul>
         <li><b>1</b><span>改名字：把「朋友A～D」换成真名，人多点「+ 加人」。</span></li>
         <li><b>2</b><span>加日期：像日历一样一天天往下记。</span></li>
-        <li><b>3</b><span>记一笔：填金额，旁边切货币（日币、美金都行），选谁垫付，再点这笔钱谁分。</span></li>
+        <li><b>3</b><span>记一笔：填金额、选币种，选谁垫付，再点这笔钱谁分；懒得打就把截图文字粘进来。</span></li>
         <li><b>4</b><span>出结果：所有外币自动折算成结算货币，最后生成结算图发群。</span></li>
       </ul>
       <p class="guide-note">账目只存在这台设备上；只有查汇率时会联网一次。</p>
@@ -472,13 +479,24 @@
   <div class="sheet" id="ocrSheet" hidden>
     <div class="sheet-inner">
       <div class="panel">
-        <h3>截图识别</h3>
-        <p class="panel-hint">选一张账单截图，它把项目、金额、日期抠出来，币种会尽量从「$、฿、欧元、日元」这类字样里认。认不出（比如中日共用的 ¥）就按结算货币记，加入前扫一眼。谁垫付、几个人分，加入后再点。</p>
-        <label class="drop">
-          <strong>点这里选截图</strong>
-          <span id="ocrPickHint">图片不会上传，只在本机识别</span>
-          <input type="file" id="ocrFile" accept="image/*" />
-        </label>
+        <h3>识别支出</h3>
+        <div class="seg" role="group" aria-label="识别方式">
+          <button type="button" class="seg-btn is-on" data-mode="paste" aria-pressed="true">粘贴文字 · 秒出</button>
+          <button type="button" class="seg-btn" data-mode="image" aria-pressed="false">选截图识别</button>
+        </div>
+        <div class="pane-pad" data-pane="paste">
+          <p class="panel-hint">相册里长按截图 → 选「拷贝文字」（iPhone 叫实况文本），或用微信的「提取文字」，然后粘到下面。不用下载任何东西，立刻出结果。</p>
+          <textarea id="ocrPaste" placeholder="粘到这里，例如：&#10;民宿 3 晚 1800&#10;打车 45.5&#10;景区门票 320 元"></textarea>
+          <button type="button" class="btn btn-primary btn-block" id="ocrParse">识别文字</button>
+        </div>
+        <div class="pane-pad" data-pane="image" hidden>
+          <p class="panel-hint">选一张账单截图，在本机识别，图片不上传。第一次需要下载约 5MB 识别组件，慢的时候可能要等半分钟；之后浏览器会缓存，就快了。</p>
+          <label class="drop">
+            <strong>点这里选截图</strong>
+            <span id="ocrPickHint">图片不会上传，只在本机识别</span>
+            <input type="file" id="ocrFile" accept="image/*" />
+          </label>
+        </div>
         <div class="ocr-msg" id="ocrMsg" hidden></div>
         <div class="bar" id="ocrBar" hidden><i></i></div>
         <div class="ocr-list" id="ocrList"></div>
@@ -1472,6 +1490,7 @@
       /* ---------- 截图识别 ---------- */
       var TESS_SRC = [
         'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js',
+        'https://fastly.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js',
         'https://unpkg.com/tesseract.js@5.1.1/dist/tesseract.min.js'
       ];
       var tessLoading = null;
@@ -1628,42 +1647,130 @@
         renderAll();
         toast('加入 ' + picked.length + ' 笔，记得选谁垫付');
       });
+      function withTimeout(promise, ms, label) {
+        return new Promise(function (resolve, reject) {
+          var done = false;
+          var timer = window.setTimeout(function () {
+            if (done) return;
+            done = true;
+            reject(new Error('timeout:' + label));
+          }, ms);
+          promise.then(function (v) {
+            if (done) return;
+            done = true;
+            window.clearTimeout(timer);
+            resolve(v);
+          }, function (e) {
+            if (done) return;
+            done = true;
+            window.clearTimeout(timer);
+            reject(e);
+          });
+        });
+      }
+
+      /* 组件换成体积最小的组合：引擎 3.8MB + 中文包 1.6MB（原来是 4.5MB + 19MB） */
+      var OCR_BASES = [
+        'https://cdn.jsdelivr.net',
+        'https://fastly.jsdelivr.net',
+        'https://unpkg.com'
+      ];
+
+      function ocrLog(m) {
+        var label = m.status;
+        if (m.status === 'loading tesseract core') label = '下载识别引擎 3.8MB（第一次慢，之后有缓存）';
+        else if (m.status === 'initializing tesseract') label = '初始化引擎';
+        else if (m.status === 'loading language traineddata') label = '下载中文包 1.6MB';
+        else if (m.status === 'initializing api') label = '准备识别';
+        else if (m.status === 'recognizing text') label = '读取截图文字';
+        else if (m.status === 'loading language traineddata (from cache)') label = '读取缓存的中文包';
+        ocrStatus(label + '…', Math.round((m.progress || 0) * 100));
+      }
+
+      function runImageOcr(file) {
+        var i = 0;
+        function attempt() {
+          if (i >= OCR_BASES.length) return Promise.reject(new Error('all-failed'));
+          var base = OCR_BASES[i];
+          i += 1;
+          if (i > 1) ocrStatus('这个源太慢，换第 ' + i + ' 个源再试…', 5);
+          return withTimeout(window.Tesseract.createWorker('chi_sim', 1, {
+            workerPath: base + '/npm/tesseract.js@5.1.1/dist/worker.min.js',
+            corePath: base + '/npm/tesseract.js-core@5.1.0/tesseract-core-lstm.wasm.js',
+            langPath: base + '/npm/@tesseract.js-data/chi_sim@1.0.0/4.0.0_best_int',
+            gzip: true,
+            logger: ocrLog
+          }), 45000, 'worker').then(function (worker) {
+            ocrStatus('正在读取截图文字…', 60);
+            return withTimeout(worker.recognize(file), 60000, 'recognize').then(function (result) {
+              return worker.terminate().then(function () { return result; });
+            }, function (err) {
+              try { worker.terminate(); } catch (e) { }
+              throw err;
+            });
+          }, function (err) {
+            throw err;
+          }).catch(function (err) {
+            if (i >= OCR_BASES.length) throw err;
+            return attempt();
+          });
+        }
+        return attempt();
+      }
+
+      document.getElementById('ocrParse').addEventListener('click', function () {
+        var text = (document.getElementById('ocrPaste').value || '').trim();
+        if (!text) { ocrStatus('先把文字粘进来再点识别。', 0); return; }
+        var rows = parseOcr(text);
+        if (!rows.length) {
+          ocrStatus('这段文字里没找到金额，检查一下是不是粘全了。', 0);
+          return;
+        }
+        ocrRows = rows;
+        ocrStatus('读出 ' + rows.length + ' 笔，确认金额、币种后加入：', 100);
+        renderOcrRows();
+      });
+
+      Array.prototype.forEach.call(document.querySelectorAll('[data-mode]'), function (btn) {
+        btn.addEventListener('click', function () {
+          var mode = btn.getAttribute('data-mode');
+          Array.prototype.forEach.call(document.querySelectorAll('[data-mode]'), function (x) {
+            var on = x === btn;
+            x.classList.toggle('is-on', on);
+            x.setAttribute('aria-pressed', on ? 'true' : 'false');
+          });
+          Array.prototype.forEach.call(document.querySelectorAll('[data-pane]'), function (pane) {
+            pane.hidden = pane.getAttribute('data-pane') !== mode;
+          });
+          els.ocrMsg.hidden = true;
+          els.ocrBar.hidden = true;
+        });
+      });
+
       els.ocrFile.addEventListener('change', function (ev) {
         var file = ev.target.files && ev.target.files[0];
         if (!file) return;
         ocrRows = [];
         els.ocrList.innerHTML = '';
         els.ocrAdd.hidden = true;
-        ocrStatus('准备识别组件…', 4);
+        ocrStatus('准备识别组件…', 3);
         loadTesseract().then(function () {
-          ocrStatus('开始识别…', 10);
-          return window.Tesseract.createWorker('chi_sim+eng', 1, {
-            logger: function (m) {
-              var label = m.status;
-              if (m.status === 'loading tesseract core') label = '加载引擎';
-              else if (m.status === 'initializing tesseract') label = '初始化引擎';
-              else if (m.status === 'loading language traineddata') label = '下载中文包（首次稍慢）';
-              else if (m.status === 'initializing api') label = '准备识别';
-              else if (m.status === 'recognizing text') label = '读取截图文字';
-              ocrStatus(label + '…', Math.round((m.progress || 0) * 100));
-            }
-          });
-        }).then(function (worker) {
-          return worker.recognize(file).then(function (result) {
-            return worker.terminate().then(function () { return result; });
-          });
+          return runImageOcr(file);
         }).then(function (result) {
           var text = (result && result.data && result.data.text) || '';
           ocrRows = parseOcr(text);
           if (!ocrRows.length) {
-            ocrStatus('没读出可用的支出，换一张更清楚的截图试试，或者用「+ 记一笔」手动记。', 0);
+            ocrStatus('没读出可用的支出。可以换一张更清楚的截图，或者用「粘贴文字 · 秒出」更快。', 0);
             els.ocrBar.hidden = true;
             return;
           }
-          ocrStatus('读出 ' + ocrRows.length + ' 笔，确认金额和项目后加入：', 100);
+          ocrStatus('读出 ' + ocrRows.length + ' 笔，确认金额、币种后加入：', 100);
           renderOcrRows();
-        }).catch(function () {
-          ocrStatus('识别组件没加载成功（首次使用需要联网）。先手动记一笔，或稍后再试。', 0);
+        }).catch(function (err) {
+          var slow = String(err && err.message).indexOf('timeout') === 0;
+          ocrStatus(slow
+            ? '识别组件下载太慢，已经停了。建议用「粘贴文字 · 秒出」：相册里长按截图 → 拷贝文字 → 粘进去。'
+            : '识别组件没能加载（首次使用需要联网）。可以改用「粘贴文字 · 秒出」，或者手动记一笔。', 0);
           els.ocrBar.hidden = true;
         });
       });
