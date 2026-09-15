@@ -191,7 +191,8 @@
     transition: border-color .16s ease;
   }
   .ex:focus-within { border-color: var(--accent); }
-  .ex-top { display: grid; grid-template-columns: minmax(0, 1fr) 118px 32px; gap: 7px; }
+  .ex-top { display: grid; grid-template-columns: minmax(0, 1fr) 116px 40px; gap: 7px; }
+  .ex-top .x { min-height: 44px; }
   .ex-mid { display: grid; grid-template-columns: auto 88px minmax(0, 1fr); gap: 7px; }
   .amt-wrap {
     display: flex; align-items: center; gap: 4px; background: var(--surface);
@@ -223,10 +224,12 @@
   .chip:active { transform: scale(.96); }
   .chip.is-on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
   .mini {
-    margin-left: auto; font: inherit; font-size: 12px; color: var(--muted);
+    font: inherit; font-size: 12px; color: var(--muted);
     background: transparent; border: 0; padding: 6px 4px; cursor: pointer;
   }
   .mini:hover { color: var(--accent); }
+  .mini-group { margin-left: auto; display: inline-flex; align-items: center; gap: 13px; }
+  .mini-del { color: var(--minus); }
   .ex.is-new { animation: cardIn .32s cubic-bezier(.2, .8, .2, 1); }
   @keyframes cardIn { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
   .expenses.fade { animation: fadeIn .2s ease; }
@@ -283,6 +286,7 @@
   .drop strong { display: block; color: var(--accent); font-size: 14.5px; margin-bottom: 3px; }
   .drop input { display: none; }
   .ocr-list, .rate-list { display: flex; flex-direction: column; gap: 8px; }
+  .ocr-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 12.5px; color: var(--muted); }
   .seg { display: flex; gap: 6px; background: var(--soft); padding: 4px; border-radius: 12px; }
   .seg-btn {
     flex: 1; font: inherit; font-size: 13px; font-weight: 600; padding: 8px 10px; border-radius: 9px;
@@ -292,9 +296,10 @@
   .panel textarea { min-height: 118px; font-size: 14.5px; line-height: 1.6; resize: vertical; }
   .pane-pad { display: flex; flex-direction: column; gap: 10px; }
   .ocr-row {
-    display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 8px; align-items: start;
+    display: grid; grid-template-columns: 28px minmax(0, 1fr) 34px; gap: 8px; align-items: start;
     border: 1px solid var(--line); border-radius: 13px; padding: 7px 10px; background: var(--surface-2);
   }
+  .ocr-row .x { min-height: 38px; }
   .ocr-row input[type="checkbox"] { width: 22px; height: 22px; min-height: 22px; }
   .ocr-main { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
   .ocr-sub { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
@@ -500,6 +505,10 @@
         </div>
         <div class="ocr-msg" id="ocrMsg" hidden></div>
         <div class="bar" id="ocrBar" hidden><i></i></div>
+        <div class="ocr-head" id="ocrHead" hidden>
+          <span id="ocrCount"></span>
+          <button type="button" class="link-btn" id="ocrClear">清空列表</button>
+        </div>
         <div class="ocr-list" id="ocrList"></div>
         <div class="sheet-actions">
           <button type="button" class="btn btn-primary btn-block" id="ocrAdd" hidden>加入这些支出</button>
@@ -678,7 +687,7 @@
       var els = {};
       ['people', 'expenses', 'rows', 'transfers', 'sheet', 'ocrSheet', 'rateSheet', 'card', 'toast', 'total', 'heroSub',
         'heroPill', 'heroLabel', 'count', 'roundNote', 'saveState', 'ocrFile', 'ocrMsg', 'ocrBar', 'ocrList', 'ocrAdd',
-        'ocrPickHint', 'dayStrip', 'baseCur', 'rateStatus', 'rateList'].forEach(function (id) {
+        'ocrPickHint', 'ocrHead', 'ocrCount', 'dayStrip', 'baseCur', 'rateStatus', 'rateList'].forEach(function (id) {
         els[id] = document.getElementById(id);
       });
 
@@ -1108,7 +1117,10 @@
               '<select class="e-payer" aria-label="谁垫付了这笔">' + opts + '</select>' +
             '</div>' + conv +
             '<div class="shares"><span class="shares-label">分摊给</span>' + chips +
-              '<button type="button" class="mini" data-copy-expense="' + e.id + '">复制一笔</button></div>' +
+              '<span class="mini-group">' +
+                '<button type="button" class="mini" data-copy-expense="' + e.id + '">复制一笔</button>' +
+                '<button type="button" class="mini mini-del" data-del-expense="' + e.id + '">删除</button>' +
+              '</span></div>' +
             '</div>';
         }).join('');
       }
@@ -1541,6 +1553,7 @@
       }
       function cleanTitle(line, amount) {
         var t = String(line);
+        t = t.replace(/(?:US|A|HK|NT|S|NZ|C)\$\s*[\d,]+(?:\.\d{1,2})?/gi, ' ');
         t = t.replace(/[¥￥$€£]\s*[\d,]+(?:\.\d{1,2})?/g, ' ');
         t = t.replace(/[\d,]+(?:\.\d{1,2})?\s*[元块]/g, ' ');
         t = t.replace(/\d{4}年\d{1,2}月\d{1,2}日?/g, ' ');
@@ -1556,6 +1569,7 @@
           }
         }
         t = t.replace(/(微信支付|支付宝|支付成功|交易成功|付款成功|收款成功|订单号|交易号|商户|收款方|实付|应付|合计|小计|总计|优惠|已优惠|红包|积分|元)/g, ' ');
+        t = t.replace(/\b(?:USD|JPY|CNY|RMB|THB|HKD|TWD|KRW|SGD|MYR|VND|IDR|PHP|AUD|NZD|CAD|CHF|AED|TRY|RUB|INR|MOP)\b/gi, ' ');
         t = t.replace(/\s{2,}/g, ' ').trim();
         t = t.replace(/^[·|:：\-—\s]+/, '').replace(/[·|:：\-—\s]+$/, '').trim();
         if (!t || t.length < 2 || /^[\d\s.]+$/.test(t)) t = '截图记的支出';
@@ -1563,17 +1577,51 @@
         return t;
       }
       function parseOcr(text) {
-        var skip = /(合计|总计|小计|优惠|已减|余额|红包|积分|发票|税额)/;
+        var NOISE = /(合计|总计|小计|优惠|已减|立减|折扣|余额|红包|积分|发票|税额|取消|确定|返回|发送|搜索|分享|收藏|设置|首页|消息|通知|电量|信号|客服|咨询|微信支付|支付宝|云闪付|支付成功|交易成功|付款成功|收款成功|立即支付|确认付款|账单详情|交易单号|商户单号|订单编号|订单号|交易号|支付时间|收款时间|当前时间|当前状态|支付方式|优惠方式|商品说明|查看详情|查看更多|查看全部|全部账单|账单明细|统计|排行榜|本月|上月|本周|广告)/;
         var lines = String(text).split(/\n+/).map(function (s) { return s.replace(/\s{2,}/g, ' ').trim(); }).filter(Boolean);
         var out = [], seen = {};
-        lines.forEach(function (line) {
-          if (line.length < 2 || skip.test(line)) return;
+
+        function textScore(s) {
+          return ((String(s).match(/[\u4e00-\u9fa5]/g) || []).length) + ((String(s).match(/[A-Za-z]/g) || []).length);
+        }
+        function isNoise(line) {
+          if (NOISE.test(line)) return true;
+          if (/\d{1,2}:\d{2}/.test(line)) return true;          /* 时间 */
+          if (/\d+(\.\d+)?%/.test(line)) return true;            /* 电量、折扣百分比 */
+          if (/1\d{10}/.test(line)) return true;                 /* 手机号 */
+          if (/^[\d\s.,:：\-—/%]+$/.test(line)) return true;      /* 纯数字行（带 ¥ 等货币符号的会放过） */
+          return false;
+        }
+        /* 金额和商户名经常分成两行，这里允许向相邻行借一个名字 */
+        function borrowTitle(idx) {
+          var cands = [lines[idx - 1], lines[idx + 1]];
+          for (var c = 0; c < cands.length; c++) {
+            var s = cands[c];
+            if (!s || isNoise(s)) continue;
+            if (parseAmount(s) !== null) continue;
+            var score = textScore(s);
+            if (score < 2 || score > 12) continue;
+            return cleanTitle(s, null);
+          }
+          return '';
+        }
+
+        lines.forEach(function (line, idx) {
+          if (line.length < 2 || isNoise(line)) return;
           var amount = parseAmount(line);
-          if (amount === null) return;
+          if (amount === null || amount < 0.5 || amount > 100000) return;
+
           var title = cleanTitle(line, amount);
+          var hasMark = /[¥￥$€£฿₩₫]|元|块/.test(line);
+          if (title === '截图记的支出' || textScore(title) < 2) {
+            if (!hasMark) return;               /* 没名字、也没币种符号：按噪音丢掉 */
+            title = borrowTitle(idx);            /* 金额和商户名分成两行时，向邻行借名字 */
+            if (textScore(title) < 2) return;    /* 借不到就丢掉 */
+          }
           var key = title + '|' + amount;
           if (seen[key]) return;
           seen[key] = true;
+
           var date = today();
           var year = new Date().getFullYear();
           var ymd = line.match(/(\d{4})年(\d{1,2})月(\d{1,2})日?/);
@@ -1591,7 +1639,7 @@
             category: guessCategory(line), currency: detectCurrency(line)
           });
         });
-        return out.slice(0, 12);
+        return out.slice(0, 8);
       }
       function renderOcrRows() {
         els.ocrList.innerHTML = ocrRows.map(function (row, idx) {
@@ -1605,11 +1653,24 @@
                   currencyOptions(row.currency || state.base) + '</select>' +
               '</div>' +
             '</div>' +
+            '<button type="button" class="x" data-drop-row="' + idx + '" aria-label="不要这一笔">×</button>' +
             '</div>';
         }).join('');
         els.ocrAdd.hidden = !ocrRows.length;
+        if (els.ocrHead) {
+          els.ocrHead.hidden = !ocrRows.length;
+          if (els.ocrCount) els.ocrCount.textContent = '识别到 ' + ocrRows.length + ' 笔';
+        }
       }
       document.getElementById('openOcr').addEventListener('click', function () {
+        ocrRows = [];
+        els.ocrList.innerHTML = '';
+        els.ocrAdd.hidden = true;
+        els.ocrMsg.hidden = true;
+        els.ocrBar.hidden = true;
+        if (els.ocrHead) els.ocrHead.hidden = true;
+        var paste = document.getElementById('ocrPaste');
+        if (paste) paste.value = '';
         els.ocrSheet.hidden = false;
         document.body.style.overflow = 'hidden';
       });
@@ -1631,26 +1692,44 @@
         var idx = Number(ev.target.getAttribute('data-idx'));
         if (ocrRows[idx]) ocrRows[idx].currency = ev.target.value;
       });
+      els.ocrList.addEventListener('click', function (ev) {
+        var drop = ev.target.closest('[data-drop-row]');
+        if (!drop) return;
+        ocrRows.splice(Number(drop.getAttribute('data-drop-row')), 1);
+        renderOcrRows();
+        if (!ocrRows.length) ocrStatus('列表已清空，可以重新识别。', 0);
+      });
+      document.getElementById('ocrClear').addEventListener('click', function () {
+        ocrRows = [];
+        renderOcrRows();
+        ocrStatus('列表已清空，可以重新识别。', 0);
+      });
       els.ocrAdd.addEventListener('click', function () {
         var picked = ocrRows.filter(function (r) { return r.checked && Number(r.amount) > 0; });
         if (!picked.length) { toast('先勾选要加入的支出'); return; }
+        var usedDays = {};
         picked.forEach(function (r) {
           var day = r.date || currentDay();
           if (state.days.indexOf(day) === -1) state.days.push(day);
+          usedDays[day] = true;
           state.expenses.push({
             id: nid('e'), title: r.title || '截图记的支出', amount: r.amount, currency: r.currency || state.base,
             category: r.category || 'other', date: day, payer: state.people[0].id, shares: null
           });
         });
         state.days.sort();
+        var dayList = Object.keys(usedDays).sort();
+        if (dayList.length === 1) state.selected = dayList[0];
+        animateId = state.expenses[state.expenses.length - 1].id;
         ocrRows = [];
         els.ocrList.innerHTML = '';
         els.ocrAdd.hidden = true;
+        if (els.ocrHead) els.ocrHead.hidden = true;
         els.ocrFile.value = '';
         els.ocrSheet.hidden = true;
         document.body.style.overflow = '';
         renderAll();
-        toast('加入 ' + picked.length + ' 笔，记得选谁垫付');
+        toast('加入 ' + picked.length + ' 笔到 ' + (dayList.length === 1 ? shortDate(dayList[0]) : dayList.length + ' 天') + '，记得选谁垫付');
       });
       function withTimeout(promise, ms, label) {
         return new Promise(function (resolve, reject) {
