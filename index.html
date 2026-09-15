@@ -130,6 +130,74 @@
     background: var(--accent-soft); color: var(--accent); border-radius: var(--r-control); padding: 10px 13px;
     font-size: var(--fs-sub); line-height: 1.5;
   }
+  /* ── 新增：项目选择 / 只读账单行 / 记账弹层 / 统计 ── */
+  .proj-btn {
+    font: inherit; font-size: var(--fs-cap); font-weight: var(--fw-medium); color: var(--accent);
+    background: transparent; border: 0; padding: var(--sp-1) var(--sp-1) var(--sp-1) 0; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 2px; text-align: left; max-width: 100%;
+  }
+  .proj-btn span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ex-main {
+    display: flex; align-items: center; gap: var(--sp-3); width: 100%; text-align: left;
+    background: transparent; border: 0; padding: 0; cursor: pointer; font: inherit; color: inherit;
+  }
+  .ex-main .ex-info { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 2px; }
+  .ex-main .ex-name { font-size: var(--fs-body); font-weight: var(--fw-medium); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ex-main .ex-meta { font-size: var(--fs-cap); color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ex-main .ex-amt { font-size: var(--fs-title); font-weight: var(--fw-semibold); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .ex-main .ex-go { font-size: var(--fs-sub); color: var(--muted); }
+  .ex-tags { display: flex; flex-wrap: wrap; gap: var(--sp-1); }
+  .tag {
+    font-size: var(--fs-cap); color: var(--muted); background: var(--soft);
+    border-radius: var(--r-pill); padding: 2px var(--sp-2);
+  }
+  .tag.is-accent { color: var(--accent); background: var(--accent-soft); }
+  .field { display: flex; flex-direction: column; gap: var(--sp-2); }
+  .field > span { font-size: var(--fs-cap); color: var(--muted); }
+  .field input, .field select { font-size: var(--fs-body); }
+  .edit-amount { display: flex; align-items: baseline; gap: var(--sp-2); padding: var(--sp-2) 0 var(--sp-3); border-bottom: 1px solid var(--line); }
+  .edit-amount .ea-cur { font-size: var(--fs-title); color: var(--muted); }
+  .edit-amount input {
+    flex: 1; border: 0; background: transparent; padding: 0; min-height: 0;
+    font-size: 40px; font-weight: var(--fw-semibold); font-variant-numeric: tabular-nums; text-align: left;
+  }
+  .edit-amount input:focus-visible { outline: none; }
+  .edit-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--sp-3); }
+  .edit-row.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .chips { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+  .payer-amounts { display: flex; flex-direction: column; gap: var(--sp-2); margin-top: var(--sp-2); }
+  .pa-row { display: grid; grid-template-columns: minmax(0, 1fr) 110px; gap: var(--sp-2); align-items: center; }
+  .pa-row span { font-size: var(--fs-sub); }
+  .pa-row input { text-align: right; font-size: var(--fs-body); }
+  .pa-last { font-size: var(--fs-body); text-align: right; font-variant-numeric: tabular-nums; color: var(--text-2); }
+  .proj-list { display: flex; flex-direction: column; gap: var(--sp-2); }
+  .proj-row {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto 40px; gap: var(--sp-2); align-items: center;
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r-control);
+    padding: var(--sp-3) var(--sp-2) var(--sp-3) var(--sp-3);
+  }
+  .proj-row.is-active { border-color: var(--accent); background: var(--accent-soft); }
+  .proj-row .pr-name { font-size: var(--fs-body); font-weight: var(--fw-medium); }
+  .proj-row .pr-sub { font-size: var(--fs-cap); color: var(--muted); }
+  .proj-row .pr-sum { font-size: var(--fs-sub); font-variant-numeric: tabular-nums; }
+  .stats-block { display: flex; flex-direction: column; gap: var(--sp-2); }
+  .stat-row { display: flex; flex-direction: column; gap: var(--sp-1); }
+  .stat-top { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-2); font-size: var(--fs-sub); }
+  .stat-top b { font-weight: var(--fw-medium); font-variant-numeric: tabular-nums; }
+  .stat-bar { height: 8px; border-radius: var(--r-pill); background: var(--soft); overflow: hidden; }
+  .stat-bar > i { display: block; height: 100%; background: var(--accent); border-radius: var(--r-pill); }
+  .stat-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-2); }
+  .stat-cell { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); padding: var(--sp-3); }
+  .stat-cell .sc-label { font-size: var(--fs-cap); color: var(--muted); }
+  .stat-cell .sc-value { font-size: var(--fs-title); font-weight: var(--fw-semibold); font-variant-numeric: tabular-nums; margin-top: 2px; }
+  .sheet-head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); }
+  .sheet-head h3 { margin: 0; font-size: var(--fs-title); font-weight: var(--fw-semibold); }
+  .share-status { font-size: var(--fs-cap); color: var(--muted); line-height: 1.6; }
+  .room-code {
+    font-size: var(--fs-title); font-weight: var(--fw-semibold); letter-spacing: .18em;
+    background: var(--surface-2); border: 1px dashed var(--line); border-radius: var(--r-control);
+    padding: var(--sp-3); text-align: center; font-variant-numeric: tabular-nums;
+  }
   .brand {
     display: inline-flex; align-items: center; font-size: var(--fs-cap); font-weight: 600; letter-spacing: .06em;
     color: var(--accent); background: var(--accent-soft); border-radius: var(--r-pill); padding: 4px 11px;
@@ -469,7 +537,9 @@
   <div class="app">
     <div class="topbar">
       <div class="tb-left">
-        <h1 class="tb-brand">旅行 AA 分摊器</h1>
+        <button type="button" class="proj-btn" id="openProjects">
+          <span id="projName">行程</span><span aria-hidden="true">▾</span>
+        </button>
         <div class="tb-label" id="heroLabel">本次总支出</div>
         <div class="tb-total" id="total">¥0</div>
         <div class="tb-sub" id="heroSub"></div>
@@ -520,6 +590,17 @@
       </div>
     </section>
 
+    <section class="view" data-view="stats" hidden>
+      <div class="view-head"><h2>概览</h2></div>
+      <div class="stat-grid" id="statGrid"></div>
+      <div class="view-head"><h2>按分类</h2></div>
+      <div class="stats-block" id="statCats"></div>
+      <div class="view-head"><h2>按天</h2></div>
+      <div class="stats-block" id="statDays"></div>
+      <div class="view-head"><h2>按成员（垫付 / 应承担）</h2></div>
+      <div class="stats-block" id="statPeople"></div>
+    </section>
+
     <section class="view" data-view="more" hidden>
       <div class="view-head">
         <h2>同行的人</h2>
@@ -550,6 +631,19 @@
         <p class="guide-note">账目只存在这台设备上；境外模式查汇率时会联网一次。</p>
       </details>
 
+      <div class="view-head">
+        <h2>多人共享</h2>
+        <span class="hint" id="shareHint"></span>
+      </div>
+      <div class="rate-card">
+        <div class="share-status" id="shareStatus">未开启。开启后同伴能用同一个房间码一起记账。</div>
+        <div class="sheet-actions">
+          <button type="button" class="btn btn-block btn-lg" id="openShare">共享设置</button>
+          <button type="button" class="btn btn-block" id="syncExport">生成同步码（发给同伴）</button>
+          <button type="button" class="btn btn-block" id="syncImport">粘贴同步码合并</button>
+        </div>
+      </div>
+
       <footer class="ft">
         <div id="saveState">数据存在这台设备上，退出也不丢。</div>
         <div class="ft-row">
@@ -562,6 +656,7 @@
 
   <nav class="tabbar" aria-label="页面切换">
     <button type="button" class="tab is-on" data-tab="record" aria-selected="true">记账</button>
+    <button type="button" class="tab" data-tab="stats" aria-selected="false">统计</button>
     <button type="button" class="tab" data-tab="settle" aria-selected="false">结算</button>
     <button type="button" class="tab" data-tab="more" aria-selected="false">设置</button>
   </nav>
@@ -585,6 +680,80 @@
         <p class="legal-foot">最后更新：2026 年 9 月 15 日</p>
         <div class="sheet-actions">
           <button type="button" class="btn btn-block" id="closeLegal">知道了</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sheet" id="editSheet" hidden>
+    <div class="sheet-inner">
+      <div class="panel">
+        <div class="sheet-head">
+          <h3 id="editHead">记一笔</h3>
+          <button type="button" class="link-btn" id="editClose">关闭</button>
+        </div>
+        <div class="edit-amount">
+          <span class="ea-cur" id="editCur">¥</span>
+          <input type="text" inputmode="decimal" id="editAmount" placeholder="0" aria-label="金额" />
+        </div>
+        <label class="field">
+          <span>项目</span>
+          <input type="text" id="editName" placeholder="比如：民宿 3 晚" />
+        </label>
+        <div class="edit-row three">
+          <label class="field"><span>日期</span><input type="date" id="editDate" /></label>
+          <label class="field"><span>分类</span><select id="editCat"></select></label>
+          <label class="field" id="editCurField"><span>币种</span><select id="editCurrency"></select></label>
+        </div>
+        <div class="field">
+          <span>谁垫付（可以多选，多个人就分别填各自垫了多少）</span>
+          <div class="chips" id="editPayers"></div>
+          <div class="payer-amounts" id="editPayerAmounts"></div>
+        </div>
+        <div class="field">
+          <span>这笔钱谁分摊</span>
+          <div class="chips" id="editShares"></div>
+        </div>
+        <div class="sheet-actions">
+          <button type="button" class="btn btn-primary btn-block" id="editSave">完成</button>
+          <button type="button" class="btn btn-block" id="editCopy" hidden>再记一笔一样的</button>
+          <button type="button" class="btn btn-block btn-danger" id="editDelete" hidden>删除这笔</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sheet" id="projSheet" hidden>
+    <div class="sheet-inner">
+      <div class="panel">
+        <div class="sheet-head">
+          <h3>我的行程</h3>
+          <button type="button" class="link-btn" id="projClose">关闭</button>
+        </div>
+        <p class="panel-hint">每次旅行一个行程，互不影响；点一下就能切换回来。</p>
+        <div class="proj-list" id="projList"></div>
+        <div class="sheet-actions">
+          <button type="button" class="btn btn-primary btn-block" id="projNew">新建行程</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sheet" id="shareSheet" hidden>
+    <div class="sheet-inner">
+      <div class="panel">
+        <div class="sheet-head">
+          <h3>多人共享</h3>
+          <button type="button" class="link-btn" id="shareClose">关闭</button>
+        </div>
+        <p class="panel-hint">开启后，你和同伴用同一个房间码记账。账目在你这台设备上加密后才上传，房间码就是钥匙；不开启就完全不上传。</p>
+        <div class="room-code" id="shareCode">未开启</div>
+        <div class="share-status" id="shareInfo"></div>
+        <div class="sheet-actions">
+          <button type="button" class="btn btn-primary btn-block" id="shareCreate">创建房间</button>
+          <button type="button" class="btn btn-block" id="shareJoin">输入房间码加入</button>
+          <button type="button" class="btn btn-block" id="shareSync">立即同步</button>
+          <button type="button" class="btn btn-block btn-danger" id="shareLeave">退出共享</button>
         </div>
       </div>
     </div>
@@ -779,8 +948,25 @@
         return null;
       }
 
+      /* ── 一个"项目"= 一次旅行 / 一个账本 ── */
+      function newProject(name, seed) {
+        var p = {
+          id: nid('t'),
+          name: name || '新的行程',
+          createdAt: Date.now(),
+          people: (seed && seed.people) || [{ id: nid('p'), name: '我' }, { id: nid('p'), name: '朋友A' }],
+          days: (seed && seed.days) || [today()],
+          expenses: (seed && seed.expenses) || [],
+          selected: 'all',
+          base: 'CNY',
+          mode: 'cn',
+          manualRates: {}
+        };
+        return p;
+      }
+
       function sampleState() {
-        return {
+        var t = newProject('示例行程', {
           people: [
             { id: 'p1', name: '朋友A' },
             { id: 'p2', name: '朋友B' },
@@ -788,20 +974,36 @@
             { id: 'p4', name: '朋友D' }
           ],
           days: [isoDay(-2), isoDay(-1)],
-          selected: 'all',
-          base: 'CNY',
-          mode: 'cn',
-          manualRates: {},
           expenses: [
-            { id: 'e1', title: '机票（往返）', amount: 2400, currency: 'CNY', category: 'traffic', date: isoDay(-2), payer: 'p1', shares: null },
-            { id: 'e2', title: '民宿 2 晚', amount: 1800, currency: 'CNY', category: 'stay', date: isoDay(-2), payer: 'p2', shares: null },
-            { id: 'e3', title: '景区门票', amount: 640, currency: 'CNY', category: 'ticket', date: isoDay(-1), payer: 'p1', shares: ['p1', 'p2', 'p4'] },
-            { id: 'e4', title: '单独买的特产', amount: 180, currency: 'CNY', category: 'shop', date: isoDay(-1), payer: 'p4', shares: ['p4'] }
+            { id: 'e1', title: '机票（往返）', amount: 2400, currency: 'CNY', category: 'traffic', date: isoDay(-2), payer: 'p1', payers: [{ id: 'p1', amount: 2400 }], shares: null },
+            { id: 'e2', title: '民宿 2 晚', amount: 1800, currency: 'CNY', category: 'stay', date: isoDay(-2), payer: 'p2', payers: [{ id: 'p2', amount: 1800 }], shares: null },
+            { id: 'e3', title: '景区门票', amount: 640, currency: 'CNY', category: 'ticket', date: isoDay(-1), payer: 'p1', payers: [{ id: 'p1', amount: 400 }, { id: 'p2', amount: 240 }], shares: ['p1', 'p2', 'p4'] },
+            { id: 'e4', title: '单独买的特产', amount: 180, currency: 'CNY', category: 'shop', date: isoDay(-1), payer: 'p4', payers: [{ id: 'p4', amount: 180 }], shares: ['p4'] }
           ]
+        });
+        return {
+          v: 2,
+          projects: [t],
+          activeId: t.id,
+          view: 'record',
+          share: { roomId: '', code: '', syncedAt: 0, rev: 0 }
         };
       }
 
       var state = sampleState();
+
+      /* 当前项目 */
+      function P() {
+        if (!state.projects || !state.projects.length) {
+          state.projects = [newProject('我的行程')];
+          state.activeId = state.projects[0].id;
+        }
+        for (var i = 0; i < state.projects.length; i++) {
+          if (state.projects[i].id === state.activeId) return state.projects[i];
+        }
+        state.activeId = state.projects[0].id;
+        return state.projects[0];
+      }
       var rateCache = { date: '', toCNY: {}, fetchedAt: 0 };
       var rateSource = 'builtin';
       var els = {};
@@ -809,6 +1011,13 @@
         'heroLabel', 'count', 'roundNote', 'saveState', 'ocrMsg', 'ocrList', 'ocrAdd',
         'ocrHead', 'ocrCount', 'dayStrip', 'baseCur', 'rateStatus', 'rateList',
         'rateCard', 'foreignBanner', 'foreignText'].forEach(function (id) {
+          els[id] = document.getElementById(id);
+        });
+      ['projName', 'openProjects', 'editSheet', 'editHead', 'editClose', 'editAmount', 'editName', 'editDate',
+        'editCat', 'editCurrency', 'editCur', 'editCurField', 'editPayers', 'editPayerAmounts', 'editShares',
+        'editSave', 'editCopy', 'editDelete', 'projSheet', 'projClose', 'projList', 'projNew',
+        'shareSheet', 'shareClose', 'shareCode', 'shareInfo', 'shareCreate', 'shareJoin', 'shareSync', 'shareLeave',
+        'openShare', 'shareStatus', 'shareHint', 'statGrid', 'statCats', 'statDays', 'statPeople'].forEach(function (id) {
         els[id] = document.getElementById(id);
       });
 
@@ -824,12 +1033,12 @@
         return (cur(code || 'CNY').symbol || '') + num(cents);
       }
       function toCNY(code) {
-        if (state.manualRates && state.manualRates[code]) return state.manualRates[code];
+        if (P().manualRates && P().manualRates[code]) return P().manualRates[code];
         if (rateCache.toCNY[code]) return rateCache.toCNY[code];
         return FALLBACK_TO_CNY[code] || 1;
       }
       /* 显示与结算用的货币：国内模式固定人民币，境外模式用用户选的结算货币 */
-      function base() { return state.mode === 'cn' ? 'CNY' : (state.base || 'CNY'); }
+      function base() { return P().mode === 'cn' ? 'CNY' : (P().base || 'CNY'); }
       function baseRate(code) {
         var b = toCNY(base());
         return toCNY(code) / (b || 1);
@@ -843,74 +1052,103 @@
       }
       function isForeign(e) { return (e.currency || 'CNY') !== base(); }
       function personById(id) {
-        for (var i = 0; i < state.people.length; i++) { if (state.people[i].id === id) return state.people[i]; }
+        for (var i = 0; i < P().people.length; i++) { if (P().people[i].id === id) return P().people[i]; }
         return null;
       }
       function expenseById(id) {
-        for (var i = 0; i < state.expenses.length; i++) { if (state.expenses[i].id === id) return state.expenses[i]; }
+        for (var i = 0; i < P().expenses.length; i++) { if (P().expenses[i].id === id) return P().expenses[i]; }
         return null;
       }
       function nameOf(id) { var p = personById(id); return p ? p.name : '已删除'; }
       function dayTotal(day) {
-        return state.expenses.reduce(function (sum, e) { return e.date === day ? sum + baseCentsOf(e) : sum; }, 0);
+        return P().expenses.reduce(function (sum, e) { return e.date === day ? sum + baseCentsOf(e) : sum; }, 0);
       }
       function visibleExpenses() {
-        return state.selected === 'all'
-          ? state.expenses.slice().sort(function (a, b) { return String(a.date).localeCompare(String(b.date)); })
-          : state.expenses.filter(function (e) { return e.date === state.selected; });
+        return P().selected === 'all'
+          ? P().expenses.slice().sort(function (a, b) { return String(a.date).localeCompare(String(b.date)); })
+          : P().expenses.filter(function (e) { return e.date === P().selected; });
       }
       function currentDay() {
-        if (state.selected !== 'all') return state.selected;
-        return state.days.length ? state.days[state.days.length - 1] : today();
+        if (P().selected !== 'all') return P().selected;
+        return P().days.length ? P().days[P().days.length - 1] : today();
       }
-      function normalizeDays() {
-        var set = {};
-        (state.days || []).forEach(function (d) { if (d) set[d] = true; });
-        state.expenses.forEach(function (e) {
-          /* 老数据没记币种时，一律按人民币认，绝不跟着"结算货币"漂移 */
-          if (!e.currency) e.currency = 'CNY';
-          if (!e.date) e.date = currentDay();
-          set[e.date] = true;
-        });
-        state.days = Object.keys(set).sort();
-        if (!state.days.length) state.days = [today()];
-        if (state.selected !== 'all' && state.days.indexOf(state.selected) === -1) state.selected = 'all';
-        if (!state.base) state.base = 'CNY';
-        if (state.mode !== 'cn' && state.mode !== 'abroad') {
-          var hasForeign = state.expenses.some(function (e) { return e.currency && e.currency !== 'CNY'; });
-          state.mode = hasForeign ? 'abroad' : 'cn';
-        }
+      /* 全量归一化：修复缺字段、保证"各付款人金额合计 = 这笔金额" */
+      function normalizeAll() {
+        if (!state.share) state.share = { roomId: '', code: '', syncedAt: 0, rev: 0 };
         if (!state.view) state.view = 'record';
-        if (!state.manualRates) state.manualRates = {};
+        if (!state.projects || !state.projects.length) {
+          var fresh = newProject('我的行程');
+          state.projects = [fresh];
+          state.activeId = fresh.id;
+        }
+        state.projects.forEach(function (pr) {
+          if (!pr.people || !pr.people.length) pr.people = [{ id: nid('p'), name: '我' }];
+          if (!pr.expenses) pr.expenses = [];
+          if (!pr.base) pr.base = 'CNY';
+          if (!pr.manualRates) pr.manualRates = {};
+          if (pr.mode !== 'cn' && pr.mode !== 'abroad') {
+            pr.mode = pr.expenses.some(function (e) { return e.currency && e.currency !== 'CNY'; }) ? 'abroad' : 'cn';
+          }
+          var set = {};
+          (pr.days || []).forEach(function (d) { if (d) set[d] = true; });
+          pr.expenses.forEach(function (e) {
+            if (!e.currency) e.currency = 'CNY';
+            if (!e.date) e.date = (pr.days && pr.days[0]) || today();
+            set[e.date] = true;
+            var amt = Number(e.amount) || 0;
+            if (!e.payers || !e.payers.length) {
+              e.payers = [{ id: e.payer || (pr.people[0] && pr.people[0].id), amount: amt }];
+            }
+            e.payers = e.payers.filter(function (x) { return x && x.id; });
+            if (!e.payers.length) e.payers = [{ id: pr.people[0].id, amount: amt }];
+            var sum = e.payers.reduce(function (s, x) { return s + (Number(x.amount) || 0); }, 0);
+            if (Math.abs(sum - amt) > 0.005) {
+              e.payers[0].amount = Math.round(((Number(e.payers[0].amount) || 0) + (amt - sum)) * 100) / 100;
+            }
+            e.payer = e.payers[0].id;
+          });
+          pr.days = Object.keys(set).sort();
+          if (!pr.days.length) pr.days = [today()];
+          if (pr.selected !== 'all' && pr.days.indexOf(pr.selected) === -1) pr.selected = 'all';
+        });
       }
       function save() {
         try {
+          stampItems(P());
           window.localStorage.setItem(KEY_V5, JSON.stringify(state));
           var d = new Date();
           els.saveState.textContent = '已保存 · ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') + ' · 退出再打开还在。';
+          scheduleSharePush();
         } catch (e) { /* 隐私模式忽略 */ }
       }
-      function migrate(old) {
-        if (!old || !old.people || !old.people.length || !old.expenses) return null;
+      /* 老版本（平铺结构）→ 一个项目 */
+      function migrateProject(old) {
         var set = {};
-        old.expenses.forEach(function (e) { if (e.date) set[e.date] = true; });
+        (old.expenses || []).forEach(function (e) { if (e.date) set[e.date] = true; });
         var days = Object.keys(set).sort();
         if (!days.length) days = [today()];
+        var people = (old.people && old.people.length) ? old.people : [{ id: nid('p'), name: '我' }];
         return {
-          people: old.people,
+          id: nid('t'),
+          name: '我的行程',
+          createdAt: Date.now(),
+          people: people,
           days: days,
-          selected: 'all',
+          selected: old.selected || 'all',
           base: old.base || 'CNY',
+          mode: old.mode,
           manualRates: old.manualRates || {},
-          expenses: old.expenses.map(function (e) {
+          expenses: (old.expenses || []).map(function (e) {
+            var amt = Number(e.amount) || 0;
             return {
-              id: e.id,
+              id: e.id || nid('e'),
               title: e.title,
               amount: e.amount,
               currency: e.currency || 'CNY',
               category: e.category || guessCategory(String(e.title || '')),
               date: e.date || days[0],
               payer: e.payer,
+              payers: e.payers || [{ id: e.payer || (people[0] && people[0].id), amount: amt }],
               shares: e.shares || null
             };
           })
@@ -920,16 +1158,27 @@
         try {
           var raw = window.localStorage.getItem(KEY_V5) || window.localStorage.getItem(KEY_V4) || window.localStorage.getItem(KEY_V3);
           if (raw) {
-            var data = migrate(JSON.parse(raw));
-            if (data) {
+            var data = JSON.parse(raw);
+            if (data && data.v === 2 && data.projects && data.projects.length) {
               state = data;
-              var maxId = 100;
-              state.people.concat(state.expenses).forEach(function (item) {
-                var n = parseInt(String(item.id).replace(/[^0-9]/g, ''), 10);
+            } else if (data && (data.people || data.expenses)) {
+              var pr = migrateProject(data);
+              state = {
+                v: 2,
+                projects: [pr],
+                activeId: pr.id,
+                view: data.view || 'record',
+                share: { roomId: '', code: '', syncedAt: 0, rev: 0 }
+              };
+            }
+            var maxId = 100;
+            (state.projects || []).forEach(function (item) {
+              (item.people || []).concat(item.expenses || []).forEach(function (x) {
+                var n = parseInt(String(x.id).replace(/[^0-9]/g, ''), 10);
                 if (!isNaN(n) && n > maxId) maxId = n;
               });
-              seq = maxId;
-            }
+            });
+            seq = maxId;
           }
           var cached = JSON.parse(window.localStorage.getItem(KEY_RATE) || 'null');
           if (cached && cached.toCNY) {
@@ -937,7 +1186,7 @@
             rateSource = 'cache';
           }
         } catch (e) { /* 用示例数据 */ }
-        normalizeDays();
+        normalizeAll();
       }
       function toast(msg, actionLabel, actionFn) {
         els.toast.innerHTML = '';
@@ -1007,8 +1256,8 @@
 
       /* ---------- 汇率 ---------- */
       function rateStatusText() {
-        var manual = state.manualRates && Object.keys(state.manualRates).length;
-        if (manual) return '手动汇率 · ' + Object.keys(state.manualRates).length + ' 种外币';
+        var manual = P().manualRates && Object.keys(P().manualRates).length;
+        if (manual) return '手动汇率 · ' + Object.keys(P().manualRates).length + ' 种外币';
         if (rateSource === 'builtin') return '离线参考汇率（点刷新联网更新）';
         return '汇率 ' + (rateCache.date ? shortDate(rateCache.date) : '最近') +
           (rateCache.fetchedAt && Date.now() - rateCache.fetchedAt < 86400000 ? ' · 已更新' : ' · 来自缓存');
@@ -1066,7 +1315,7 @@
 
       function rateLines() {
         var codes = {};
-        state.expenses.forEach(function (e) {
+        P().expenses.forEach(function (e) {
           var c = e.currency || base();
           if (c && c !== 'CNY') codes[c] = true;
         });
@@ -1079,7 +1328,7 @@
           return;
         }
         els.rateList.innerHTML = lines.map(function (code) {
-          var v = state.manualRates[code] || rateCache.toCNY[code] || FALLBACK_TO_CNY[code] || 1;
+          var v = P().manualRates[code] || rateCache.toCNY[code] || FALLBACK_TO_CNY[code] || 1;
           return '<div class="rate-item"><span>1 ' + code + ' =</span>' +
             '<input type="number" step="0.0001" min="0" inputmode="decimal" data-rate="' + code + '" value="' + Number(v.toFixed(4)) + '" aria-label="' + code + ' 汇率" /></div>';
         }).join('');
@@ -1088,14 +1337,34 @@
       /* ---------- 计算 ---------- */
       function compute() {
         var paid = {}, share = {}, total = 0, smooth = false;
-        state.people.forEach(function (p) { paid[p.id] = 0; share[p.id] = 0; });
-        var ids = state.people.map(function (p) { return p.id; });
+        P().people.forEach(function (p) { paid[p.id] = 0; share[p.id] = 0; });
+        var ids = P().people.map(function (p) { return p.id; });
 
-        state.expenses.forEach(function (e) {
+        P().expenses.forEach(function (e) {
           var cents = baseCentsOf(e);
-          if (ids.indexOf(e.payer) === -1) e.payer = ids[0];
-          paid[e.payer] += cents;
           total += cents;
+
+          /* 多付款人：按各自垫付金额的占比拆分这笔的结算金额，合计与这笔金额一致 */
+          var payers = (e.payers && e.payers.length ? e.payers : [{ id: e.payer, amount: Number(e.amount) || 0 }])
+            .filter(function (x) { return x && x.id; });
+          if (!payers.length) payers = [{ id: ids[0], amount: Number(e.amount) || 0 }];
+          var totalPay = payers.reduce(function (s, x) { return s + (Number(x.amount) || 0); }, 0);
+          var mainPayer = payers.slice().sort(function (a, b) {
+            return (Number(b.amount) || 0) - (Number(a.amount) || 0);
+          })[0].id;
+          if (ids.indexOf(mainPayer) === -1) mainPayer = ids[0];
+          var assigned = 0;
+          payers.forEach(function (x, i) {
+            var id = ids.indexOf(x.id) === -1 ? ids[0] : x.id;
+            var portion = (i === payers.length - 1)
+              ? (cents - assigned)
+              : Math.round(cents * (totalPay ? ((Number(x.amount) || 0) / totalPay) : (1 / payers.length)));
+            if (portion < 0) portion = 0;
+            assigned += portion;
+            paid[id] += portion;
+          });
+          e.payer = mainPayer;
+
           var who = e.shares ? e.shares.filter(function (id) { return ids.indexOf(id) !== -1; }) : ids.slice();
           if (!who.length) who = ids.slice();
           var ordered = who.slice();
@@ -1116,7 +1385,7 @@
           }
         });
 
-        var rows = state.people.map(function (p) {
+        var rows = P().people.map(function (p) {
           return { id: p.id, name: p.name, pay: share[p.id], paid: paid[p.id], diff: paid[p.id] - share[p.id] };
         });
         return { total: total, rows: rows, transfers: settle(rows), smooth: smooth };
@@ -1143,7 +1412,7 @@
       }
 
       function dateRange() {
-        var days = state.days.slice().sort();
+        var days = P().days.slice().sort();
         if (!days.length) return shortDate(today());
         if (days.length === 1) return shortDate(days[0]);
         return shortDate(days[0]) + '–' + shortDate(days[days.length - 1]);
@@ -1151,7 +1420,7 @@
       function rateFootnote() {
         var codes = rateLines();
         if (!codes.length) return '';
-        var manual = state.manualRates && Object.keys(state.manualRates).length;
+        var manual = P().manualRates && Object.keys(P().manualRates).length;
         var head = manual ? '手动汇率' : (rateSource === 'builtin' ? '参考汇率' : '汇率 ' + (rateCache.date ? shortDate(rateCache.date) : ''));
         var list = codes.slice(0, 3).map(function (c) { return '1 ' + c + '≈' + Number(toCNY(c).toFixed(4)) + ' CNY'; });
         return head + ' · ' + list.join(' · ') + (codes.length > 3 ? ' 等' : '');
@@ -1165,15 +1434,15 @@
       }
 
       function renderDays() {
-        var all = state.expenses.reduce(function (s, e) { return s + baseCentsOf(e); }, 0);
-        var html = '<div class="day-wrap' + (state.selected === 'all' ? ' is-active' : '') + '">' +
-          '<button type="button" class="day' + (state.selected === 'all' ? ' is-active' : '') + '" data-day="all" aria-pressed="' +
-          (state.selected === 'all' ? 'true' : 'false') + '">' +
-          '<span class="day-top">全部</span><span class="day-week">' + state.days.length + ' 天</span>' +
+        var all = P().expenses.reduce(function (s, e) { return s + baseCentsOf(e); }, 0);
+        var html = '<div class="day-wrap' + (P().selected === 'all' ? ' is-active' : '') + '">' +
+          '<button type="button" class="day' + (P().selected === 'all' ? ' is-active' : '') + '" data-day="all" aria-pressed="' +
+          (P().selected === 'all' ? 'true' : 'false') + '">' +
+          '<span class="day-top">全部</span><span class="day-week">' + P().days.length + ' 天</span>' +
           '<span class="day-sum">' + fmt(all, base()) + '</span></button></div>';
 
-        html += state.days.map(function (d) {
-          var active = state.selected === d;
+        html += P().days.map(function (d) {
+          var active = P().selected === d;
           return '<div class="day-wrap' + (active ? ' is-active' : '') + '">' +
             '<button type="button" class="day' + (active ? ' is-active' : '') + '" data-day="' + d + '" aria-pressed="' +
             (active ? 'true' : 'false') + '">' +
@@ -1184,12 +1453,12 @@
         }).join('');
 
         html += '<label class="day-add">+ 加一天<input type="date" id="dayPicker" value="' +
-          addDays(state.days[state.days.length - 1] || today(), 1) + '" aria-label="选择日期" /></label>';
+          addDays(P().days[P().days.length - 1] || today(), 1) + '" aria-label="选择日期" /></label>';
         els.dayStrip.innerHTML = html;
       }
 
       function renderPeople() {
-        els.people.innerHTML = state.people.map(function (p) {
+        els.people.innerHTML = P().people.map(function (p) {
           return '<div class="person">' +
             '<input type="text" class="p-name" data-person="' + p.id + '" value="' + esc(p.name) + '" aria-label="成员名字" />' +
             '<button type="button" class="x" data-del-person="' + p.id + '" aria-label="删除成员">×</button>' +
@@ -1209,59 +1478,46 @@
         animateId = null;
         if (!list.length) {
           els.expenses.innerHTML = '<div class="empty">' +
-            (state.selected === 'all' ? '还没有支出' : shortDate(state.selected) + ' 还没记账') +
-            '<br />点右上角「+ 记一笔」，或用「粘贴文字」自动填</div>';
+            (P().selected === 'all' ? '还没有支出' : shortDate(P().selected) + ' 还没记账') +
+            '<br />点右上角「+ 记一笔」开始记</div>';
           return;
         }
         els.expenses.innerHTML = list.map(function (e) {
-          var abroad = state.mode === 'abroad';
+          var abroad = P().mode === 'abroad';
           var code = abroad ? (e.currency || 'CNY') : 'CNY';
-          var opts = state.people.map(function (p) {
-            return '<option value="' + p.id + '"' + (p.id === e.payer ? ' selected' : '') + '>' + esc(p.name) + ' 垫付</option>';
-          }).join('');
-          /* 分类收成一个下拉：6 个胶囊平铺会把卡片顶高、稀释重点 */
-          var catField = '<select class="e-cat chip-select" aria-label="分类">' + CATEGORIES.map(function (c) {
-            var on = (e.category || 'other') === c.key;
-            return '<option value="' + c.key + '"' + (on ? ' selected' : '') + '>' + c.label + '</option>';
-          }).join('') + '</select>';
-          var chips = state.people.map(function (p) {
-            var on = !e.shares || e.shares.indexOf(p.id) !== -1;
-            return '<button type="button" class="chip' + (on ? ' is-on' : '') + '" data-pid="' + p.id + '" aria-pressed="' +
-              (on ? 'true' : 'false') + '">' + esc(p.name) + '</button>';
-          }).join('');
-          var conv = (abroad && code !== base())
-            ? '<div class="conv">折合 <b>' + fmt(baseCentsOf(e), base()) + '</b> · 原币 ' + fmt(Math.round((Number(e.amount) || 0) * 100), code) + '（' + code + '）</div>'
-            : '';
-          var curField = abroad
-            ? '<select class="e-cur" aria-label="这笔的货币">' + currencyOptions(code) + '</select>'
-            : '';
+          var n = e.shares ? e.shares.filter(function (id) { return personById(id); }).length : P().people.length;
+          if (!n) n = P().people.length;
+          var meta = shortDate(e.date) + ' · ' + payerText(e) + ' · ' + n + ' 人分';
+          if (abroad && code !== base()) meta += ' · 折合 ' + fmt(baseCentsOf(e), base());
+          var tags = '<span class="tag">' + cat(e.category).label + '</span>';
+          if (abroad) tags += '<span class="tag is-accent">' + esc(code) + '</span>';
+          if ((e.payers || []).length > 1) tags += '<span class="tag is-accent">' + e.payers.length + ' 人垫付</span>';
           return '<div class="ex' + (e.id === newId ? ' is-new' : '') + '" data-expense="' + e.id + '">' +
-            '<div class="ex-top">' +
-              '<input type="text" class="e-title" value="' + esc(e.title) + '" aria-label="支出项目" />' +
-              '<div class="amt-wrap"><span class="amt-code">' + (abroad ? esc(code) : '¥') + '</span>' +
-                '<input type="number" class="e-amount" min="0" step="10" inputmode="decimal" value="' + (Number(e.amount) || 0) + '" aria-label="金额" /></div>' +
-              '<button type="button" class="x" data-del-expense="' + e.id + '" aria-label="删除这笔">×</button>' +
-            '</div>' +
-            '<div class="ex-mid' + (abroad ? ' four' : '') + '">' +
-              catField +
-              '<label class="date-chip">' + shortDate(e.date) +
-                '<input type="date" class="e-date" value="' + esc(e.date || today()) + '" aria-label="日期" /></label>' +
-              curField +
-              '<select class="e-payer" aria-label="谁垫付了这笔">' + opts + '</select>' +
-            '</div>' + conv +
-            '<div class="shares"><span class="shares-label">分摊给</span>' + chips +
-              '<span class="mini-group">' +
-                '<button type="button" class="mini" data-copy-expense="' + e.id + '">复制一笔</button>' +
-              '</span></div>' +
+            '<button type="button" class="ex-main" data-edit-expense="' + e.id + '" aria-label="修改' + esc(e.title) + '">' +
+              '<span class="ex-info">' +
+                '<span class="ex-name">' + esc(e.title || '未命名支出') + '</span>' +
+                '<span class="ex-meta">' + esc(meta) + '</span>' +
+              '</span>' +
+              '<span class="ex-amt">' + fmt(Math.round((Number(e.amount) || 0) * 100), abroad ? code : 'CNY') + '</span>' +
+              '<span class="ex-go" aria-hidden="true">›</span>' +
+            '</button>' +
+            '<div class="ex-tags">' + tags + '</div>' +
             '</div>';
         }).join('');
       }
 
+      function payerText(e) {
+        var ps = (e.payers && e.payers.length ? e.payers : [{ id: e.payer }]).filter(function (x) { return x && x.id; });
+        if (!ps.length) return '未记录垫付';
+        if (ps.length === 1) return nameOf(ps[0].id) + '垫付';
+        return nameOf(ps[0].id) + ' 等 ' + ps.length + ' 人垫付';
+      }
+
       function renderCard(res) {
-        var peopleCount = state.people.length || 1;
+        var peopleCount = P().people.length || 1;
         var detail = '';
-        state.days.forEach(function (d) {
-          var items = state.expenses.filter(function (e) { return e.date === d; });
+        P().days.forEach(function (d) {
+          var items = P().expenses.filter(function (e) { return e.date === d; });
           if (!items.length) return;
           detail += '<div class="card-day"><span>' + shortDate(d) + ' ' + weekOf(d) + '</span><span>' + fmt(dayTotal(d), base()) + '</span></div>';
           detail += items.map(function (e) {
@@ -1269,7 +1525,7 @@
             var n = e.shares ? e.shares.filter(function (id) { return personById(id); }).length : peopleCount;
             if (!n) n = peopleCount;
             var amount = '<div class="card-item-amt">' + fmt(baseCentsOf(e), base()) +
-              (state.mode === 'abroad' && isForeign(e)
+              (P().mode === 'abroad' && isForeign(e)
                 ? '<em>' + fmt(Math.round((Number(e.amount) || 0) * 100), e.currency) + '</em>' : '') + '</div>';
             return '<div class="card-item">' +
               '<div><div class="card-item-name">' + esc(e.title || '未命名支出') + '</div>' +
@@ -1292,17 +1548,17 @@
             }).join('')
           : '<div class="card-line"><span>大家出的钱刚好平了</span><span class="amt">不用转</span></div>';
 
-        var note = state.mode === 'abroad' ? rateFootnote() : '';
+        var note = P().mode === 'abroad' ? rateFootnote() : '';
         els.card.innerHTML =
           '<div class="card-hero">' +
             '<div class="card-brand">赛肯德工具箱</div>' +
             '<div class="card-title">旅行 AA 结算</div>' +
             '<div class="card-total">' + fmt(res.total, base()) + '</div>' +
-            '<div class="card-meta">' + esc(dateRange()) + ' · ' + peopleCount + ' 人 · ' + state.expenses.length + ' 笔</div>' +
+            '<div class="card-meta">' + esc(dateRange()) + ' · ' + peopleCount + ' 人 · ' + P().expenses.length + ' 笔</div>' +
           '</div>' +
           '<div class="card-body">' +
             '<div class="card-sec">支出明细</div>' + detail +
-            '<div class="card-sec">每人结果' + (state.mode === 'abroad' ? '（' + esc(cur(base()).name) + '）' : '') + '</div>' + lines +
+            '<div class="card-sec">每人结果' + (P().mode === 'abroad' ? '（' + esc(cur(base()).name) + '）' : '') + '</div>' + lines +
             '<div class="card-sec">' + (res.transfers.length ? '转账方案 · ' + res.transfers.length + ' 笔结清' : '转账方案 · 已结清') + '</div>' + transfers +
             (note ? '<div class="card-item-note" style="margin-top:3px">' + esc(note) + '</div>' : '') +
           '</div>' +
@@ -1311,15 +1567,16 @@
 
       function render() {
         var res = compute();
-        var peopleCount = state.people.length || 1;
+        var peopleCount = P().people.length || 1;
 
         setTotal(res.total);
-        els.heroLabel.textContent = state.mode === 'abroad'
+        els.projName.textContent = P().name;
+        els.heroLabel.textContent = P().mode === 'abroad'
           ? '本次总支出（' + cur(base()).name + '）'
           : '本次总支出';
         var perHead = Math.round(res.total / peopleCount / 100) * 100;
-        els.heroSub.textContent = state.days.length + ' 天 · ' + peopleCount + ' 人 · ' +
-          state.expenses.length + ' 笔 · 人均约 ' + fmt(perHead, base()) + ' · ' + dateRange();
+        els.heroSub.textContent = P().days.length + ' 天 · ' + peopleCount + ' 人 · ' +
+          P().expenses.length + ' 笔 · 人均约 ' + fmt(perHead, base()) + ' · ' + dateRange();
         els.roundNote.textContent = res.smooth ? '零头已抹平，最多差 1 元' : '';
 
         els.rows.innerHTML = res.rows.map(function (r) {
@@ -1343,9 +1600,9 @@
           : '<div class="none">大家出的钱刚好平了，不用转账</div>';
         els.count.textContent = res.transfers.length ? res.transfers.length + ' 笔' : '';
 
-        els.rateCard.hidden = state.mode === 'cn';
-        var foreign = state.expenses.filter(function (e) { return e.currency && e.currency !== 'CNY'; });
-        if (state.mode === 'cn' && foreign.length) {
+        els.rateCard.hidden = P().mode === 'cn';
+        var foreign = P().expenses.filter(function (e) { return e.currency && e.currency !== 'CNY'; });
+        if (P().mode === 'cn' && foreign.length) {
           els.foreignText.textContent = '有 ' + foreign.length + ' 笔是外币，需要按汇率折算';
           els.foreignBanner.hidden = false;
         } else {
@@ -1353,6 +1610,8 @@
         }
 
         renderCard(res);
+        renderStats();
+        renderShare();
         renderRateStatus();
         save();
       }
@@ -1360,9 +1619,9 @@
       function summaryText() {
         var res = compute();
         var lines = res.transfers.map(function (t) { return t.from + ' → ' + t.to + ' ' + fmt(t.amount, base()); });
-        var note = state.mode === 'abroad' ? rateFootnote() : '';
-        return '本次 ' + (state.people.length || 1) + ' 人（' + dateRange() + '）共花 ' + fmt(res.total, base()) +
-          (state.mode === 'abroad' ? '，按' + cur(base()).name + '结算。' : '。') +
+        var note = P().mode === 'abroad' ? rateFootnote() : '';
+        return '本次 ' + (P().people.length || 1) + ' 人（' + dateRange() + '）共花 ' + fmt(res.total, base()) +
+          (P().mode === 'abroad' ? '，按' + cur(base()).name + '结算。' : '。') +
           (lines.length
             ? '转账：' + lines.join('；') + '。麻烦大家按这个转一下，有问题随时说～'
             : '大家出的钱刚好平了，不用转账。') +
@@ -1397,7 +1656,7 @@
         var e = expenseById(holder.getAttribute('data-expense'));
         if (!e) return;
         var pid = chip.getAttribute('data-pid');
-        var all = state.people.map(function (p) { return p.id; });
+        var all = P().people.map(function (p) { return p.id; });
         var current = e.shares ? e.shares.slice() : all.slice();
         var at = current.indexOf(pid);
         if (at === -1) current.push(pid); else current.splice(at, 1);
@@ -1430,8 +1689,145 @@
         });
       }
 
+      /* ───────── 记账弹层（点 + 记一笔 / 点某一笔修改）───────── */
+      var draft = null;
+
+      function editTotal() {
+        return Math.max(0, Number(String((draft && draft.amount) || '').replace(/[^\d.]/g, '')) || 0);
+      }
+      function payerRemainder() {
+        var total = editTotal();
+        var payers = draft.payers || [];
+        var sum = 0;
+        for (var i = 0; i < payers.length - 1; i++) sum += Number(payers[i].amount) || 0;
+        return Math.round((total - sum) * 100) / 100;
+      }
+      function openEdit(id) {
+        var pr = P();
+        if (id) {
+          var e = expenseById(id);
+          if (!e) return;
+          draft = JSON.parse(JSON.stringify(e));
+          draft.isNew = false;
+          if (!draft.payers || !draft.payers.length) {
+            draft.payers = [{ id: draft.payer || pr.people[0].id, amount: Number(draft.amount) || 0 }];
+          }
+        } else {
+          draft = {
+            id: nid('e'),
+            title: '',
+            amount: '',
+            currency: pr.base || 'CNY',
+            category: 'other',
+            date: (pr.selected !== 'all' ? pr.selected : (pr.days[pr.days.length - 1] || today())),
+            shares: null,
+            payers: [{ id: pr.people[0].id, amount: '' }],
+            isNew: true
+          };
+        }
+        renderEdit();
+        els.editSheet.hidden = false;
+        document.body.style.overflow = 'hidden';
+      }
+      function closeEdit() {
+        els.editSheet.hidden = true;
+        document.body.style.overflow = '';
+        draft = null;
+      }
+      function renderEdit() {
+        var pr = P();
+        var abroad = pr.mode === 'abroad';
+        els.editHead.textContent = draft.isNew ? '记一笔' : '修改这一笔';
+        els.editAmount.value = (draft.amount === '' || draft.amount === null || draft.amount === undefined) ? '' : draft.amount;
+        els.editName.value = draft.title || '';
+        els.editDate.value = draft.date || today();
+        els.editCat.innerHTML = CATEGORIES.map(function (c) {
+          return '<option value="' + c.key + '"' + ((draft.category || 'other') === c.key ? ' selected' : '') + '>' + c.label + '</option>';
+        }).join('');
+        els.editCurrency.innerHTML = currencyOptions(draft.currency || pr.base || 'CNY');
+        els.editCurField.hidden = !abroad;
+        els.editCur.textContent = abroad ? cur(draft.currency || pr.base).code : '¥';
+        els.editPayers.innerHTML = pr.people.map(function (p) {
+          var on = (draft.payers || []).some(function (x) { return x.id === p.id; });
+          return '<button type="button" class="chip' + (on ? ' is-on' : '') + '" data-payer="' + p.id + '" aria-pressed="' + (on ? 'true' : 'false') + '">' + esc(p.name) + '</button>';
+        }).join('');
+        renderPayerAmounts();
+        els.editShares.innerHTML = pr.people.map(function (p) {
+          var on = !draft.shares || draft.shares.indexOf(p.id) !== -1;
+          return '<button type="button" class="chip' + (on ? ' is-on' : '') + '" data-share="' + p.id + '" aria-pressed="' + (on ? 'true' : 'false') + '">' + esc(p.name) + '</button>';
+        }).join('');
+        els.editDelete.hidden = draft.isNew;
+        els.editCopy.hidden = draft.isNew;
+      }
+      function renderPayerAmounts() {
+        var payers = draft.payers || [];
+        if (payers.length < 2) { els.editPayerAmounts.innerHTML = ''; return; }
+        var rest = payerRemainder();
+        els.editPayerAmounts.innerHTML = payers.map(function (x, i) {
+          var last = (i === payers.length - 1);
+          var val = last ? (rest > 0 ? rest : 0) : (Number(x.amount) || 0);
+          return '<div class="pa-row"><span>' + esc(nameOf(x.id)) + (last ? '（差额自动）' : '') + '</span>' +
+            (last
+              ? '<span class="pa-last num">' + val + '</span>'
+              : '<input type="number" min="0" step="0.01" inputmode="decimal" data-payidx="' + i + '" value="' + val + '" aria-label="' + esc(nameOf(x.id)) + '垫付金额" />') +
+            '</div>';
+        }).join('');
+      }
+      function saveEdit() {
+        var pr = P();
+        var isNew = draft.isNew;
+        var total = editTotal();
+        if (!total) { toast('先填金额'); els.editAmount.focus(); return; }
+        var payers = (draft.payers || []).filter(function (x) { return x && x.id; });
+        if (!payers.length) payers = [{ id: pr.people[0].id, amount: total }];
+        if (payers.length === 1) payers[0].amount = total;
+        else payers[payers.length - 1].amount = Math.max(0, payerRemainder());
+        var shares = draft.shares && draft.shares.length && draft.shares.length < pr.people.length ? draft.shares : null;
+        var obj = {
+          id: draft.id,
+          title: (els.editName.value || '').trim() || '未命名支出',
+          amount: total,
+          currency: (pr.mode === 'abroad') ? (draft.currency || pr.base || 'CNY') : 'CNY',
+          category: draft.category || 'other',
+          date: els.editDate.value || draft.date || today(),
+          payer: payers[0].id,
+          payers: payers,
+          shares: shares
+        };
+        var idx = -1;
+        for (var i = 0; i < pr.expenses.length; i++) { if (pr.expenses[i].id === obj.id) idx = i; }
+        if (idx >= 0) pr.expenses[idx] = obj; else pr.expenses.push(obj);
+        if (pr.days.indexOf(obj.date) === -1) { pr.days.push(obj.date); pr.days.sort(); }
+        animateId = obj.id;
+        closeEdit();
+        renderAll();
+        toast(isNew ? '已记一笔' : '已修改');
+      }
+      function copyEdit() {
+        if (!draft || draft.isNew) return;
+        var pr = P();
+        var copy = JSON.parse(JSON.stringify(draft));
+        copy.id = nid('e');
+        copy.isNew = false;
+        pr.expenses.push(copy);
+        animateId = copy.id;
+        closeEdit();
+        renderAll();
+        toast('已复制这一笔，改改就行');
+      }
+      function deleteEdit() {
+        if (!draft || draft.isNew) return;
+        var pr = P();
+        var snap = snapshot();
+        var id = draft.id;
+        pr.expenses = pr.expenses.filter(function (e) { return e.id !== id; });
+        closeEdit();
+        renderAll();
+        toast('已删除', '撤销', function () { undo(snap, '已恢复'); });
+      }
+
       function renderAll() {
-        normalizeDays();
+        normalizeAll();
         renderDays();
         renderPeople();
         renderExpenses();
@@ -1443,7 +1839,7 @@
         return '<option value="' + c.code + '">' + c.code + ' · ' + c.name + '</option>';
       }).join('');
       els.baseCur.addEventListener('change', function () {
-        state.base = els.baseCur.value;
+        P().base = els.baseCur.value;
         renderAll();
         var s = rateSentence();
         toast('已按' + cur(base()).name + '结算' + (s ? ' · ' + s : ''));
@@ -1454,20 +1850,20 @@
         var del = ev.target.closest('[data-del-day]');
         if (del) {
           var day = del.getAttribute('data-del-day');
-          var n = state.expenses.filter(function (e) { return e.date === day; }).length;
+          var n = P().expenses.filter(function (e) { return e.date === day; }).length;
           var msg = n ? '删除 ' + shortDate(day) + ' 和这天的 ' + n + ' 笔支出？' : '删除 ' + shortDate(day) + '？';
           if (!window.confirm(msg)) return;
           var snap = snapshot();
-          state.expenses = state.expenses.filter(function (e) { return e.date !== day; });
-          state.days = state.days.filter(function (d) { return d !== day; });
-          if (state.selected === day) state.selected = 'all';
+          P().expenses = P().expenses.filter(function (e) { return e.date !== day; });
+          P().days = P().days.filter(function (d) { return d !== day; });
+          if (P().selected === day) P().selected = 'all';
           renderAll();
           toast('已删除 ' + shortDate(day), '撤销', function () { undo(snap, '已恢复那天'); });
           return;
         }
         var btn = ev.target.closest('[data-day]');
         if (!btn) return;
-        state.selected = btn.getAttribute('data-day');
+        P().selected = btn.getAttribute('data-day');
         renderDays();
         renderExpenses();
         pulse(els.expenses, 'fade');
@@ -1477,9 +1873,9 @@
         if (ev.target.id !== 'dayPicker') return;
         var day = ev.target.value;
         if (!day) return;
-        if (state.days.indexOf(day) === -1) state.days.push(day);
-        state.days.sort();
-        state.selected = day;
+        if (P().days.indexOf(day) === -1) P().days.push(day);
+        P().days.sort();
+        P().selected = day;
         renderAll();
         toast('已选中 ' + shortDate(day));
       });
@@ -1492,13 +1888,13 @@
       els.people.addEventListener('click', function (ev) {
         var btn = ev.target.closest('[data-del-person]');
         if (!btn) return;
-        if (state.people.length <= 1) { toast('至少要留一个人'); return; }
+        if (P().people.length <= 1) { toast('至少要留一个人'); return; }
         var id = btn.getAttribute('data-del-person');
         var snap = snapshot();
         var gone = nameOf(id);
-        state.people = state.people.filter(function (p) { return p.id !== id; });
-        state.expenses.forEach(function (e) {
-          if (e.payer === id) e.payer = state.people[0].id;
+        P().people = P().people.filter(function (p) { return p.id !== id; });
+        P().expenses.forEach(function (e) {
+          if (e.payer === id) e.payer = P().people[0].id;
           if (e.shares) {
             e.shares = e.shares.filter(function (x) { return x !== id; });
             if (!e.shares.length) e.shares = null;
@@ -1508,73 +1904,474 @@
         toast('已移除 ' + gone, '撤销', function () { undo(snap, '已恢复' + gone); });
       });
 
-      els.expenses.addEventListener('input', function (ev) {
-        var holder = ev.target.closest('[data-expense]');
-        if (!holder) return;
-        var e = expenseById(holder.getAttribute('data-expense'));
-        if (!e) return;
-        if (ev.target.classList.contains('e-title')) e.title = ev.target.value;
-        if (ev.target.classList.contains('e-amount')) e.amount = ev.target.value;
-        if (ev.target.classList.contains('e-date')) {
-          e.date = ev.target.value || e.date;
-          if (state.days.indexOf(e.date) === -1) { state.days.push(e.date); state.days.sort(); }
-          renderDays();
-        }
-        render();
-      });
-      els.expenses.addEventListener('change', function (ev) {
-        var holder = ev.target.closest('[data-expense]');
-        if (!holder) return;
-        var e = expenseById(holder.getAttribute('data-expense'));
-        if (!e) return;
-        if (ev.target.classList.contains('e-payer')) { e.payer = ev.target.value; render(); }
-        if (ev.target.classList.contains('e-cat')) { e.category = ev.target.value; render(); }
-        if (ev.target.classList.contains('e-cur')) {
-          e.currency = ev.target.value;
-          renderExpenses();
-          render();
-          toast('这笔已标为' + cur(e.currency).name + '，金额数字保留，折算按汇率算');
-        }
-        if (ev.target.classList.contains('e-date')) { renderExpenses(); render(); }
-      });
       els.expenses.addEventListener('click', function (ev) {
-        var holder = ev.target.closest('[data-expense]');
-        var chip = ev.target.closest('[data-pid]');
-        if (chip && holder) { toggleShareChip(chip); return; }
-        var copyBtn = ev.target.closest('[data-copy-expense]');
-        if (copyBtn) {
-          var src = expenseById(copyBtn.getAttribute('data-copy-expense'));
-          if (src) {
-            var copy = JSON.parse(JSON.stringify(src));
-            copy.id = nid('e');
-            var at = state.expenses.indexOf(src);
-            state.expenses.splice(at + 1, 0, copy);
-            animateId = copy.id;
-            renderAll();
-            toast('已复制这一笔，改金额就行');
-          }
+        var edit = ev.target.closest('[data-edit-expense]');
+        if (!edit) return;
+        openEdit(edit.getAttribute('data-edit-expense'));
+      });
+
+      /* 记账弹层交互 */
+      els.editClose.addEventListener('click', closeEdit);
+      els.editSave.addEventListener('click', saveEdit);
+      els.editCopy.addEventListener('click', copyEdit);
+      els.editDelete.addEventListener('click', deleteEdit);
+      els.editSheet.addEventListener('click', function (ev) { if (ev.target === els.editSheet) closeEdit(); });
+      els.editAmount.addEventListener('input', function () {
+        draft.amount = els.editAmount.value;
+        renderPayerAmounts();
+      });
+      els.editName.addEventListener('input', function () { draft.title = els.editName.value; });
+      els.editDate.addEventListener('change', function () { draft.date = els.editDate.value; });
+      els.editCat.addEventListener('change', function () { draft.category = els.editCat.value; });
+      els.editCurrency.addEventListener('change', function () {
+        draft.currency = els.editCurrency.value;
+        els.editCur.textContent = cur(draft.currency).code;
+      });
+      els.editPayers.addEventListener('click', function (ev) {
+        var chip = ev.target.closest('[data-payer]');
+        if (!chip) return;
+        var pid = chip.getAttribute('data-payer');
+        var payers = draft.payers || [];
+        var at = -1;
+        payers.forEach(function (x, i) { if (x.id === pid) at = i; });
+        if (at >= 0) {
+          if (payers.length === 1) { toast('至少留一个垫付人'); return; }
+          payers.splice(at, 1);
+        } else {
+          payers.push({ id: pid, amount: 0 });
+        }
+        draft.payers = payers;
+        renderEdit();
+      });
+      els.editPayerAmounts.addEventListener('input', function (ev) {
+        var input = ev.target.closest('[data-payidx]');
+        if (!input) return;
+        var i = Number(input.getAttribute('data-payidx'));
+        if (draft.payers[i]) draft.payers[i].amount = Number(input.value) || 0;
+        var last = els.editPayerAmounts.querySelector('.pa-last');
+        if (last) { var rest = payerRemainder(); last.textContent = (rest > 0 ? rest : 0); }
+      });
+      els.editShares.addEventListener('click', function (ev) {
+        var chip = ev.target.closest('[data-share]');
+        if (!chip) return;
+        var pr = P();
+        var pid = chip.getAttribute('data-share');
+        var all = pr.people.map(function (p) { return p.id; });
+        var picked = draft.shares ? draft.shares.slice() : all.slice();
+        var at = picked.indexOf(pid);
+        if (at >= 0) picked.splice(at, 1); else picked.push(pid);
+        if (!picked.length) picked = [pid];
+        draft.shares = picked.length === all.length ? null : all.filter(function (id) { return picked.indexOf(id) !== -1; });
+        renderEdit();
+      });
+
+      /* ───────── 行程（多项目）───────── */
+      function projectTotal(pr) {
+        var b = pr.mode === 'cn' ? 'CNY' : (pr.base || 'CNY');
+        var rate = toCNY(b) || 1;
+        return (pr.expenses || []).reduce(function (s, e) {
+          var cents = Math.max(0, Math.round((Number(e.amount) || 0) * 100));
+          return s + Math.max(0, Math.round((cents * (toCNY(e.currency || 'CNY') / rate)) / 100) * 100);
+        }, 0);
+      }
+      function renderProjects() {
+        els.projList.innerHTML = state.projects.map(function (pr) {
+          var days = (pr.days || []).slice().sort();
+          var range = days.length ? (days.length === 1 ? shortDate(days[0]) : shortDate(days[0]) + '–' + shortDate(days[days.length - 1])) : '—';
+          var active = pr.id === state.activeId;
+          return '<div class="proj-row' + (active ? ' is-active' : '') + '">' +
+            '<button type="button" class="ex-main" data-proj="' + pr.id + '">' +
+              '<span class="ex-info"><span class="pr-name">' + esc(pr.name) + '</span>' +
+              '<span class="pr-sub">' + range + ' · ' + (pr.expenses || []).length + ' 笔 · ' + (pr.people || []).length + ' 人</span></span>' +
+            '</button>' +
+            '<span class="pr-sum">' + fmt(projectTotal(pr), (pr.mode === 'cn' ? 'CNY' : (pr.base || 'CNY'))) + '</span>' +
+            (state.projects.length > 1
+              ? '<button type="button" class="x" data-delproj="' + pr.id + '" aria-label="删除行程">×</button>'
+              : '<span></span>') +
+            '</div>';
+        }).join('');
+      }
+      function openProjSheet() { renderProjects(); els.projSheet.hidden = false; document.body.style.overflow = 'hidden'; }
+      function closeProjSheet() { els.projSheet.hidden = true; document.body.style.overflow = ''; }
+      els.openProjects.addEventListener('click', openProjSheet);
+      els.projClose.addEventListener('click', closeProjSheet);
+      els.projSheet.addEventListener('click', function (ev) { if (ev.target === els.projSheet) closeProjSheet(); });
+      els.projList.addEventListener('click', function (ev) {
+        var del = ev.target.closest('[data-delproj]');
+        if (del) {
+          var id = del.getAttribute('data-delproj');
+          var target = null;
+          state.projects.forEach(function (x) { if (x.id === id) target = x; });
+          if (!target || state.projects.length <= 1) return;
+          if (!window.confirm('删除行程「' + target.name + '」和里面的 ' + (target.expenses || []).length + ' 笔账？')) return;
+          var snap = snapshot();
+          state.projects = state.projects.filter(function (x) { return x.id !== id; });
+          if (state.activeId === id) state.activeId = state.projects[0].id;
+          renderAll(); renderProjects(); closeProjSheet();
+          toast('已删除行程', '撤销', function () { undo(snap, '已恢复行程'); });
           return;
         }
-        var del = ev.target.closest('[data-del-expense]');
-        if (del) {
-          var target = expenseById(del.getAttribute('data-del-expense'));
-          var snap = snapshot();
-          state.expenses = state.expenses.filter(function (e) { return e.id !== del.getAttribute('data-del-expense'); });
-          renderAll();
-          toast('已删除「' + (target ? target.title : '这笔') + '」', '撤销', function () { undo(snap, '已恢复'); });
+        var pick = ev.target.closest('[data-proj]');
+        if (!pick) return;
+        state.activeId = pick.getAttribute('data-proj');
+        normalizeAll();
+        closeProjSheet();
+        showView('record');
+        renderAll();
+        toast('已切到「' + P().name + '」');
+      });
+      els.projNew.addEventListener('click', function () {
+        var name = window.prompt('这次行程叫什么？（例如：2026 云南 7 天）', '新的行程');
+        if (name === null) return;
+        var pr = newProject((name || '').trim() || '新的行程');
+        state.projects.push(pr);
+        state.activeId = pr.id;
+        normalizeAll();
+        closeProjSheet();
+        showView('record');
+        renderAll();
+        toast('已新建行程');
+      });
+
+      /* ───────── 共享：同步码（零后端）+ 房间（需自建服务）───────── */
+      var itemCache = {};   /* id -> 上次保存时的 JSON，用于打时间戳与识别删除 */
+
+      function stampItems(pr) {
+        var now = Date.now();
+        if (!pr.tomb) pr.tomb = {};
+        var alive = {};
+        ['people', 'expenses'].forEach(function (key) {
+          (pr[key] || []).forEach(function (it) {
+            if (!it || !it.id) return;
+            alive[it.id] = 1;
+            var j = JSON.stringify(it);
+            if (itemCache[it.id] !== j) { it.mtime = now; }
+            itemCache[it.id] = JSON.stringify(it);
+          });
+        });
+        /* 本地删掉的条目留个墓碑，合并时不会从同伴那边"复活" */
+        Object.keys(itemCache).forEach(function (id) {
+          if (!alive[id] && !pr.tomb[id]) pr.tomb[id] = now;
+        });
+        pr.mtime = now;
+      }
+
+      function b64encode(str) {
+        var bytes = new TextEncoder().encode(str);
+        var bin = '';
+        for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+        return btoa(bin);
+      }
+      function b64decode(b64) {
+        var bin = atob(b64);
+        var bytes = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        return new TextDecoder().decode(bytes);
+      }
+
+      function exportProjectCode() {
+        var pr = P();
+        var payload = {
+          name: pr.name, people: pr.people, days: pr.days, expenses: pr.expenses,
+          base: pr.base, mode: pr.mode, manualRates: pr.manualRates, mtime: pr.mtime, tomb: pr.tomb || {}
+        };
+        return 'SKD1:' + b64encode(JSON.stringify(payload));
+      }
+
+      function mergeProjectInto(local, remote) {
+        if (!remote) return 0;
+        var added = 0;
+        var tomb = local.tomb || {};
+        var newer = function (a, b) { return (Number(b.mtime) || 0) > (Number(a.mtime) || 0); };
+        ['people', 'expenses'].forEach(function (key) {
+          var map = {};
+          (local[key] || []).forEach(function (it) { if (it && it.id) map[it.id] = it; });
+          (remote[key] || []).forEach(function (it) {
+            if (!it || !it.id) return;
+            if (tomb[it.id] && tomb[it.id] >= (Number(it.mtime) || 0)) return;
+            var cur = map[it.id];
+            if (!cur) { map[it.id] = it; added++; }
+            else if (newer(cur, it)) { map[it.id] = it; added++; }
+          });
+          local[key] = Object.keys(map).map(function (k) { return map[k]; })
+            .filter(function (it) { return !(tomb[it.id] && tomb[it.id] >= (Number(it.mtime) || 0)); });
+        });
+        var days = {};
+        (local.days || []).concat(remote.days || []).forEach(function (d) { if (d) days[d] = 1; });
+        local.days = Object.keys(days).sort();
+        if ((Number(remote.mtime) || 0) > (Number(local.mtime) || 0)) {
+          if (remote.name) local.name = remote.name;
+          if (remote.base) local.base = remote.base;
+          if (remote.mode) local.mode = remote.mode;
+          if (remote.manualRates) local.manualRates = remote.manualRates;
+          local.mtime = remote.mtime;
         }
+        Object.keys(remote.tomb || {}).forEach(function (id) { if (!tomb[id]) tomb[id] = remote.tomb[id]; });
+        local.tomb = tomb;
+        return added;
+      }
+
+      function importProjectCode(text) {
+        text = String(text || '').trim();
+        if (!text) return null;
+        if (text.indexOf('SKD1:') === 0) text = text.slice(5);
+        var json = null;
+        try { json = b64decode(text); } catch (e) { json = text; }
+        var data = null;
+        try { data = JSON.parse(json); } catch (e) { return null; }
+        return (data && data.expenses) ? data : null;
+      }
+
+      function copyText(text, okMsg) {
+        function fallback() {
+          var ta = document.createElement('textarea');
+          ta.value = text; ta.setAttribute('readonly', '');
+          ta.style.position = 'fixed'; ta.style.top = '-1000px';
+          document.body.appendChild(ta); ta.select();
+          var ok = false;
+          try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+          document.body.removeChild(ta);
+          toast(ok ? (okMsg || '已复制') : '复制失败，请手动长按选中');
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(function () { toast(okMsg || '已复制'); }, fallback);
+        } else { fallback(); }
+      }
+
+      /* 房间共享（客户端；服务端地址配置后可跨设备实时同步） */
+      var SHARE_API = window.localStorage ? (window.localStorage.getItem('saikende-share-api') || '') : '';
+
+      function shareReady() { return !!SHARE_API; }
+      function randomId(n) {
+        var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        var out = '';
+        for (var i = 0; i < n; i++) out += chars[Math.floor(Math.random() * chars.length)];
+        return out;
+      }
+      function renderShare() {
+        if (!els.shareCode) return;
+        var sh = state.share || {};
+        els.shareCode.textContent = sh.code || '未开启';
+        if (!shareReady()) {
+          els.shareInfo.textContent = '共享服务还没配置。你可以先用下面的「同步码」跟同伴对账；想开房间共享，把服务地址填进来即可（见说明）。';
+        } else if (!sh.code) {
+          els.shareInfo.textContent = '已连接共享服务。点「创建房间」生成房间码，发给同伴就能一起记。';
+        } else {
+          els.shareInfo.textContent = '房间码：' + sh.code + '　最后同步：' +
+            (sh.syncedAt ? new Date(sh.syncedAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) : '还没同步');
+        }
+        if (els.shareHint) els.shareHint.textContent = sh.code ? '已开启' : '未开启';
+        if (els.shareStatus) {
+          els.shareStatus.textContent = sh.code
+            ? '共享中，房间码 ' + sh.code + '（同伴输入这个码就能加入）'
+            : '未开启。开启后同伴能用同一个房间码一起记账。';
+        }
+      }
+
+      /* 房间共享：客户端加解密 + 推送/拉取（服务端见 共享服务/worker.js） */
+      async function roomKey() {
+        var sh = state.share || {};
+        var enc = new TextEncoder();
+        var base = await crypto.subtle.importKey('raw', enc.encode(sh.code || ''), 'PBKDF2', false, ['deriveKey']);
+        return crypto.subtle.deriveKey(
+          { name: 'PBKDF2', salt: enc.encode('saikende:' + sh.roomId), iterations: 120000, hash: 'SHA-256' },
+          base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+      }
+      function roomIdFrom(code) {
+        var h = 2166136261;
+        for (var i = 0; i < code.length; i++) { h ^= code.charCodeAt(i); h = Math.imul(h, 16777619); }
+        return 'r' + (h >>> 0).toString(36) + '-' + code.length;
+      }
+      function bytesToB64(bytes) {
+        var bin = '';
+        for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+        return btoa(bin);
+      }
+      function b64ToBytes(b64) {
+        var bin = atob(b64);
+        var out = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+        return out;
+      }
+      function sharePayload() {
+        var pr = P();
+        return {
+          name: pr.name, people: pr.people, days: pr.days, expenses: pr.expenses,
+          base: pr.base, mode: pr.mode, manualRates: pr.manualRates, mtime: pr.mtime, tomb: pr.tomb || {}
+        };
+      }
+      async function roomPush() {
+        var sh = state.share || {};
+        if (!shareReady() || !sh.roomId || !sh.code) return false;
+        try {
+          var key = await roomKey();
+          var iv = crypto.getRandomValues(new Uint8Array(12));
+          var cipher = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key,
+            new TextEncoder().encode(JSON.stringify(sharePayload())));
+          var body = bytesToB64(iv) + '.' + bytesToB64(new Uint8Array(cipher));
+          var res = await fetch(SHARE_API + '/room/' + sh.roomId, {
+            method: 'PUT', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ payload: body })
+          });
+          if (!res.ok) throw new Error('push ' + res.status);
+          state.share.syncedAt = Date.now();
+          renderShare();
+          return true;
+        } catch (e) { toast('同步失败，检查网络或共享服务'); return false; }
+      }
+      async function roomPull(silent) {
+        var sh = state.share || {};
+        if (!shareReady() || !sh.roomId || !sh.code) return false;
+        try {
+          var res = await fetch(SHARE_API + '/room/' + sh.roomId);
+          if (res.status === 404) { if (!silent) toast('房间里还没有数据，先同步一次吧'); return false; }
+          if (!res.ok) throw new Error('pull ' + res.status);
+          var data = await res.json();
+          if (!data || !data.payload) return false;
+          var parts = String(data.payload).split('.');
+          var key = await roomKey();
+          var plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64ToBytes(parts[0]) }, key, b64ToBytes(parts[1]));
+          var remote = JSON.parse(new TextDecoder().decode(plain));
+          var added = mergeProjectInto(P(), remote);
+          state.share.syncedAt = Date.now();
+          normalizeAll();
+          renderAll();
+          renderShare();
+          if (!silent) toast(added ? ('已合并 ' + added + ' 处更新') : '已经是最新的');
+          return true;
+        } catch (e) { if (!silent) toast('拉取失败：房间码不对，或同伴还没同步'); return false; }
+      }
+      var pushTimer = null;
+      function scheduleSharePush() {
+        if (!shareReady() || !state.share || !state.share.code) return;
+        if (pushTimer) window.clearTimeout(pushTimer);
+        pushTimer = window.setTimeout(function () { roomPush(); }, 2500);
+      }
+
+      /* ───────── 统计 ───────── */
+      function statCell(label, value) {
+        return '<div class="stat-cell"><div class="sc-label">' + label + '</div><div class="sc-value">' + value + '</div></div>';
+      }
+      function statBar(label, value, width) {
+        return '<div class="stat-row"><div class="stat-top"><span>' + label + '</span><b>' + value + '</b></div>' +
+          '<div class="stat-bar"><i style="width:' + Math.max(2, Math.min(100, Math.round(width))) + '%"></i></div></div>';
+      }
+      function renderStats() {
+        if (!els.statGrid) return;
+        var pr = P();
+        var res = compute();
+        var peopleCount = pr.people.length || 1;
+        els.statGrid.innerHTML =
+          statCell('总支出', fmt(res.total, base())) +
+          statCell('人均', fmt(Math.round(res.total / peopleCount / 100) * 100, base())) +
+          statCell('笔数', pr.expenses.length + ' 笔') +
+          statCell('天数', pr.days.length + ' 天');
+        var byCat = {};
+        pr.expenses.forEach(function (e) {
+          var k = e.category || 'other';
+          byCat[k] = (byCat[k] || 0) + baseCentsOf(e);
+        });
+        var cats = Object.keys(byCat).map(function (k) { return { k: k, v: byCat[k] }; })
+          .sort(function (a, b) { return b.v - a.v; });
+        var maxCat = cats.length ? cats[0].v : 1;
+        els.statCats.innerHTML = cats.length ? cats.map(function (c) {
+          var pct = res.total ? (c.v / res.total * 100) : 0;
+          return statBar(cat(c.k).label, fmt(c.v, base()) + ' · ' + Math.round(pct) + '%', c.v / maxCat * 100);
+        }).join('') : '<div class="share-status">还没有数据</div>';
+        var days = pr.days.slice().sort();
+        var maxDay = 1;
+        days.forEach(function (d) { maxDay = Math.max(maxDay, dayTotal(d)); });
+        els.statDays.innerHTML = days.length ? days.map(function (d) {
+          return statBar(shortDate(d) + ' ' + weekOf(d), fmt(dayTotal(d), base()), dayTotal(d) / maxDay * 100);
+        }).join('') : '<div class="share-status">还没有数据</div>';
+        var maxPerson = 1;
+        res.rows.forEach(function (r) { maxPerson = Math.max(maxPerson, r.paid, r.pay); });
+        els.statPeople.innerHTML = res.rows.map(function (r) {
+          return statBar(esc(r.name) + ' · 垫付 ' + fmt(r.paid, base()), '应承担 ' + fmt(r.pay, base()), Math.max(r.paid, r.pay) / maxPerson * 100);
+        }).join('');
+      }
+
+      /* ───────── 共享按钮 ───────── */
+      document.getElementById('syncExport').addEventListener('click', function () {
+        var code = exportProjectCode();
+        copyText(code, '同步码已复制，直接粘给同伴');
+        els.shareInfo.textContent = '同步码已复制（' + code.length + ' 个字符）。同伴在「设置 → 粘贴同步码合并」里粘进去就行。';
+      });
+      document.getElementById('syncImport').addEventListener('click', function () {
+        var txt = window.prompt('把同伴发来的同步码粘到这里：');
+        if (!txt) return;
+        var data = importProjectCode(txt);
+        if (!data) { toast('这段同步码看不懂，检查有没有复制完整'); return; }
+        var snap = snapshot();
+        var added = mergeProjectInto(P(), data);
+        normalizeAll();
+        renderAll();
+        toast('已合并 ' + added + ' 处更新', '撤销', function () { undo(snap, '已撤销合并'); });
+      });
+      function openShareSheet() {
+        renderShare();
+        els.shareSheet.hidden = false;
+        document.body.style.overflow = 'hidden';
+      }
+      function closeShareSheet() {
+        els.shareSheet.hidden = true;
+        document.body.style.overflow = '';
+      }
+      els.openShare.addEventListener('click', openShareSheet);
+      els.shareClose.addEventListener('click', closeShareSheet);
+      els.shareSheet.addEventListener('click', function (ev) { if (ev.target === els.shareSheet) closeShareSheet(); });
+      els.shareCreate.addEventListener('click', function () {
+        if (!shareReady()) {
+          var url = window.prompt('先填入共享服务地址（部署一次即可，见说明文档）：', SHARE_API || 'https://');
+          if (!url) return;
+          SHARE_API = url.trim().replace(/\/$/, '');
+          try { window.localStorage.setItem('saikende-share-api', SHARE_API); } catch (e) { }
+          renderShare();
+        }
+        var code = randomId(8);
+        state.share = { roomId: roomIdFrom(code), code: code, syncedAt: 0, rev: 0 };
+        renderShare();
+        roomPush().then(function (ok) {
+          if (ok) { toast('房间已创建，把房间码发给同伴'); copyText(code, '房间码 ' + code + ' 已复制'); }
+        });
+      });
+      els.shareJoin.addEventListener('click', function () {
+        if (!shareReady()) {
+          var url2 = window.prompt('先填入共享服务地址（部署一次即可，见说明文档）：', SHARE_API || 'https://');
+          if (!url2) return;
+          SHARE_API = url2.trim().replace(/\/$/, '');
+          try { window.localStorage.setItem('saikende-share-api', SHARE_API); } catch (e) { }
+          renderShare();
+        }
+        var code = window.prompt('输入同伴给你的 8 位房间码：');
+        if (!code) return;
+        code = code.trim().toUpperCase();
+        state.share = { roomId: roomIdFrom(code), code: code, syncedAt: 0, rev: 0 };
+        renderShare();
+        roomPull(false).then(function (ok) {
+          if (ok) { closeShareSheet(); showView('record'); }
+        });
+      });
+      els.shareSync.addEventListener('click', function () {
+        roomPull(false).then(function (ok) { if (ok) roomPush(); });
+      });
+      els.shareLeave.addEventListener('click', function () {
+        if (!window.confirm('退出共享？本地账目会保留，只是不再和同伴同步。')) return;
+        state.share = { roomId: '', code: '', syncedAt: 0, rev: 0 };
+        renderShare();
+        toast('已退出共享');
       });
 
       document.getElementById('addPerson').addEventListener('click', function () {
-        state.people.push({ id: nid('p'), name: '朋友' + String.fromCharCode(64 + state.people.length + 1) });
+        P().people.push({ id: nid('p'), name: '朋友' + String.fromCharCode(64 + P().people.length + 1) });
         renderAll();
       });
       document.getElementById('addExpense').addEventListener('click', function () {
         var fresh = {
           id: nid('e'), title: '新的支出', amount: 0, currency: base(), category: 'other',
-          date: currentDay(), payer: state.people[0].id, shares: null
+          date: currentDay(), payer: P().people[0].id, shares: null
         };
-        state.expenses.push(fresh);
+        P().expenses.push(fresh);
         animateId = fresh.id;
         renderAll();
       });
@@ -1601,17 +2398,12 @@
       document.getElementById('clearAll').addEventListener('click', function () {
         if (!window.confirm('清空以后现在填的内容就没了（无法恢复），确定要重来吗？')) return;
         var snap = snapshot();
-        var keepBase = state.base;
-        var keepMode = state.mode;
-        state = {
-          people: [{ id: nid('p'), name: '朋友A' }, { id: nid('p'), name: '朋友B' }],
-          days: [today()],
-          selected: today(),
-          base: keepBase || 'CNY',
-          mode: keepMode || 'cn',
-          manualRates: {},
-          expenses: []
-        };
+        var pr = P();
+        pr.people = [{ id: nid('p'), name: '朋友A' }, { id: nid('p'), name: '朋友B' }];
+        pr.days = [today()];
+        pr.selected = today();
+        pr.expenses = [];
+        normalizeAll();
         renderAll();
         toast('已清空，可以重新开始', '撤销清空', function () { undo(snap, '已恢复到清空前'); });
       });
@@ -1630,7 +2422,7 @@
         Array.prototype.forEach.call(els.rateList.querySelectorAll('[data-rate]'), function (input) {
           var code = input.getAttribute('data-rate');
           var v = Number(input.value);
-          if (v > 0) state.manualRates[code] = v;
+          if (v > 0) P().manualRates[code] = v;
         });
         els.rateSheet.hidden = true;
         document.body.style.overflow = '';
@@ -1638,7 +2430,7 @@
         toast('已按手动汇率折算');
       });
       document.getElementById('resetRates').addEventListener('click', function () {
-        state.manualRates = {};
+        P().manualRates = {};
         els.rateSheet.hidden = true;
         document.body.style.overflow = '';
         renderAll();
@@ -1824,18 +2616,18 @@
         var usedDays = {};
         picked.forEach(function (r) {
           var day = r.date || currentDay();
-          if (state.days.indexOf(day) === -1) state.days.push(day);
+          if (P().days.indexOf(day) === -1) P().days.push(day);
           usedDays[day] = true;
-          state.expenses.push({
+          P().expenses.push({
             id: nid('e'), title: r.title || '未命名支出', amount: r.amount,
-            currency: state.mode === 'cn' ? 'CNY' : (r.currency || base()),
-            category: r.category || 'other', date: day, payer: state.people[0].id, shares: null
+            currency: P().mode === 'cn' ? 'CNY' : (r.currency || base()),
+            category: r.category || 'other', date: day, payer: P().people[0].id, shares: null
           });
         });
-        state.days.sort();
+        P().days.sort();
         var dayList = Object.keys(usedDays).sort();
-        if (dayList.length === 1) state.selected = dayList[0];
-        animateId = state.expenses[state.expenses.length - 1].id;
+        if (dayList.length === 1) P().selected = dayList[0];
+        animateId = P().expenses[P().expenses.length - 1].id;
         ocrRows = [];
         els.ocrList.innerHTML = '';
         els.ocrAdd.hidden = true;
@@ -1861,11 +2653,11 @@
       /* ---------- 分页与国内/境外模式 ---------- */
       function applyModeUI() {
         Array.prototype.forEach.call(document.querySelectorAll('[data-mode]'), function (b) {
-          var on = b.getAttribute('data-mode') === state.mode;
+          var on = b.getAttribute('data-mode') === P().mode;
           b.classList.toggle('is-on', on);
           b.setAttribute('aria-pressed', on ? 'true' : 'false');
         });
-        els.rateCard.hidden = state.mode === 'cn';
+        els.rateCard.hidden = P().mode === 'cn';
       }
 
       function showView(name) {
@@ -1889,7 +2681,7 @@
       }
 
       function setMode(mode) {
-        state.mode = mode;
+        P().mode = mode;
         applyModeUI();
         renderAll();
         if (mode === 'abroad') fetchRates(false);
@@ -1905,11 +2697,18 @@
       document.getElementById('switchAbroad').addEventListener('click', function () { setMode('abroad'); });
 
       load();
-      els.baseCur.value = state.base;
+      els.baseCur.value = P().base;
       applyModeUI();
       renderAll();
       showView(state.view || 'record');
-      if (state.mode === 'abroad') fetchRates(false);
+      if (P().mode === 'abroad') fetchRates(false);
+      /* 在房间里的话：打开先拉一次，之后每 45 秒静默拉一次 */
+      if (state.share && state.share.code) {
+        roomPull(true);
+        window.setInterval(function () {
+          if (!document.hidden) roomPull(true);
+        }, 45000);
+      }
     })();
   </script>
 </body>
