@@ -684,6 +684,7 @@
       </div>
       <div class="stat-donut" id="statCats"></div>
       <div class="stat-donut" id="statDays"></div>
+      <div class="stat-donut" id="statPeople"></div>
     </section>
 
     <section class="view" data-view="settle" hidden>
@@ -1196,7 +1197,7 @@
         'editSheet', 'editHead', 'editClose', 'editAmount', 'editName', 'editDate',
         'editCat', 'editCurrency', 'editCur', 'editCurField', 'editPayers', 'editPayerAmounts', 'editShares',
         'editSave', 'editCopy', 'editDelete',
-        'expCount', 'statScope', 'statCats', 'statDays',
+        'expCount', 'statScope', 'statCats', 'statDays', 'statPeople',
         'daySheet', 'dayClose', 'dayQuick', 'calPrev', 'calNext', 'calLabel', 'calGrid'].forEach(function (id) {
         els[id] = document.getElementById(id);
       });
@@ -2683,6 +2684,24 @@
         } else {
           els.statDays.innerHTML = '';
         }
+
+        /* 按成员：每个人一共垫付了多少（多付款人按各自填的金额拆） */
+        var byPayer = {};
+        list.forEach(function (e) {
+          var totalCents = baseCentsOf(e);
+          var payers = (e.payers && e.payers.length) ? e.payers : [{ id: e.payer, amount: e.amount }];
+          var sum = payers.reduce(function (s, x) { return s + (Number(x.amount) || 0); }, 0);
+          payers.forEach(function (x) {
+            if (!personById(x.id)) return;
+            var frac = sum > 0 ? (Number(x.amount) || 0) / sum : (1 / payers.length);
+            byPayer[x.id] = (byPayer[x.id] || 0) + Math.round(totalCents * frac);
+          });
+        });
+        var people = Object.keys(byPayer).map(function (id) { return { label: nameOf(id), value: byPayer[id] }; })
+          .sort(function (a, b) { return b.value - a.value; });
+        var peopleTotal = people.reduce(function (s, x) { return s + x.value; }, 0);
+        els.statPeople.innerHTML = donutBlock('按成员（垫付）', people, peopleTotal);
+
         if (els.statScope) {
           els.statScope.textContent = all ? '全部 ' + pr.days.length + ' 天' : shortDate(pr.selected) + ' ' + weekOf(pr.selected);
         }
