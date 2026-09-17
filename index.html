@@ -554,27 +554,16 @@
   }
   .panel h3 { margin: 0; font-size: var(--fs-body); font-weight: 600; }
   .panel-hint { margin: 0; font-size: var(--fs-sub); color: var(--muted); line-height: 1.6; }
-  .ocr-list, .rate-list { display: flex; flex-direction: column; gap: 8px; }
-  .ocr-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: var(--fs-sub); color: var(--muted); }
   .panel textarea { min-height: 118px; font-size: var(--fs-body); line-height: 1.6; resize: vertical; }
-  .ocr-row {
     display: grid; grid-template-columns: 28px minmax(0, 1fr) 34px; gap: 8px; align-items: start;
     border: 1px solid var(--line); border-radius: var(--r-control); padding: 7px 10px; background: var(--surface-2);
   }
-  .ocr-row .x { min-height: var(--btn-sm); }
-  .ocr-row input[type="checkbox"] { width: 22px; height: 22px; min-height: 22px; }
-  .ocr-main { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-  .ocr-sub { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
-  .ocr-row select { min-height: var(--btn-sm); font-size: var(--fs-sub); padding: 6px 8px; }
-  .ocr-row input[type="text"] { border: 0; background: transparent; padding: 6px 4px; font-size: var(--fs-body); min-height: var(--btn-sm); }
-  .ocr-row input[type="number"] { border: 0; background: transparent; padding: 6px 4px; font-size: var(--fs-body); text-align: right; min-height: var(--btn-sm); }
   .rate-item {
     display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 8px; align-items: center;
     border: 1px solid var(--line); border-radius: var(--r-control); padding: 8px 11px; background: var(--surface-2);
   }
   .rate-item span { font-size: var(--fs-sub); color: var(--muted); }
   .rate-item input { border: 0; background: transparent; padding: 6px 4px; text-align: right; font-variant-numeric: tabular-nums; min-height: var(--btn-sm); }
-  .ocr-msg { font-size: var(--fs-sub); color: var(--muted); line-height: 1.6; }
   .card { border-radius: var(--r-card); overflow: hidden; background: #ffffff; color: #16202b; box-shadow: 0 20px 48px rgba(6, 12, 20, .4); }
   .card-hero {
     background: linear-gradient(135deg, #4a8c82 0%, #6aa79b 55%, #8fc4b8 100%);
@@ -631,7 +620,6 @@
   .person input, .pa-row input,
   .rate-row select,
   .panel textarea,
-  .ocr-row input[type="text"], .ocr-row input[type="number"], .ocr-row select,
   input, select, textarea { font-size: 16px; }
 </style>
 </head>
@@ -667,7 +655,7 @@
       <div class="day-strip" id="dayStrip"></div>
       <div class="quick-actions">
         <button type="button" class="btn btn-primary" id="addExpense">+ 记一笔</button>
-        <button type="button" class="btn" id="openOcr">粘贴文字</button>
+        <button type="button" class="btn" id="refreshNow">刷新</button>
       </div>
       <div class="banner" id="foreignBanner" hidden>
         <span id="foreignText"></span>
@@ -971,27 +959,6 @@
     </div>
   </div>
 
-  <div class="sheet" id="ocrSheet" hidden>
-    <div class="sheet-inner">
-      <div class="panel">
-        <h3>粘贴文字记账</h3>
-        <p class="panel-hint">在相册里长按截图 → 选「拷贝文字」（iPhone 叫实况文本），或用微信的「提取文字」，再把文字粘到下面，就能拆成一笔笔支出。不用下载任何东西。</p>
-        <textarea id="ocrPaste" placeholder="粘到这里，例如：&#10;民宿 3 晚 1800&#10;打车 45.5&#10;景区门票 320 元"></textarea>
-        <button type="button" class="btn btn-primary btn-block" id="ocrParse">解析文字</button>
-        <div class="ocr-msg" id="ocrMsg" hidden></div>
-        <div class="ocr-head" id="ocrHead" hidden>
-          <span id="ocrCount"></span>
-          <button type="button" class="link-btn" id="ocrClear">清空列表</button>
-        </div>
-        <div class="ocr-list" id="ocrList"></div>
-        <div class="sheet-actions">
-          <button type="button" class="btn btn-primary btn-block" id="ocrAdd" hidden>加入这些支出</button>
-          <button type="button" class="btn btn-block" id="ocrClose">取消</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
   <script>
@@ -1048,12 +1015,22 @@
       var WEEK = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
       var seq = 100;
       var toastTimer = null;
-      var ocrRows = [];
       var animateId = null;
       var shownTotal = null;
       var shownBase = null;
 
-      function nid(p) { seq += 1; return p + seq; }
+      /* 每台设备一个随机标记：不同设备的记录 id 不会撞车，
+         否则同步时两条不同的账会因为 id 相同而互相覆盖 */
+      var DEVICE_TAG = (function () {
+        var key = 'saikende-device-tag', tag = '';
+        try { tag = window.localStorage.getItem(key) || ''; } catch (e) { tag = ''; }
+        if (!tag) {
+          tag = Math.random().toString(36).slice(2, 7);
+          try { window.localStorage.setItem(key, tag); } catch (e) { }
+        }
+        return tag;
+      })();
+      function nid(p) { seq += 1; return p + DEVICE_TAG + seq; }
       function cat(key) {
         for (var i = 0; i < CATEGORIES.length; i++) { if (CATEGORIES[i].key === key) return CATEGORIES[i]; }
         return CATEGORIES[CATEGORIES.length - 1];
@@ -1195,9 +1172,8 @@
       var rateCache = { date: '', toCNY: {}, fetchedAt: 0 };
       var rateSource = 'builtin';
       var els = {};
-      ['people', 'expenses', 'rows', 'transfers', 'sheet', 'ocrSheet', 'rateSheet', 'legalSheet', 'card', 'toast', 'total', 'heroSub',
-        'count', 'roundNote', 'saveState', 'ocrMsg', 'ocrList', 'ocrAdd',
-        'ocrHead', 'ocrCount', 'dayStrip', 'baseCur', 'rateStatus', 'rateList',
+      ['people', 'expenses', 'rows', 'transfers', 'sheet', 'rateSheet', 'legalSheet', 'card', 'toast', 'total', 'heroSub',
+        'count', 'roundNote', 'saveState', 'dayStrip', 'baseCur', 'rateStatus', 'rateList',
         'rateCard', 'foreignBanner', 'foreignText'].forEach(function (id) {
           els[id] = document.getElementById(id);
         });
@@ -1211,7 +1187,7 @@
         'editSheet', 'editHead', 'editClose', 'editAmount', 'editName', 'editDate',
         'editCat', 'editCurrency', 'editCur', 'editCurField', 'editPayers', 'editPayerAmounts', 'editShares',
         'editSave', 'editDelete',
-        'expCount', 'statScope', 'statCats', 'statDays', 'statPeople',
+        'expCount', 'statScope', 'statCats', 'statDays', 'statPeople', 'refreshNow',
         'daySheet', 'dayClose', 'dayQuick', 'calPrev', 'calNext', 'calLabel', 'calGrid'].forEach(function (id) {
         els[id] = document.getElementById(id);
       });
@@ -2523,13 +2499,13 @@
         var on = !!rm.code;
         els.tripRoomOpen.classList.toggle('is-on', on);
         els.tripRoomOpen.setAttribute('aria-pressed', on ? 'true' : 'false');
-        els.tripRoomLabel.textContent = on ? '房间码 ' + rm.code : '创建房间';
+        els.tripRoomLabel.textContent = on ? '房间码 ' + rm.code : '创建/加入房间';
 
         var pending = !!(pendingRoom && (pendingRoom.create || pendingRoom.join));
         els.newTripRoom.classList.toggle('is-on', pending);
         els.newTripRoom.setAttribute('aria-pressed', pending ? 'true' : 'false');
-        els.newTripRoomLabel.textContent = !pending ? '创建房间'
-          : (pendingRoom.join ? '加入房间 ' + pendingRoom.join : '创建房间（创建行程时自动开）');
+        els.newTripRoomLabel.textContent = !pending ? '创建/加入房间'
+          : (pendingRoom.join ? '已选：加入 ' + pendingRoom.join : '已选：创建房间');
       }
       function renderRoomSheet() {
         if (!els.roomSheet) return;
@@ -2554,8 +2530,7 @@
             (rm.syncedAt ? new Date(rm.syncedAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) : '还没同步');
         }
         els.roomActions.innerHTML = rm.code
-          ? '<button type="button" class="btn btn-primary btn-block" data-room="sync">立即同步</button>' +
-            '<button type="button" class="btn btn-block btn-sm btn-danger" data-room="leave">退出共享</button>'
+          ? '<button type="button" class="btn btn-block btn-sm btn-danger" data-room="leave">退出房间</button>'
           : '<button type="button" class="btn btn-primary btn-block" data-room="create">创建房间</button>' +
             '<button type="button" class="btn btn-block" data-room="join">输入房间码加入</button>';
       }
@@ -2632,7 +2607,7 @@
         if (!roomCryptoOk()) { if (!silent) toast('同步需要加密连接，请用 https://aa.saikende.cn 打开'); return false; }
         try {
           var res = await fetch(SHARE_API + '/room/' + sh.id);
-          if (res.status === 404) { if (!silent) toast('房间里还没有数据，先同步一次吧'); return false; }
+          if (res.status === 404) return 'empty';
           if (!res.ok) throw new Error('pull ' + res.status);
           var data = await res.json();
           if (!data || !data.payload) return false;
@@ -2647,7 +2622,7 @@
           refreshRoomUI();
           if (!silent) toast(added ? ('已合并 ' + added + ' 处更新') : '已经是最新的');
           return true;
-        } catch (e) { if (!silent) toast('拉取失败：房间码不对，或同伴还没同步'); return false; }
+        } catch (e) { return false; }
       }
       var pushTimer = null;
       function scheduleSharePush() {
@@ -2765,8 +2740,13 @@
         code = String(code).trim().toUpperCase();
         pr.room = { id: roomIdFrom(code), code: code, syncedAt: 0 };
         refreshRoomUI();
-        roomPull(false).then(function (ok) {
-          if (ok) { closeRoomSheet(); if (!els.tripSheet.hidden) closeTripSheet(); renderAll(); }
+        roomPull(false).then(function (r) {
+          if (r === false) { toast('没连上这个房间，检查房间码和网络'); return; }
+          if (r === 'empty') { roomPush(); toast('房间里还没有数据，已把你的账目放进去'); }
+          else toast('已加入，同步到最新');
+          closeRoomSheet();
+          if (!els.tripSheet.hidden) closeTripSheet();
+          renderAll();
         });
       }
       function leaveRoom() {
@@ -2781,7 +2761,6 @@
         var act = b.getAttribute('data-room');
         if (act === 'create') createRoom();
         else if (act === 'join') joinRoom();
-        else if (act === 'sync') roomPull(false).then(function (ok) { if (ok) roomPush(); });
         else if (act === 'leave') leaveRoom();
         else if (act === 'pick-create') { pendingRoom = { create: true }; closeRoomSheet(); renderRoomEntry(); }
         else if (act === 'pick-join') {
@@ -2797,6 +2776,22 @@
       els.roomSheet.addEventListener('click', function (ev) { if (ev.target === els.roomSheet) closeRoomSheet(); });
       els.tripRoomOpen.addEventListener('click', function () { openRoomSheet('trip'); });
       els.newTripRoom.addEventListener('click', function () { openRoomSheet('pending'); });
+
+      /* 记账页的「刷新」：把同伴的改动拉下来，再把自己的改动推上去 */
+      async function syncNow() {
+        var rm = roomOf(P());
+        if (!shareReady()) { toast('共享服务未配置，暂时同步不了'); return; }
+        if (!rm.code) { toast('这段行程还没有房间，先创建或加入一个'); openRoomSheet('trip'); return; }
+        if (!roomCryptoOk()) { toast('同步需要加密连接，请用 https://aa.saikende.cn 打开'); return; }
+        var r = await roomPull(true);
+        if (r === false) { toast('连不上共享服务，过一会儿再试'); return; }
+        var pushed = await roomPush();
+        renderAll();
+        refreshRoomUI();
+        if (!pushed) { toast('同步失败，检查网络后重试'); return; }
+        toast(r === 'empty' ? '房间已建立，把房间码发给同伴' : '已同步到最新');
+      }
+      els.refreshNow.addEventListener('click', function () { syncNow(); });
 
       document.getElementById('addPerson').addEventListener('click', function () {
         P().people.push({ id: nid('p'), name: '朋友' + String.fromCharCode(64 + P().people.length + 1) });
@@ -2892,219 +2887,6 @@
         document.body.style.overflow = '';
         renderAll();
         toast('已恢复自动汇率');
-      });
-
-      /* ---------- 粘贴文字记账 ---------- */
-      function ocrStatus(msg) {
-        if (!msg) { els.ocrMsg.hidden = true; return; }
-        els.ocrMsg.hidden = false;
-        els.ocrMsg.textContent = msg;
-      }
-      function parseAmount(line) {
-        var tokens = line.match(/(?:[¥￥$€£]\s*)?(\d[\d,]*(?:\.\d{1,2})?)\s*(?:元|块)?/g);
-        if (!tokens) return null;
-        var best = null;
-        for (var i = 0; i < tokens.length; i++) {
-          var raw = tokens[i];
-          var hasSymbol = /[¥￥$€£]/.test(raw) || /元|块/.test(raw);
-          var n = parseFloat(raw.replace(/[^\d.]/g, ''));
-          if (isNaN(n) || n <= 0 || n > 200000) continue;
-          if (!hasSymbol && raw.replace(/[^\d]/g, '').length > 7) continue;
-          var score = (hasSymbol ? 2 : 0) + (raw.indexOf('.') !== -1 ? 1 : 0);
-          if (!best || score >= best.score) best = { value: n, score: score };
-        }
-        return best ? best.value : null;
-      }
-      function cleanTitle(line, amount) {
-        var t = String(line);
-        t = t.replace(/(?:US|A|HK|NT|S|NZ|C)\$\s*[\d,]+(?:\.\d{1,2})?/gi, ' ');
-        t = t.replace(/[¥￥$€£]\s*[\d,]+(?:\.\d{1,2})?/g, ' ');
-        t = t.replace(/[\d,]+(?:\.\d{1,2})?\s*[元块]/g, ' ');
-        t = t.replace(/\d{4}年\d{1,2}月\d{1,2}日?/g, ' ');
-        t = t.replace(/\d{1,2}月\d{1,2}日?/g, ' ');
-        t = t.replace(/\d{1,2}\/\d{1,2}/g, ' ');
-        t = t.replace(/\d{6,}/g, ' ');
-        if (amount !== undefined && amount !== null) {
-          var s = String(amount);
-          if (s.indexOf('.') === -1) {
-            t = t.replace(new RegExp('[¥￥$€£]?\\s*' + s + '(?:\\.\\d{1,2})?\\s*[元块]?', 'g'), ' ');
-          } else {
-            t = t.replace(new RegExp('[¥￥$€£]?\\s*' + s.replace(/\./g, '\\.') + '\\s*[元块]?', 'g'), ' ');
-          }
-        }
-        t = t.replace(/(微信支付|支付宝|支付成功|交易成功|付款成功|收款成功|订单号|交易号|商户|收款方|实付|应付|合计|小计|总计|优惠|已优惠|红包|积分|元)/g, ' ');
-        t = t.replace(/\b(?:USD|JPY|CNY|RMB|THB|HKD|TWD|KRW|SGD|MYR|VND|IDR|PHP|AUD|NZD|CAD|CHF|AED|TRY|RUB|INR|MOP)\b/gi, ' ');
-        t = t.replace(/\s{2,}/g, ' ').trim();
-        t = t.replace(/^[·|:：\-—\s]+/, '').replace(/[·|:：\-—\s]+$/, '').trim();
-        if (!t || t.length < 2 || /^[\d\s.]+$/.test(t)) t = '未命名支出';
-        if (t.length > 18) t = t.slice(0, 18);
-        return t;
-      }
-      function parseOcr(text) {
-        var NOISE = /(合计|总计|小计|优惠|已减|立减|折扣|余额|红包|积分|发票|税额|取消|确定|返回|发送|搜索|分享|收藏|设置|首页|消息|通知|电量|信号|客服|咨询|微信支付|支付宝|云闪付|支付成功|交易成功|付款成功|收款成功|立即支付|确认付款|账单详情|交易单号|商户单号|订单编号|订单号|交易号|支付时间|收款时间|当前时间|当前状态|支付方式|优惠方式|商品说明|查看详情|查看更多|查看全部|全部账单|账单明细|统计|排行榜|本月|上月|本周|广告)/;
-        var lines = String(text).split(/\n+/).map(function (s) { return s.replace(/\s{2,}/g, ' ').trim(); }).filter(Boolean);
-        var out = [], seen = {};
-
-        function textScore(s) {
-          return ((String(s).match(/[\u4e00-\u9fa5]/g) || []).length) + ((String(s).match(/[A-Za-z]/g) || []).length);
-        }
-        function isNoise(line) {
-          if (NOISE.test(line)) return true;
-          if (/\d{1,2}:\d{2}/.test(line)) return true;          /* 时间 */
-          if (/\d+(\.\d+)?%/.test(line)) return true;            /* 电量、折扣百分比 */
-          if (/1\d{10}/.test(line)) return true;                 /* 手机号 */
-          if (/^[\d\s.,:：\-—/%]+$/.test(line)) return true;      /* 纯数字行（带 ¥ 等货币符号的会放过） */
-          return false;
-        }
-        /* 金额和商户名经常分成两行，这里允许向相邻行借一个名字 */
-        function borrowTitle(idx) {
-          var cands = [lines[idx - 1], lines[idx + 1]];
-          for (var c = 0; c < cands.length; c++) {
-            var s = cands[c];
-            if (!s || isNoise(s)) continue;
-            if (parseAmount(s) !== null) continue;
-            var score = textScore(s);
-            if (score < 2 || score > 12) continue;
-            return cleanTitle(s, null);
-          }
-          return '';
-        }
-
-        lines.forEach(function (line, idx) {
-          if (line.length < 2 || isNoise(line)) return;
-          var amount = parseAmount(line);
-          if (amount === null || amount < 0.5 || amount > 100000) return;
-
-          var title = cleanTitle(line, amount);
-          var hasMark = /[¥￥$€£฿₩₫]|元|块/.test(line);
-          if (title === '未命名支出' || textScore(title) < 2) {
-            if (!hasMark) return;               /* 没名字、也没币种符号：按噪音丢掉 */
-            title = borrowTitle(idx);            /* 金额和商户名分成两行时，向邻行借名字 */
-            if (textScore(title) < 2) return;    /* 借不到就丢掉 */
-          }
-          var key = title + '|' + amount;
-          if (seen[key]) return;
-          seen[key] = true;
-
-          var date = today();
-          var year = new Date().getFullYear();
-          var ymd = line.match(/(\d{4})年(\d{1,2})月(\d{1,2})日?/);
-          var md = line.match(/(\d{1,2})月(\d{1,2})日?/);
-          var sd = line.match(/(\d{1,2})\/(\d{1,2})/);
-          var parts = ymd ? [ymd[1], ymd[2], ymd[3]] : (md ? [year, md[1], md[2]] : (sd ? [year, sd[1], sd[2]] : null));
-          if (parts) {
-            var mm = parseInt(parts[1], 10), dd = parseInt(parts[2], 10);
-            if (mm >= 1 && mm <= 12 && dd >= 1 && dd <= 31) {
-              date = String(parts[0]) + '-' + String(mm).padStart(2, '0') + '-' + String(dd).padStart(2, '0');
-            }
-          }
-          out.push({
-            checked: true, title: title, amount: amount, date: date,
-            category: guessCategory(line), currency: detectCurrency(line)
-          });
-        });
-        return out.slice(0, 8);
-      }
-      function renderOcrRows() {
-        els.ocrList.innerHTML = ocrRows.map(function (row, idx) {
-          return '<div class="ocr-row">' +
-            '<input type="checkbox" data-idx="' + idx + '"' + (row.checked ? ' checked' : '') + ' aria-label="是否加入这笔" />' +
-            '<div class="ocr-main">' +
-              '<input type="text" data-idx="' + idx + '" data-role="title" value="' + esc(row.title) + '" aria-label="解析出的项目" />' +
-              '<div class="ocr-sub">' +
-                '<input type="number" data-idx="' + idx + '" data-role="amount" min="0" step="1" inputmode="decimal" value="' + row.amount + '" aria-label="解析出的金额" />' +
-                '<select data-idx="' + idx + '" data-role="currency" aria-label="这笔的货币">' +
-                  currencyOptions(row.currency || base()) + '</select>' +
-              '</div>' +
-            '</div>' +
-            '<button type="button" class="x" data-drop-row="' + idx + '" aria-label="不要这一笔">×</button>' +
-            '</div>';
-        }).join('');
-        els.ocrAdd.hidden = !ocrRows.length;
-        if (els.ocrHead) {
-          els.ocrHead.hidden = !ocrRows.length;
-          if (els.ocrCount) els.ocrCount.textContent = '解析出 ' + ocrRows.length + ' 笔';
-        }
-      }
-      document.getElementById('openOcr').addEventListener('click', function () {
-        ocrRows = [];
-        els.ocrList.innerHTML = '';
-        els.ocrAdd.hidden = true;
-        els.ocrMsg.hidden = true;
-        if (els.ocrHead) els.ocrHead.hidden = true;
-        var paste = document.getElementById('ocrPaste');
-        if (paste) paste.value = '';
-        els.ocrSheet.hidden = false;
-        document.body.style.overflow = 'hidden';
-      });
-      document.getElementById('ocrClose').addEventListener('click', function () {
-        els.ocrSheet.hidden = true;
-        document.body.style.overflow = '';
-      });
-      els.ocrList.addEventListener('input', function (ev) {
-        var idx = Number(ev.target.getAttribute('data-idx'));
-        var row = ocrRows[idx];
-        if (!row) return;
-        if (ev.target.type === 'checkbox') row.checked = ev.target.checked;
-        if (ev.target.getAttribute('data-role') === 'title') row.title = ev.target.value;
-        if (ev.target.getAttribute('data-role') === 'amount') row.amount = ev.target.value;
-        if (ev.target.getAttribute('data-role') === 'currency') row.currency = ev.target.value;
-      });
-      els.ocrList.addEventListener('change', function (ev) {
-        if (ev.target.getAttribute('data-role') !== 'currency') return;
-        var idx = Number(ev.target.getAttribute('data-idx'));
-        if (ocrRows[idx]) ocrRows[idx].currency = ev.target.value;
-      });
-      els.ocrList.addEventListener('click', function (ev) {
-        var drop = ev.target.closest('[data-drop-row]');
-        if (!drop) return;
-        ocrRows.splice(Number(drop.getAttribute('data-drop-row')), 1);
-        renderOcrRows();
-        if (!ocrRows.length) ocrStatus('列表已清空，可以重新解析。');
-      });
-      document.getElementById('ocrClear').addEventListener('click', function () {
-        ocrRows = [];
-        renderOcrRows();
-        ocrStatus('列表已清空，可以重新解析。');
-      });
-      els.ocrAdd.addEventListener('click', function () {
-        var picked = ocrRows.filter(function (r) { return r.checked && Number(r.amount) > 0; });
-        if (!picked.length) { toast('先勾选要加入的支出'); return; }
-        var usedDays = {};
-        picked.forEach(function (r) {
-          var day = r.date || currentDay();
-          if (P().days.indexOf(day) === -1) P().days.push(day);
-          usedDays[day] = true;
-          P().expenses.push({
-            id: nid('e'), title: r.title || '未命名支出', amount: r.amount,
-            currency: P().mode === 'cn' ? 'CNY' : (r.currency || base()),
-            category: r.category || 'other', date: day, payer: P().people[0].id, shares: null
-          });
-        });
-        P().days.sort();
-        var dayList = Object.keys(usedDays).sort();
-        if (dayList.length === 1) P().selected = dayList[0];
-        animateId = P().expenses[P().expenses.length - 1].id;
-        ocrRows = [];
-        els.ocrList.innerHTML = '';
-        els.ocrAdd.hidden = true;
-        if (els.ocrHead) els.ocrHead.hidden = true;
-        els.ocrSheet.hidden = true;
-        document.body.style.overflow = '';
-        renderAll();
-        toast('加入 ' + picked.length + ' 笔到 ' + (dayList.length === 1 ? shortDate(dayList[0]) : dayList.length + ' 天') + '，记得选谁垫付');
-      });
-      document.getElementById('ocrParse').addEventListener('click', function () {
-        var text = (document.getElementById('ocrPaste').value || '').trim();
-        if (!text) { ocrStatus('先把文字粘进来再点解析。'); return; }
-        var rows = parseOcr(text);
-        if (!rows.length) {
-          ocrStatus('这段文字里没找到金额，检查一下是不是粘全了。');
-          return;
-        }
-        ocrRows = rows;
-        ocrStatus('读出 ' + rows.length + ' 笔，确认金额、币种后加入：');
-        renderOcrRows();
       });
 
       /* ---------- 分页与国内/境外模式 ---------- */
