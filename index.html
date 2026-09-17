@@ -90,6 +90,35 @@
     box-shadow: 0 8px 22px rgba(15, 23, 32, .05);
   }
   .tb-left { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .appbar { display: flex; flex-direction: column; gap: var(--sp-1); padding: var(--sp-4) 0 var(--sp-2); }
+  .appbar[hidden], .topbar[hidden] { display: none; }
+  .app-title { margin: 0; font-size: var(--fs-hero); font-weight: var(--fw-semibold); line-height: 1.2; letter-spacing: -.01em; }
+  .app-sub { margin: 0; font-size: var(--fs-sub); color: var(--muted); }
+  .tb-nav { display: flex; align-items: center; gap: var(--sp-2); min-width: 0; }
+  .back-btn {
+    font: inherit; font-size: var(--fs-sub); font-weight: var(--fw-medium); color: var(--accent);
+    background: transparent; border: 0; padding: var(--sp-1) 2px; min-height: var(--btn-sm);
+    cursor: pointer; white-space: nowrap; border-radius: var(--r-control);
+  }
+  .back-btn:active { opacity: .65; }
+  .btn-sm { min-height: var(--btn-sm); font-size: var(--fs-sub); padding: 8px 12px; }
+  .clear-row { display: flex; }
+  .trip-cards { display: flex; flex-direction: column; gap: var(--sp-3); }
+  .trip-hint { margin: 0; font-size: var(--fs-sub); color: var(--muted); line-height: 1.6; }
+  .trip-card {
+    display: flex; align-items: center; gap: var(--sp-3); width: 100%; text-align: left;
+    font: inherit; color: inherit; cursor: pointer;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card);
+    padding: var(--sp-4); box-shadow: var(--shadow-sm);
+    transition: transform .14s ease, border-color .14s ease;
+  }
+  .trip-card:active { transform: scale(.985); }
+  .trip-card.is-active { border-color: var(--accent); }
+  .tc-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .tc-name { font-size: var(--fs-title); font-weight: var(--fw-medium); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tc-sub { font-size: var(--fs-cap); color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tc-sum { flex: none; font-size: var(--fs-title); font-weight: var(--fw-semibold); font-variant-numeric: tabular-nums; }
+  .tc-go { flex: none; color: var(--muted); font-size: var(--fs-title); }
   .tb-brand { font-size: var(--fs-cap); font-weight: 600; letter-spacing: .06em; color: var(--accent); margin: 0 0 3px; }
   .tb-total { font-size: var(--fs-hero); font-weight: var(--fw-semibold); margin-top: 2px; color: var(--accent); font-variant-numeric: tabular-nums; line-height: 1.14; }
   .tb-sub { font-size: var(--fs-cap); color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -554,7 +583,7 @@
   .sheet-tip { font-size: var(--fs-sub); color: rgba(255, 255, 255, .9); text-align: center; line-height: 1.6; }
   .sheet-actions { display: flex; flex-direction: column; gap: 9px; }
   .toast {
-    position: fixed; left: 50%; bottom: calc(26px + env(safe-area-inset-bottom)); transform: translateX(-50%);
+    position: fixed; left: 50%; bottom: calc(78px + env(safe-area-inset-bottom)); transform: translateX(-50%);
     background: rgba(12, 18, 26, .93); color: #ffffff; font-size: var(--fs-sub); padding: 10px 16px;
     border-radius: var(--r-pill); z-index: 30; max-width: 88vw; text-align: center; line-height: 1.5;
     display: flex; align-items: center; gap: 8px; cursor: pointer; animation: riseIn .16s ease;
@@ -565,11 +594,19 @@
 </head>
 <body>
   <div class="app">
-    <div class="topbar">
+    <header class="appbar" id="appBar">
+      <h1 class="app-title">旅行 AA 分摊器</h1>
+      <p class="app-sub">一次旅行一份账，几个人的钱分开算</p>
+    </header>
+
+    <header class="topbar" id="tripBar" hidden>
       <div class="tb-left">
-        <button type="button" class="proj-btn" id="openProjects">
-          <span id="projName">行程</span><span class="proj-caret" aria-hidden="true">▾</span>
-        </button>
+        <div class="tb-nav">
+          <button type="button" class="back-btn" id="backHome" aria-label="返回全部行程">‹ 全部行程</button>
+          <button type="button" class="proj-btn" id="openTripMenu">
+            <span id="projName">行程</span><span class="proj-caret" aria-hidden="true">▾</span>
+          </button>
+        </div>
         <div class="tb-total" id="total">¥0</div>
         <div class="tb-sub" id="heroSub"></div>
       </div>
@@ -577,11 +614,18 @@
         <button type="button" class="mode is-on" data-mode="cn" aria-pressed="true">国内</button>
         <button type="button" class="mode" data-mode="abroad" aria-pressed="false">境外</button>
       </div>
-    </div>
+    </header>
 
-    <section class="view" data-view="record">
-      <button type="button" class="btn btn-block btn-danger btn-lg" id="clearAll">清空全部</button>
+    <section class="view" data-view="home">
+      <div class="view-head">
+        <h2>我的行程</h2>
+        <button type="button" class="btn btn-soft-on" id="newTrip">+ 新建行程</button>
+      </div>
+      <div class="trip-cards" id="tripCards"></div>
+      <p class="trip-hint" id="tripHint"></p>
+    </section>
 
+    <section class="view" data-view="record" hidden>
       <div class="view-head">
         <h2>支出</h2>
         <div class="sec-actions">
@@ -598,6 +642,18 @@
     </section>
 
     <section class="view" data-view="settle" hidden>
+      <div class="rate-card" id="rateCard">
+        <div class="rate-row">
+          <span class="rate-label">结算货币</span>
+          <select id="baseCur" aria-label="结算货币"></select>
+          <button type="button" class="btn btn-soft" id="refreshRates">刷新</button>
+        </div>
+        <div class="rate-note">
+          <span id="rateStatus">汇率加载中…</span>
+          <button type="button" class="link-btn" id="openRates">手动改汇率</button>
+        </div>
+      </div>
+
       <div class="view-head">
         <h2>每人应付</h2>
         <span class="hint" id="roundNote"></span>
@@ -626,27 +682,17 @@
       <div class="stats-block" id="statCats"></div>
       <div class="view-head"><h2>按天</h2></div>
       <div class="stats-block" id="statDays"></div>
-      <div class="view-head"><h2>按成员（垫付 / 应承担）</h2></div>
-      <div class="stats-block" id="statPeople"></div>
     </section>
 
     <section class="view" data-view="more" hidden>
-      <div class="view-head">
-        <h2>同行的人</h2>
-        <button type="button" class="btn btn-soft" id="addPerson">+ 加人</button>
-      </div>
-      <div class="people" id="people"></div>
-
-      <div class="rate-card" id="rateCard">
+      <div class="view-head"><h2>数据</h2></div>
+      <div class="rate-card">
         <div class="rate-row">
-          <span class="rate-label">结算货币</span>
-          <select id="baseCur" aria-label="结算货币"></select>
-          <button type="button" class="btn btn-soft" id="refreshRates">刷新</button>
+          <span class="rate-label">要清空的行程</span>
+          <select id="clearTripSel" aria-label="选择要清空的行程"></select>
         </div>
-        <div class="rate-note">
-          <span id="rateStatus">汇率加载中…</span>
-          <button type="button" class="link-btn" id="openRates">手动改汇率</button>
-        </div>
+        <div class="share-status" id="clearHint"></div>
+        <div class="clear-row"><button type="button" class="btn btn-sm btn-danger" id="clearTrip">清空这个行程的账目</button></div>
       </div>
 
       <details class="guide">
@@ -655,8 +701,8 @@
           <li><b>记一笔</b><span>填金额、写项目、挑日期和分类就完事。垫钱的人可以只勾一个，也可以勾几个，勾多了各自填自己垫了多少。</span></li>
           <li><b>按天记</b><span>顶上是一排日期卡，点哪张就只看那天的账。要加新的一天，点最右边的「添加日期」，日历里直接选，也有今天、明天、后天的快捷键。</span></li>
           <li><b>两种模式</b><span>国内游只用人民币，没有汇率这回事，页面也不联网。出国玩就切到境外，每一笔自己选币种，自动折成你设定的结算货币；汇率每天更新一次，跟实际刷卡不一样时可以手动改。</span></li>
-          <li><b>多行程</b><span>点最上面的行程名就能新建、切换、重命名。这次旅行和上次互不干扰，想翻旧账随时切回去。</span></li>
-          <li><b>统计</b><span>总额、人均、笔数、天数一眼看完，还能看钱花在哪些分类、哪一天花得最多、每个人垫了多少。</span></li>
+          <li><b>多个行程</b><span>打开就是行程列表，点哪张卡就进哪次旅行。新建行程时顺手把同行的人加好，每段行程的账互不影响，想翻旧账随时进去看。</span></li>
+          <li><b>统计</b><span>总额、人均、笔数、天数一眼看完，还能看钱花在哪些分类、哪一天花得最多。</span></li>
           <li><b>结算图</b><span>算出谁该收、谁该付，给出笔数最少的转账方案，再生成一张结算图，长按保存就能发群里。</span></li>
           <li><b>一起记</b><span>可选。建个房间，把 8 位房间码发给同伴，大家记的账会自动汇总到一起。账目先在手机上加密再上传，房间码就是唯一的钥匙；不建房间就完全不上传。</span></li>
           <li><b>不用网络</b><span>账目只存在你这台设备上。同伴暂时不方便加房间，就用「设置」里的同步码把账目复制给对方，粘过去自动合并。</span></li>
@@ -687,12 +733,7 @@
     </section>
   </div>
 
-  <nav class="tabbar" aria-label="页面切换">
-    <button type="button" class="tab is-on" data-tab="record" aria-selected="true">记账</button>
-    <button type="button" class="tab" data-tab="stats" aria-selected="false">统计</button>
-    <button type="button" class="tab" data-tab="settle" aria-selected="false">结算</button>
-    <button type="button" class="tab" data-tab="more" aria-selected="false">设置</button>
-  </nav>
+  <nav class="tabbar" aria-label="页面切换" id="tabbar"></nav>
 
   <div class="sheet" id="legalSheet" hidden>
     <div class="sheet-inner">
@@ -756,23 +797,6 @@
     </div>
   </div>
 
-  <div class="sheet" id="projSheet" hidden>
-    <div class="sheet-inner">
-      <div class="panel">
-        <div class="sheet-head">
-          <h3>我的行程</h3>
-          <button type="button" class="link-btn" id="projClose">关闭</button>
-        </div>
-        <p class="panel-hint">每次旅行一个行程，互不影响；点一下就能切换回来。</p>
-        <div class="proj-list" id="projList"></div>
-        <div class="sheet-actions">
-          <button type="button" class="btn btn-primary btn-block" id="projNew">新建行程</button>
-          <button type="button" class="btn btn-block" id="projRename">重命名当前行程</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <div class="sheet" id="shareSheet" hidden>
     <div class="sheet-inner">
       <div class="panel">
@@ -788,6 +812,46 @@
           <button type="button" class="btn btn-block" id="shareJoin">输入房间码加入</button>
           <button type="button" class="btn btn-block" id="shareSync">立即同步</button>
           <button type="button" class="btn btn-block btn-danger" id="shareLeave">退出共享</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sheet" id="tripSheet" hidden>
+    <div class="sheet-inner">
+      <div class="panel">
+        <div class="sheet-head">
+          <h3>行程设置</h3>
+          <button type="button" class="link-btn" id="tripClose">关闭</button>
+        </div>
+        <label class="field"><span>行程名字</span><input type="text" id="tripNameInput" placeholder="比如：2026 云南 7 天" /></label>
+        <div class="field">
+          <span>同行的人</span>
+          <div class="people" id="people"></div>
+          <button type="button" class="btn btn-soft btn-block" id="addPerson">+ 加人</button>
+        </div>
+        <div class="sheet-actions">
+          <button type="button" class="btn btn-block btn-sm btn-danger" id="deleteTrip">删除这个行程</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sheet is-top" id="newTripSheet" hidden>
+    <div class="sheet-inner">
+      <div class="panel">
+        <div class="sheet-head">
+          <h3>新建行程</h3>
+          <button type="button" class="link-btn" id="newTripClose">关闭</button>
+        </div>
+        <label class="field"><span>行程名字</span><input type="text" id="newTripName" placeholder="比如：2026 云南 7 天" /></label>
+        <div class="field">
+          <span>这次和谁一起（记起来也能改）</span>
+          <div class="people" id="newTripPeople"></div>
+          <button type="button" class="btn btn-soft btn-block" id="newTripAddPerson">+ 加人</button>
+        </div>
+        <div class="sheet-actions">
+          <button type="button" class="btn btn-primary btn-block" id="newTripCreate">创建行程</button>
         </div>
       </div>
     </div>
@@ -1043,7 +1107,7 @@
           v: 2,
           projects: [t],
           activeId: t.id,
-          view: 'record',
+          view: 'home',
           share: { roomId: '', code: '', syncedAt: 0, rev: 0 }
         };
       }
@@ -1071,11 +1135,15 @@
         'rateCard', 'foreignBanner', 'foreignText'].forEach(function (id) {
           els[id] = document.getElementById(id);
         });
-      ['projName', 'openProjects', 'editSheet', 'editHead', 'editClose', 'editAmount', 'editName', 'editDate',
+      ['projName', 'backHome', 'openTripMenu', 'appBar', 'tripBar', 'tabbar', 'tripCards', 'tripHint', 'newTrip',
+        'tripSheet', 'tripClose', 'tripNameInput', 'deleteTrip',
+        'newTripSheet', 'newTripClose', 'newTripName', 'newTripPeople', 'newTripAddPerson', 'newTripCreate',
+        'clearTrip', 'clearHint', 'clearTripSel',
+        'editSheet', 'editHead', 'editClose', 'editAmount', 'editName', 'editDate',
         'editCat', 'editCurrency', 'editCur', 'editCurField', 'editPayers', 'editPayerAmounts', 'editShares',
-        'editSave', 'editCopy', 'editDelete', 'projSheet', 'projClose', 'projList', 'projNew', 'projRename',
+        'editSave', 'editCopy', 'editDelete',
         'shareSheet', 'shareClose', 'shareCode', 'shareInfo', 'shareCreate', 'shareJoin', 'shareSync', 'shareLeave',
-        'openShare', 'shareStatus', 'shareHint', 'statGrid', 'statCats', 'statDays', 'statPeople',
+        'openShare', 'shareStatus', 'shareHint', 'statGrid', 'statCats', 'statDays',
         'daySheet', 'dayClose', 'dayQuick', 'calPrev', 'calNext', 'calLabel', 'calGrid'].forEach(function (id) {
         els[id] = document.getElementById(id);
       });
@@ -2102,72 +2170,132 @@
           return s + Math.max(0, Math.round((cents * (toCNY(e.currency || 'CNY') / rate)) / 100) * 100);
         }, 0);
       }
-      function renderProjects() {
-        els.projList.innerHTML = state.projects.map(function (pr) {
-          var days = (pr.days || []).slice().sort();
-          var range = days.length ? (days.length === 1 ? shortDate(days[0]) : shortDate(days[0]) + '–' + shortDate(days[days.length - 1])) : '—';
-          var active = pr.id === state.activeId;
-          return '<div class="proj-row' + (active ? ' is-active' : '') + '">' +
-            '<button type="button" class="ex-main" data-proj="' + pr.id + '">' +
-              '<span class="ex-info"><span class="pr-name">' + esc(pr.name) + '</span>' +
-              '<span class="pr-sub">' + range + ' · ' + (pr.expenses || []).length + ' 笔 · ' + (pr.people || []).length + ' 人</span></span>' +
-            '</button>' +
-            '<span class="pr-sum">' + fmt(projectTotal(pr), (pr.mode === 'cn' ? 'CNY' : (pr.base || 'CNY'))) + '</span>' +
-            (state.projects.length > 1
-              ? '<button type="button" class="x" data-delproj="' + pr.id + '" aria-label="删除行程">×</button>'
-              : '<span></span>') +
-            '</div>';
+      /* ───────── 主页：行程列表 ───────── */
+      var TRIP_VIEWS = { record: '记账', stats: '统计', settle: '结算' };
+      var HOME_VIEWS = { home: '行程', more: '设置' };
+
+      function renderTabs() {
+        var group = TRIP_VIEWS[state.view] ? TRIP_VIEWS : HOME_VIEWS;
+        els.tabbar.innerHTML = Object.keys(group).map(function (k) {
+          var on = k === state.view;
+          return '<button type="button" class="tab' + (on ? ' is-on' : '') + '" data-tab="' + k +
+            '" aria-selected="' + (on ? 'true' : 'false') + '">' + group[k] + '</button>';
         }).join('');
       }
-      function openProjSheet() { renderProjects(); els.projSheet.hidden = false; document.body.style.overflow = 'hidden'; }
-      function closeProjSheet() { els.projSheet.hidden = true; document.body.style.overflow = ''; }
-      els.openProjects.addEventListener('click', openProjSheet);
-      els.projClose.addEventListener('click', closeProjSheet);
-      els.projSheet.addEventListener('click', function (ev) { if (ev.target === els.projSheet) closeProjSheet(); });
-      els.projList.addEventListener('click', function (ev) {
-        var del = ev.target.closest('[data-delproj]');
-        if (del) {
-          var id = del.getAttribute('data-delproj');
-          var target = null;
-          state.projects.forEach(function (x) { if (x.id === id) target = x; });
-          if (!target || state.projects.length <= 1) return;
-          if (!window.confirm('删除行程「' + target.name + '」和里面的 ' + (target.expenses || []).length + ' 笔账？')) return;
-          var snap = snapshot();
-          state.projects = state.projects.filter(function (x) { return x.id !== id; });
-          if (state.activeId === id) state.activeId = state.projects[0].id;
-          renderAll(); renderProjects(); closeProjSheet();
-          toast('已删除行程', '撤销', function () { undo(snap, '已恢复行程'); });
-          return;
-        }
-        var pick = ev.target.closest('[data-proj]');
-        if (!pick) return;
-        state.activeId = pick.getAttribute('data-proj');
+
+      function tripRange(pr) {
+        var days = (pr.days || []).slice().sort();
+        if (!days.length) return '还没记日子';
+        return days.length === 1 ? shortDate(days[0]) : shortDate(days[0]) + '–' + shortDate(days[days.length - 1]);
+      }
+      function renderTrips() {
+        els.tripCards.innerHTML = state.projects.map(function (pr) {
+          var sub = tripRange(pr) + ' · ' + (pr.days || []).length + ' 天 · ' +
+            (pr.people || []).length + ' 人 · ' + (pr.expenses || []).length + ' 笔';
+          return '<button type="button" class="trip-card' + (pr.id === state.activeId ? ' is-active' : '') + '" data-trip="' + pr.id + '">' +
+            '<span class="tc-main"><span class="tc-name">' + esc(pr.name) + '</span><span class="tc-sub">' + sub + '</span></span>' +
+            '<span class="tc-sum">' + fmt(projectTotal(pr), (pr.mode === 'cn' ? 'CNY' : (pr.base || 'CNY'))) + '</span>' +
+            '<span class="tc-go" aria-hidden="true">›</span></button>';
+        }).join('');
+        els.tripHint.textContent = '点行程卡进去记账。每段行程的账互不影响，下次出去玩再新建一个就行。';
+      }
+      function enterTrip(id) {
+        state.activeId = id;
         normalizeAll();
-        closeProjSheet();
         showView('record');
         renderAll();
-        toast('已切到「' + P().name + '」');
+      }
+      els.tripCards.addEventListener('click', function (ev) {
+        var card = ev.target.closest('[data-trip]');
+        if (!card) return;
+        enterTrip(card.getAttribute('data-trip'));
       });
-      els.projRename.addEventListener('click', function () {
+      els.backHome.addEventListener('click', function () { showView('home'); renderTrips(); });
+
+      /* ───────── 行程设置：改名 / 管成员 / 删行程 ───────── */
+      function openTripSheet() {
+        els.tripNameInput.value = P().name;
+        renderPeople();
+        els.tripSheet.hidden = false;
+        document.body.style.overflow = 'hidden';
+      }
+      function closeTripSheet() {
+        els.tripSheet.hidden = true;
+        if (els.newTripSheet.hidden) document.body.style.overflow = '';
+      }
+      els.openTripMenu.addEventListener('click', openTripSheet);
+      els.tripClose.addEventListener('click', closeTripSheet);
+      els.tripSheet.addEventListener('click', function (ev) { if (ev.target === els.tripSheet) closeTripSheet(); });
+      els.tripNameInput.addEventListener('input', function () {
+        P().name = (els.tripNameInput.value || '').trim() || '未命名行程';
+        els.projName.textContent = P().name;
+        renderTrips();
+      });
+      els.deleteTrip.addEventListener('click', function () {
         var pr = P();
-        var name = window.prompt('给这个行程改个名字：', pr.name);
-        if (name === null) return;
-        pr.name = (name || '').trim() || pr.name;
-        renderProjects();
-        render();
-        toast('已改名为「' + pr.name + '」');
+        if (!window.confirm('删除行程「' + pr.name + '」和里面的 ' + (pr.expenses || []).length + ' 笔账？其他行程不受影响。')) return;
+        var snap = snapshot();
+        state.projects = state.projects.filter(function (x) { return x.id !== pr.id; });
+        if (!state.projects.length) state.projects.push(newProject('我的行程'));
+        state.activeId = state.projects[0].id;
+        normalizeAll();
+        closeTripSheet();
+        showView('home');
+        renderAll();
+        toast('已删除行程', '撤销', function () { undo(snap, '已恢复行程'); });
       });
-      els.projNew.addEventListener('click', function () {
-        var name = window.prompt('这次行程叫什么？（例如：2026 云南 7 天）', '新的行程');
-        if (name === null) return;
-        var pr = newProject((name || '').trim() || '新的行程');
+
+      /* ───────── 新建行程（顺手把成员加好）───────── */
+      var newTripDraft = [];
+      function renderNewTripPeople() {
+        els.newTripPeople.innerHTML = newTripDraft.map(function (n, i) {
+          return '<div class="person"><input type="text" class="p-name" data-nti="' + i + '" value="' + esc(n) + '" aria-label="成员名字" />' +
+            '<button type="button" class="x" data-ntdel="' + i + '" aria-label="删除成员">×</button></div>';
+        }).join('');
+      }
+      function openNewTrip() {
+        newTripDraft = ['我', '朋友A'];
+        els.newTripName.value = '';
+        renderNewTripPeople();
+        els.newTripSheet.hidden = false;
+        document.body.style.overflow = 'hidden';
+        window.setTimeout(function () { try { els.newTripName.focus(); } catch (e) { } }, 80);
+      }
+      function closeNewTrip() {
+        els.newTripSheet.hidden = true;
+        if (els.tripSheet.hidden) document.body.style.overflow = '';
+      }
+      els.newTrip.addEventListener('click', openNewTrip);
+      els.newTripClose.addEventListener('click', closeNewTrip);
+      els.newTripSheet.addEventListener('click', function (ev) { if (ev.target === els.newTripSheet) closeNewTrip(); });
+      els.newTripPeople.addEventListener('input', function (ev) {
+        var i = ev.target.getAttribute && ev.target.getAttribute('data-nti');
+        if (i === null || i === undefined) return;
+        newTripDraft[Number(i)] = ev.target.value;
+      });
+      els.newTripPeople.addEventListener('click', function (ev) {
+        var del = ev.target.closest('[data-ntdel]');
+        if (!del) return;
+        if (newTripDraft.length <= 1) { toast('至少留一个人'); return; }
+        newTripDraft.splice(Number(del.getAttribute('data-ntdel')), 1);
+        renderNewTripPeople();
+      });
+      els.newTripAddPerson.addEventListener('click', function () {
+        newTripDraft.push('朋友' + String.fromCharCode(64 + newTripDraft.length));
+        renderNewTripPeople();
+      });
+      els.newTripCreate.addEventListener('click', function () {
+        var name = (els.newTripName.value || '').trim() || '新的行程';
+        var names = newTripDraft.map(function (n) { return String(n || '').trim(); }).filter(Boolean);
+        if (!names.length) names = ['我'];
+        var pr = newProject(name, { people: names.map(function (n) { return { id: nid('p'), name: n }; }) });
         state.projects.push(pr);
         state.activeId = pr.id;
         normalizeAll();
-        closeProjSheet();
+        closeNewTrip();
         showView('record');
         renderAll();
-        toast('已新建行程');
+        toast('已新建「' + pr.name + '」');
       });
 
       /* ───────── 共享：同步码（零后端）+ 房间（需自建服务）───────── */
@@ -2437,11 +2565,6 @@
         els.statDays.innerHTML = days.length ? days.map(function (d) {
           return statBar(shortDate(d) + ' ' + weekOf(d), fmt(dayTotal(d), base()), dayTotal(d) / maxDay * 100);
         }).join('') : '<div class="share-status">还没有数据</div>';
-        var maxPerson = 1;
-        res.rows.forEach(function (r) { maxPerson = Math.max(maxPerson, r.paid, r.pay); });
-        els.statPeople.innerHTML = res.rows.map(function (r) {
-          return statBar(esc(r.name) + ' · 垫付 ' + fmt(r.paid, base()), '应承担 ' + fmt(r.pay, base()), Math.max(r.paid, r.pay) / maxPerson * 100);
-        }).join('');
       }
 
       /* ───────── 共享按钮 ───────── */
@@ -2542,17 +2665,44 @@
         els.legalSheet.hidden = true;
         document.body.style.overflow = '';
       });
-      document.getElementById('clearAll').addEventListener('click', function () {
-        if (!window.confirm('清空以后现在填的内容就没了（无法恢复），确定要重来吗？')) return;
+      /* 清空只作用于「在设置里选中的那一段行程」：成员和行程名字保留，其他行程完全不动 */
+      function clearTarget() {
+        var id = els.clearTripSel.value, found = null;
+        state.projects.forEach(function (x) { if (x.id === id) found = x; });
+        return found;
+      }
+      function updateClearHint() {
+        var pr = clearTarget();
+        els.clearHint.textContent = pr
+          ? '只会清掉「' + pr.name + '」的 ' + (pr.expenses || []).length + ' 笔支出，行程名字和同行的人保留，其他行程不受影响。'
+          : '还没有行程可以清空。';
+      }
+      function renderClearSection(keepId) {
+        if (!els.clearTripSel) return;
+        var want = keepId || els.clearTripSel.value || state.activeId;
+        var exists = state.projects.some(function (pr) { return pr.id === want; });
+        if (!exists) want = state.activeId;
+        els.clearTripSel.innerHTML = state.projects.map(function (pr) {
+          return '<option value="' + pr.id + '"' + (pr.id === want ? ' selected' : '') + '>' +
+            esc(pr.name) + '（' + (pr.expenses || []).length + ' 笔）</option>';
+        }).join('');
+        updateClearHint();
+      }
+      els.clearTripSel.addEventListener('change', updateClearHint);
+      els.clearTrip.addEventListener('click', function () {
+        var pr = clearTarget();
+        if (!pr) return;
+        var n = (pr.expenses || []).length;
+        if (!window.confirm('清空「' + pr.name + '」的账目？\n\n这 ' + n + ' 笔支出会被删掉，' +
+          '行程名字和同行的人保留，其他行程不受影响。\n（清空后可以用提示里的「撤销」恢复）')) return;
         var snap = snapshot();
-        var pr = P();
-        pr.people = [{ id: nid('p'), name: '朋友A' }, { id: nid('p'), name: '朋友B' }];
+        pr.expenses = [];
         pr.days = [today()];
         pr.selected = today();
-        pr.expenses = [];
-        normalizeAll();
+        if (state.activeId === pr.id) normalizeAll();
         renderAll();
-        toast('已清空，可以重新开始', '撤销清空', function () { undo(snap, '已恢复到清空前'); });
+        renderClearSection(pr.id);
+        toast('已清空「' + pr.name + '」', '撤销清空', function () { undo(snap, '已恢复'); });
       });
 
       /* ---------- 汇率面板 ---------- */
@@ -2809,6 +2959,9 @@
 
       function showView(name) {
         state.view = name;
+        var inTrip = !!TRIP_VIEWS[name];
+        els.appBar.hidden = inTrip;
+        els.tripBar.hidden = !inTrip;
         Array.prototype.forEach.call(document.querySelectorAll('[data-view]'), function (v) {
           var on = v.getAttribute('data-view') === name;
           v.hidden = !on;
@@ -2818,11 +2971,9 @@
             v.classList.add('view-in');
           }
         });
-        Array.prototype.forEach.call(document.querySelectorAll('[data-tab]'), function (t) {
-          var on = t.getAttribute('data-tab') === name;
-          t.classList.toggle('is-on', on);
-          t.setAttribute('aria-selected', on ? 'true' : 'false');
-        });
+        renderTabs();
+        if (name === 'home') renderTrips();
+        if (name === 'more') renderClearSection();
         save();
         window.scrollTo(0, 0);
       }
@@ -2835,8 +2986,10 @@
         toast(mode === 'cn' ? '国内模式：只用人民币' : '境外模式：可记多种货币，自动折算');
       }
 
-      Array.prototype.forEach.call(document.querySelectorAll('[data-tab]'), function (t) {
-        t.addEventListener('click', function () { showView(t.getAttribute('data-tab')); });
+      /* 标签栏是动态渲染的（主页两个、行程内三个），用事件委托绑定一次即可 */
+      els.tabbar.addEventListener('click', function (ev) {
+        var t = ev.target.closest('[data-tab]');
+        if (t) showView(t.getAttribute('data-tab'));
       });
       Array.prototype.forEach.call(document.querySelectorAll('[data-mode]'), function (b) {
         b.addEventListener('click', function () { setMode(b.getAttribute('data-mode')); });
@@ -2847,7 +3000,7 @@
       els.baseCur.value = P().base;
       applyModeUI();
       renderAll();
-      showView(state.view || 'record');
+      showView('home');   /* 每次打开都先落在这段行程的列表上 */
       if (P().mode === 'abroad') fetchRates(false);
       /* 在房间里的话：打开先拉一次，之后每 45 秒静默拉一次 */
       if (state.share && state.share.code) {
