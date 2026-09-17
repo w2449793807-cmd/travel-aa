@@ -239,7 +239,7 @@
   }
   .tag.is-accent { color: var(--accent); background: var(--accent-soft); }
   .field { display: flex; flex-direction: column; gap: var(--sp-2); }
-  .field > span { font-size: var(--fs-cap); color: var(--muted); }
+  .field > span { font-size: var(--fs-sub); color: var(--muted); }
   .field input, .field select { font-size: var(--fs-body); }
   .edit-amount { display: flex; align-items: baseline; gap: var(--sp-2); padding: var(--sp-2) 0 var(--sp-3); border-bottom: 1px solid var(--line); }
   .edit-amount .ea-cur { font-size: var(--fs-title); color: var(--muted); }
@@ -817,18 +817,18 @@
           <h3>行程设置</h3>
           <button type="button" class="link-btn" id="tripClose">关闭</button>
         </div>
-        <label class="field"><span>行程名字</span><input type="text" id="tripNameInput" placeholder="比如：2026 云南 7 天" /></label>
+        <label class="field"><span>名称</span><input type="text" id="tripNameInput" placeholder="比如：2026 云南 7 天" /></label>
         <div class="field">
-          <span>去哪玩（新建时选的，这里可改）</span>
+          <span>出行目的地（新建时选的，这里可改）</span>
           <div class="mode-switch" role="group" aria-label="行程类型">
             <button type="button" class="mode" data-mode="cn" aria-pressed="false">国内</button>
             <button type="button" class="mode" data-mode="abroad" aria-pressed="false">境外</button>
           </div>
         </div>
         <div class="field">
-          <span>同行的人</span>
+          <span>旅游伙伴</span>
           <div class="people" id="people"></div>
-          <button type="button" class="btn btn-soft btn-block" id="addPerson">+ 加人</button>
+          <button type="button" class="btn btn-soft btn-block" id="addPerson">添加</button>
         </div>
         <div class="field">
           <span>共享房间（只共享这一段行程）</span>
@@ -851,14 +851,14 @@
           <h3>新建行程</h3>
           <button type="button" class="link-btn" id="newTripClose">关闭</button>
         </div>
-        <label class="field"><span>行程名字</span><input type="text" id="newTripName" placeholder="比如：2026 云南 7 天" /></label>
+        <label class="field"><span>名称</span><input type="text" id="newTripName" placeholder="比如：2026 云南 7 天" /></label>
         <div class="field">
-          <span>这次和谁一起（记起来也能改）</span>
+          <span>旅游伙伴</span>
           <div class="people" id="newTripPeople"></div>
-          <button type="button" class="btn btn-soft btn-block" id="newTripAddPerson">+ 加人</button>
+          <button type="button" class="btn btn-soft btn-block" id="newTripAddPerson">添加</button>
         </div>
         <div class="field">
-          <span>去哪玩</span>
+          <span>出行目的地</span>
           <div class="mode-switch" role="group" aria-label="行程类型" id="newTripMode">
             <button type="button" class="mode is-on" data-nt-mode="cn" aria-pressed="true">国内</button>
             <button type="button" class="mode" data-nt-mode="abroad" aria-pressed="false">境外</button>
@@ -2825,7 +2825,7 @@
         els.legalSheet.hidden = true;
         document.body.style.overflow = '';
       });
-      /* 清空只作用于「在设置里选中的那一段行程」：成员和行程名字保留，其他行程完全不动 */
+      /* 清空只作用于「在设置里选中的那一段行程」：名称和旅游伙伴保留，其他行程完全不动 */
       function clearTarget() {
         var id = els.clearTripSel.value, found = null;
         state.projects.forEach(function (x) { if (x.id === id) found = x; });
@@ -2834,7 +2834,7 @@
       function updateClearHint() {
         var pr = clearTarget();
         els.clearHint.textContent = pr
-          ? '只会清掉「' + pr.name + '」的 ' + (pr.expenses || []).length + ' 笔支出，行程名字和同行的人保留，其他行程不受影响。'
+          ? '只会清掉「' + pr.name + '」的 ' + (pr.expenses || []).length + ' 笔支出，名称和旅游伙伴保留，其他行程不受影响。'
           : '还没有行程可以清空。';
       }
       function renderClearSection(keepId) {
@@ -2854,7 +2854,7 @@
         if (!pr) return;
         var n = (pr.expenses || []).length;
         if (!window.confirm('清空「' + pr.name + '」的账目？\n\n这 ' + n + ' 笔支出会被删掉，' +
-          '行程名字和同行的人保留，其他行程不受影响。\n（清空后可以用提示里的「撤销」恢复）')) return;
+          '名称和旅游伙伴保留，其他行程不受影响。\n（清空后可以用提示里的「撤销」恢复）')) return;
         var snap = snapshot();
         pr.expenses = [];
         pr.days = [today()];
