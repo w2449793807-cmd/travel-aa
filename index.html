@@ -104,16 +104,53 @@
   .btn-sm { min-height: var(--btn-sm); font-size: var(--fs-sub); padding: 8px 12px; }
   .clear-row { display: flex; }
   .trip-cards { display: flex; flex-direction: column; gap: var(--sp-3); }
-  .trip-hint { margin: 0; font-size: var(--fs-sub); color: var(--muted); line-height: 1.6; }
-  .trip-card {
-    display: flex; align-items: center; gap: var(--sp-3); width: 100%; text-align: left;
-    font: inherit; color: inherit; cursor: pointer;
+  /* 记账页：日期条下面两个大按钮 */
+  .quick-actions { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: var(--sp-3); }
+  .quick-actions .btn { min-height: var(--btn-lg); font-size: var(--fs-title); }
+  .check-row { display: flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-sub); color: var(--text); cursor: pointer; }
+  .check-row input { width: 20px; height: 20px; min-height: 0; padding: 0; flex: none; }
+  /* 统计：环状图 + 图例 */
+  .stat-donut { display: flex; flex-direction: column; gap: var(--sp-3); }
+  .stat-card {
     background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card);
-    padding: var(--sp-4); box-shadow: var(--shadow-sm);
-    transition: transform .14s ease, border-color .14s ease;
+    padding: var(--sp-4); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: var(--sp-3);
   }
-  .trip-card:active { transform: scale(.985); }
+  .stat-card h3 { margin: 0; font-size: var(--fs-cap); font-weight: var(--fw-medium); color: var(--muted); }
+  .donut-wrap { display: flex; align-items: center; gap: var(--sp-4); }
+  .donut { position: relative; width: 112px; height: 112px; flex: none; }
+  .donut svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .donut-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; }
+  .donut-center b {
+    font-size: var(--fs-sub); font-weight: var(--fw-semibold); font-variant-numeric: tabular-nums;
+    max-width: 84px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .donut-center span { font-size: var(--fs-cap); color: var(--muted); }
+  .legend { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--sp-2); }
+  .leg { display: flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-sub); }
+  .leg-dot { width: 8px; height: 8px; border-radius: var(--r-pill); flex: none; }
+  .leg-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .leg-val { color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .guide-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--sp-3); }
+  .guide-list li { display: grid; grid-template-columns: 68px minmax(0, 1fr); gap: var(--sp-2); font-size: var(--fs-sub); line-height: 1.6; }
+  .guide-list li b { color: var(--accent); font-weight: var(--fw-medium); }
+  .trip-card {
+    display: flex; align-items: stretch; width: 100%;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card);
+    box-shadow: var(--shadow-sm); overflow: hidden;
+    transition: border-color .14s ease;
+  }
   .trip-card.is-active { border-color: var(--accent); }
+  .tc-main-btn {
+    flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--sp-3);
+    padding: var(--sp-4); background: transparent; border: 0; font: inherit; color: inherit;
+    text-align: left; cursor: pointer; transition: background .14s ease;
+  }
+  .tc-main-btn:active { background: var(--soft); }
+  .tc-more {
+    flex: none; width: var(--tap-min); background: transparent; border: 0; border-left: 1px solid var(--line);
+    color: var(--muted); font: inherit; font-size: var(--fs-title); line-height: 1; cursor: pointer;
+  }
+  .tc-more:active { background: var(--soft); }
   .tc-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
   .tc-name { font-size: var(--fs-title); font-weight: var(--fw-medium); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .tc-sub { font-size: var(--fs-cap); color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -209,16 +246,6 @@
   .proj-row .pr-name { font-size: var(--fs-body); font-weight: var(--fw-medium); }
   .proj-row .pr-sub { font-size: var(--fs-cap); color: var(--muted); }
   .proj-row .pr-sum { font-size: var(--fs-sub); font-variant-numeric: tabular-nums; }
-  .stats-block { display: flex; flex-direction: column; gap: var(--sp-2); }
-  .stat-row { display: flex; flex-direction: column; gap: var(--sp-1); }
-  .stat-top { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-2); font-size: var(--fs-sub); }
-  .stat-top b { font-weight: var(--fw-medium); font-variant-numeric: tabular-nums; }
-  .stat-bar { height: 8px; border-radius: var(--r-pill); background: var(--soft); overflow: hidden; }
-  .stat-bar > i { display: block; height: 100%; background: var(--accent); border-radius: var(--r-pill); }
-  .stat-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-2); }
-  .stat-cell { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); padding: var(--sp-3); }
-  .stat-cell .sc-label { font-size: var(--fs-cap); color: var(--muted); }
-  .stat-cell .sc-value { font-size: var(--fs-title); font-weight: var(--fw-semibold); font-variant-numeric: tabular-nums; margin-top: 2px; }
   .sheet-head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); }
   .sheet-head h3 { margin: 0; font-size: var(--fs-title); font-weight: var(--fw-semibold); }
   .share-status { font-size: var(--fs-cap); color: var(--muted); line-height: 1.6; }
@@ -297,21 +324,6 @@
   .rate-row select { min-height: var(--btn-md); font-size: var(--fs-body); padding: 8px 10px; }
   .rate-note { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: var(--fs-cap); color: var(--muted); }
   .rate-note span { line-height: 1.5; }
-  .guide {
-    background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card);
-    padding: 12px 16px; font-size: var(--fs-sub); line-height: 1.7; box-shadow: var(--shadow-sm);
-  }
-  .guide summary {
-    cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between;
-    gap: 8px; font-size: var(--fs-sub); font-weight: 600;
-  }
-  .guide summary::-webkit-details-marker { display: none; }
-  .guide summary::after { content: "收起"; font-size: var(--fs-cap); font-weight: 400; color: var(--muted); }
-  .guide:not([open]) summary::after { content: "展开"; }
-  .guide ul { margin: 9px 0 0; padding-left: 0; list-style: none; }
-  .guide li { display: grid; grid-template-columns: 68px minmax(0, 1fr); gap: 8px; margin-bottom: 7px; color: var(--muted); }
-  .guide li b { color: var(--accent); font-weight: 600; }
-  .guide li span { color: var(--text); }
   .guide-note { margin: 8px 0 0; font-size: var(--fs-cap); color: var(--muted); }
   .people { display: flex; flex-wrap: wrap; gap: 7px; }
   .person {
@@ -632,23 +644,30 @@
         <button type="button" class="btn btn-soft-on" id="newTrip">+ 新建行程</button>
       </div>
       <div class="trip-cards" id="tripCards"></div>
-      <p class="trip-hint" id="tripHint"></p>
     </section>
 
     <section class="view" data-view="record" hidden>
-      <div class="view-head">
-        <h2>支出</h2>
-        <div class="sec-actions">
-          <button type="button" class="btn btn-soft" id="openOcr">粘贴文字</button>
-          <button type="button" class="btn btn-soft-on" id="addExpense">+ 记一笔</button>
-        </div>
+      <div class="day-strip" id="dayStrip"></div>
+      <div class="quick-actions">
+        <button type="button" class="btn btn-primary" id="addExpense">+ 记一笔</button>
+        <button type="button" class="btn" id="openOcr">粘贴文字</button>
       </div>
       <div class="banner" id="foreignBanner" hidden>
         <span id="foreignText"></span>
         <button type="button" class="link-btn" id="switchAbroad">切到境外模式</button>
       </div>
-      <div class="day-strip" id="dayStrip"></div>
+      <div class="view-head">
+        <h2>支出</h2>
+        <span class="hint" id="expCount"></span>
+      </div>
       <div class="expenses" id="expenses"></div>
+
+      <div class="view-head">
+        <h2>统计</h2>
+        <span class="hint" id="statScope"></span>
+      </div>
+      <div class="stat-donut" id="statCats"></div>
+      <div class="stat-donut" id="statDays"></div>
     </section>
 
     <section class="view" data-view="settle" hidden>
@@ -685,15 +704,6 @@
       </div>
     </section>
 
-    <section class="view" data-view="stats" hidden>
-      <div class="view-head"><h2>概览</h2></div>
-      <div class="stat-grid" id="statGrid"></div>
-      <div class="view-head"><h2>按分类</h2></div>
-      <div class="stats-block" id="statCats"></div>
-      <div class="view-head"><h2>按天</h2></div>
-      <div class="stats-block" id="statDays"></div>
-    </section>
-
     <section class="view" data-view="more" hidden>
       <div class="view-head"><h2>数据</h2></div>
       <div class="rate-card">
@@ -705,32 +715,9 @@
         <div class="clear-row"><button type="button" class="btn btn-sm btn-danger" id="clearTrip">清空这个行程的账目</button></div>
       </div>
 
-      <details class="guide">
-        <summary>功能介绍</summary>
-        <ul>
-          <li><b>记一笔</b><span>填金额、写项目、挑日期和分类就完事。垫钱的人可以只勾一个，也可以勾几个，勾多了各自填自己垫了多少。</span></li>
-          <li><b>按天记</b><span>顶上是一排日期卡，点哪张就只看那天的账。要加新的一天，点最右边的「添加日期」，日历里直接选，也有今天、明天、后天的快捷键。</span></li>
-          <li><b>两种模式</b><span>国内游只用人民币，没有汇率这回事，页面也不联网。出国玩就切到境外，每一笔自己选币种，自动折成你设定的结算货币；汇率每天更新一次，跟实际刷卡不一样时可以手动改。</span></li>
-          <li><b>多个行程</b><span>打开就是行程列表，点哪张卡就进哪次旅行。新建行程时顺手把同行的人加好，每段行程的账互不影响，想翻旧账随时进去看。</span></li>
-          <li><b>统计</b><span>总额、人均、笔数、天数一眼看完，还能看钱花在哪些分类、哪一天花得最多。</span></li>
-          <li><b>结算图</b><span>算出谁该收、谁该付，给出笔数最少的转账方案，再生成一张结算图，长按保存就能发群里。</span></li>
-          <li><b>一起记</b><span>可选。建个房间，把 8 位房间码发给同伴，大家记的账会自动汇总到一起。账目先在手机上加密再上传，房间码就是唯一的钥匙；不建房间就完全不上传。</span></li>
-          <li><b>不用网络</b><span>账目只存在你这台设备上。同伴暂时不方便加房间，就用「设置」里的同步码把账目复制给对方，粘过去自动合并。</span></li>
-        </ul>
-        <p class="guide-note">换手机或清空浏览器数据会把账目一起清掉，重要的行程顺手导出一份同步码存着更稳妥。</p>
-      </details>
-
-      <div class="view-head">
-        <h2>多人共享</h2>
-        <span class="hint" id="shareHint"></span>
-      </div>
+      <div class="view-head"><h2>关于</h2></div>
       <div class="rate-card">
-        <div class="share-status" id="shareStatus">未开启。开启后同伴能用同一个房间码一起记账。</div>
-        <div class="sheet-actions">
-          <button type="button" class="btn btn-block btn-lg" id="openShare">共享设置</button>
-          <button type="button" class="btn btn-block" id="syncExport">生成同步码（发给同伴）</button>
-          <button type="button" class="btn btn-block" id="syncImport">粘贴同步码合并</button>
-        </div>
+        <button type="button" class="btn btn-block" id="openGuide">功能介绍</button>
       </div>
 
       <footer class="ft">
@@ -807,26 +794,6 @@
     </div>
   </div>
 
-  <div class="sheet" id="shareSheet" hidden>
-    <div class="sheet-inner">
-      <div class="panel">
-        <div class="sheet-head">
-          <h3>多人共享</h3>
-          <button type="button" class="link-btn" id="shareClose">关闭</button>
-        </div>
-        <p class="panel-hint">开启后，你和同伴用同一个房间码记账。账目在你这台设备上加密后才上传，房间码就是钥匙；不开启就完全不上传。</p>
-        <div class="room-code" id="shareCode">未开启</div>
-        <div class="share-status" id="shareInfo"></div>
-        <div class="sheet-actions">
-          <button type="button" class="btn btn-primary btn-block" id="shareCreate">创建房间</button>
-          <button type="button" class="btn btn-block" id="shareJoin">输入房间码加入</button>
-          <button type="button" class="btn btn-block" id="shareSync">立即同步</button>
-          <button type="button" class="btn btn-block btn-danger" id="shareLeave">退出共享</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <div class="sheet" id="tripSheet" hidden>
     <div class="sheet-inner">
       <div class="panel">
@@ -839,6 +806,12 @@
           <span>同行的人</span>
           <div class="people" id="people"></div>
           <button type="button" class="btn btn-soft btn-block" id="addPerson">+ 加人</button>
+        </div>
+        <div class="field">
+          <span>共享房间（只共享这一段行程）</span>
+          <div class="room-code" id="tripRoomCode">未开启</div>
+          <div class="share-status" id="tripRoomInfo"></div>
+          <div class="sheet-actions" id="tripRoomActions"></div>
         </div>
         <div class="sheet-actions">
           <button type="button" class="btn btn-block btn-sm btn-danger" id="deleteTrip">删除这个行程</button>
@@ -860,8 +833,50 @@
           <div class="people" id="newTripPeople"></div>
           <button type="button" class="btn btn-soft btn-block" id="newTripAddPerson">+ 加人</button>
         </div>
+        <div class="field">
+          <span>去哪玩</span>
+          <div class="mode-switch" role="group" aria-label="行程类型" id="newTripMode">
+            <button type="button" class="mode is-on" data-nt-mode="cn" aria-pressed="true">国内</button>
+            <button type="button" class="mode" data-nt-mode="abroad" aria-pressed="false">境外</button>
+          </div>
+        </div>
+        <label class="field" id="newTripCurField" hidden>
+          <span>结算币种（进行程后也能改）</span>
+          <select id="newTripCur" aria-label="结算币种"></select>
+        </label>
+        <div class="field">
+          <span>共享房间</span>
+          <label class="check-row">
+            <input type="checkbox" id="newTripRoom" />
+            <span>现在就开一个房间，和同伴一起记这段行程</span>
+          </label>
+        </div>
         <div class="sheet-actions">
           <button type="button" class="btn btn-primary btn-block" id="newTripCreate">创建行程</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sheet" id="guideSheet" hidden>
+    <div class="sheet-inner">
+      <div class="panel">
+        <div class="sheet-head">
+          <h3>功能介绍</h3>
+          <button type="button" class="link-btn" id="guideClose">关闭</button>
+        </div>
+        <ul class="guide-list">
+          <li><b>记一笔</b><span>填写金额、项目、日期与分类；垫付人可多选，多人垫付时按各自金额拆分。</span></li>
+          <li><b>按天记</b><span>在日期条上选择某天，只显示当天账目；「添加日期」可新增日期，也可直接选今天、明天、后天。</span></li>
+          <li><b>国内 / 境外</b><span>国内模式仅用人民币；境外模式每笔可选币种，自动折算为行程的结算货币。汇率每日更新一次，也可手动修改。</span></li>
+          <li><b>多行程</b><span>每个行程独立记账，互不影响；新建行程时一并设定成员、类型与币种。</span></li>
+          <li><b>统计</b><span>按分类显示占比；选择「全部」时同时显示按日期的分布。</span></li>
+          <li><b>结算</b><span>计算每人应收应付与最少转账方案，并可生成结算图。</span></li>
+          <li><b>共享房间</b><span>在行程设置中创建房间，把房间码告知同伴即可共同记账，仅同步这一段行程。</span></li>
+        </ul>
+        <p class="guide-note">账目保存在本机；换设备或清理浏览器数据会一并清除。</p>
+        <div class="sheet-actions">
+          <button type="button" class="btn btn-block" id="guideOk">知道了</button>
         </div>
       </div>
     </div>
@@ -1092,7 +1107,8 @@
           selected: 'all',
           base: 'CNY',
           mode: 'cn',
-          manualRates: {}
+          manualRates: {},
+          room: { id: '', code: '', syncedAt: 0 }
         };
         return p;
       }
@@ -1145,15 +1161,17 @@
         'rateCard', 'foreignBanner', 'foreignText'].forEach(function (id) {
           els[id] = document.getElementById(id);
         });
-      ['projName', 'backHome', 'openTripMenu', 'appBar', 'tripBar', 'tabbar', 'tripCards', 'tripHint', 'newTrip',
+      ['projName', 'backHome', 'openTripMenu', 'appBar', 'tripBar', 'tabbar', 'tripCards', 'newTrip',
         'tripSheet', 'tripClose', 'tripNameInput', 'deleteTrip',
+        'tripRoomCode', 'tripRoomInfo', 'tripRoomActions',
         'newTripSheet', 'newTripClose', 'newTripName', 'newTripPeople', 'newTripAddPerson', 'newTripCreate',
+        'newTripMode', 'newTripCurField', 'newTripCur', 'newTripRoom',
         'clearTrip', 'clearHint', 'clearTripSel',
+        'guideSheet', 'guideClose', 'guideOk', 'openGuide',
         'editSheet', 'editHead', 'editClose', 'editAmount', 'editName', 'editDate',
         'editCat', 'editCurrency', 'editCur', 'editCurField', 'editPayers', 'editPayerAmounts', 'editShares',
         'editSave', 'editCopy', 'editDelete',
-        'shareSheet', 'shareClose', 'shareCode', 'shareInfo', 'shareCreate', 'shareJoin', 'shareSync', 'shareLeave',
-        'openShare', 'shareStatus', 'shareHint', 'statGrid', 'statCats', 'statDays',
+        'expCount', 'statScope', 'statCats', 'statDays',
         'daySheet', 'dayClose', 'dayQuick', 'calPrev', 'calNext', 'calLabel', 'calGrid'].forEach(function (id) {
         els[id] = document.getElementById(id);
       });
@@ -1211,18 +1229,18 @@
       }
       /* 全量归一化：修复缺字段、保证"各付款人金额合计 = 这笔金额" */
       function normalizeAll() {
-        if (!state.share) state.share = { roomId: '', code: '', syncedAt: 0, rev: 0 };
         if (!state.view) state.view = 'record';
         if (!state.projects || !state.projects.length) {
           var fresh = newProject('我的行程');
           state.projects = [fresh];
           state.activeId = fresh.id;
         }
-        state.projects.forEach(function (pr) {
+      state.projects.forEach(function (pr) {
           if (!pr.people || !pr.people.length) pr.people = [{ id: nid('p'), name: '我' }];
           if (!pr.expenses) pr.expenses = [];
           if (!pr.base) pr.base = 'CNY';
           if (!pr.manualRates) pr.manualRates = {};
+          roomOf(pr);
           if (pr.mode !== 'cn' && pr.mode !== 'abroad') {
             pr.mode = pr.expenses.some(function (e) { return e.currency && e.currency !== 'CNY'; }) ? 'abroad' : 'cn';
           }
@@ -1254,7 +1272,7 @@
           stampItems(P());
           window.localStorage.setItem(KEY_V5, JSON.stringify(state));
           var d = new Date();
-          els.saveState.textContent = '已保存 · ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') + ' · 退出再打开还在。';
+          els.saveState.textContent = '已保存 · ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
           scheduleSharePush();
         } catch (e) { /* 隐私模式忽略 */ }
       }
@@ -1744,8 +1762,8 @@
 
         renderCard(res);
         renderStats();
-        renderShare();
         renderRateStatus();
+        els.expCount.textContent = visibleExpenses().length + ' 笔';
         save();
       }
 
@@ -1971,6 +1989,7 @@
         renderPeople();
         renderExpenses();
         render();
+        applyModeUI();
       }
 
       /* ---------- 事件 ---------- */
@@ -2181,7 +2200,7 @@
         }, 0);
       }
       /* ───────── 主页：行程列表 ───────── */
-      var TRIP_VIEWS = { record: '记账', stats: '统计', settle: '结算' };
+      var TRIP_VIEWS = { record: '记账', settle: '结算' };
       var HOME_VIEWS = { home: '行程', more: '设置' };
 
       function renderTabs() {
@@ -2202,12 +2221,15 @@
         els.tripCards.innerHTML = state.projects.map(function (pr) {
           var sub = tripRange(pr) + ' · ' + (pr.days || []).length + ' 天 · ' +
             (pr.people || []).length + ' 人 · ' + (pr.expenses || []).length + ' 笔';
-          return '<button type="button" class="trip-card' + (pr.id === state.activeId ? ' is-active' : '') + '" data-trip="' + pr.id + '">' +
-            '<span class="tc-main"><span class="tc-name">' + esc(pr.name) + '</span><span class="tc-sub">' + sub + '</span></span>' +
-            '<span class="tc-sum">' + fmt(projectTotal(pr), (pr.mode === 'cn' ? 'CNY' : (pr.base || 'CNY'))) + '</span>' +
-            '<span class="tc-go" aria-hidden="true">›</span></button>';
+          return '<div class="trip-card' + (pr.id === state.activeId ? ' is-active' : '') + '">' +
+            '<button type="button" class="tc-main-btn" data-trip="' + pr.id + '">' +
+              '<span class="tc-main"><span class="tc-name">' + esc(pr.name) + '</span><span class="tc-sub">' + sub + '</span></span>' +
+              '<span class="tc-sum">' + fmt(projectTotal(pr), (pr.mode === 'cn' ? 'CNY' : (pr.base || 'CNY'))) + '</span>' +
+              '<span class="tc-go" aria-hidden="true">›</span>' +
+            '</button>' +
+            '<button type="button" class="tc-more" data-tripmenu="' + pr.id + '" aria-label="' + esc(pr.name) + '的行程设置">⋯</button>' +
+          '</div>';
         }).join('');
-        els.tripHint.textContent = '点行程卡进去记账。每段行程的账互不影响，下次出去玩再新建一个就行。';
       }
       function enterTrip(id) {
         state.activeId = id;
@@ -2216,6 +2238,13 @@
         renderAll();
       }
       els.tripCards.addEventListener('click', function (ev) {
+        var menu = ev.target.closest('[data-tripmenu]');
+        if (menu) {
+          var mid = menu.getAttribute('data-tripmenu');
+          if (state.activeId !== mid) { state.activeId = mid; normalizeAll(); renderAll(); }
+          openTripSheet();
+          return;
+        }
         var card = ev.target.closest('[data-trip]');
         if (!card) return;
         enterTrip(card.getAttribute('data-trip'));
@@ -2226,6 +2255,7 @@
       function openTripSheet() {
         els.tripNameInput.value = P().name;
         renderPeople();
+        renderTripRoom();
         els.tripSheet.hidden = false;
         document.body.style.overflow = 'hidden';
       }
@@ -2263,14 +2293,31 @@
             '<button type="button" class="x" data-ntdel="' + i + '" aria-label="删除成员">×</button></div>';
         }).join('');
       }
+      var newTripMode = 'cn';
+      function setNewTripMode(m) {
+        newTripMode = m;
+        Array.prototype.forEach.call(els.newTripMode.querySelectorAll('[data-nt-mode]'), function (b) {
+          var on = b.getAttribute('data-nt-mode') === m;
+          b.classList.toggle('is-on', on);
+          b.setAttribute('aria-pressed', on ? 'true' : 'false');
+        });
+        els.newTripCurField.hidden = m !== 'abroad';
+      }
       function openNewTrip() {
         newTripDraft = ['我', '朋友A'];
         els.newTripName.value = '';
+        els.newTripCur.innerHTML = currencyOptions('CNY');
+        els.newTripRoom.checked = false;
+        setNewTripMode('cn');
         renderNewTripPeople();
         els.newTripSheet.hidden = false;
         document.body.style.overflow = 'hidden';
         window.setTimeout(function () { try { els.newTripName.focus(); } catch (e) { } }, 80);
       }
+      els.newTripMode.addEventListener('click', function (ev) {
+        var b = ev.target.closest('[data-nt-mode]');
+        if (b) setNewTripMode(b.getAttribute('data-nt-mode'));
+      });
       function closeNewTrip() {
         els.newTripSheet.hidden = true;
         if (els.tripSheet.hidden) document.body.style.overflow = '';
@@ -2299,14 +2346,26 @@
         var names = newTripDraft.map(function (n) { return String(n || '').trim(); }).filter(Boolean);
         if (!names.length) names = ['我'];
         var pr = newProject(name, { people: names.map(function (n) { return { id: nid('p'), name: n }; }) });
+        pr.mode = newTripMode;
+        pr.base = newTripMode === 'abroad' ? (els.newTripCur.value || 'CNY') : 'CNY';
         state.projects.push(pr);
         state.activeId = pr.id;
         normalizeAll();
+        var wantRoom = els.newTripRoom.checked;
         closeNewTrip();
         showView('record');
         renderAll();
-        toast('已新建「' + pr.name + '」');
+        if (wantRoom) createRoom();
+        else toast('已新建「' + pr.name + '」');
       });
+
+      /* ───────── 功能介绍（点击弹出，不再用展开收起）───────── */
+      function openGuide() { els.guideSheet.hidden = false; document.body.style.overflow = 'hidden'; }
+      function closeGuide() { els.guideSheet.hidden = true; document.body.style.overflow = ''; }
+      els.openGuide.addEventListener('click', openGuide);
+      els.guideClose.addEventListener('click', closeGuide);
+      els.guideOk.addEventListener('click', closeGuide);
+      els.guideSheet.addEventListener('click', function (ev) { if (ev.target === els.guideSheet) closeGuide(); });
 
       /* ───────── 共享：同步码（零后端）+ 房间（需自建服务）───────── */
       var itemCache = {};   /* id -> 上次保存时的 JSON，用于打时间戳与识别删除 */
@@ -2344,15 +2403,6 @@
         return new TextDecoder().decode(bytes);
       }
 
-      function exportProjectCode() {
-        var pr = P();
-        var payload = {
-          name: pr.name, people: pr.people, days: pr.days, expenses: pr.expenses,
-          base: pr.base, mode: pr.mode, manualRates: pr.manualRates, mtime: pr.mtime, tomb: pr.tomb || {}
-        };
-        return 'SKD1:' + b64encode(JSON.stringify(payload));
-      }
-
       function mergeProjectInto(local, remote) {
         if (!remote) return 0;
         var added = 0;
@@ -2384,17 +2434,6 @@
         Object.keys(remote.tomb || {}).forEach(function (id) { if (!tomb[id]) tomb[id] = remote.tomb[id]; });
         local.tomb = tomb;
         return added;
-      }
-
-      function importProjectCode(text) {
-        text = String(text || '').trim();
-        if (!text) return null;
-        if (text.indexOf('SKD1:') === 0) text = text.slice(5);
-        var json = null;
-        try { json = b64decode(text); } catch (e) { json = text; }
-        var data = null;
-        try { data = JSON.parse(json); } catch (e) { return null; }
-        return (data && data.expenses) ? data : null;
       }
 
       function copyText(text, okMsg) {
@@ -2437,29 +2476,33 @@
         for (var i = 0; i < n; i++) out += chars[Math.floor(Math.random() * chars.length)];
         return out;
       }
-      function renderShare() {
-        if (!els.shareCode) return;
-        var sh = state.share || {};
-        els.shareCode.textContent = sh.code || '未开启';
+      /* 房间跟着行程走：每个行程一个房间，只在该行程的成员之间同步 */
+      function roomOf(pr) {
+        if (!pr.room) pr.room = { id: '', code: '', syncedAt: 0 };
+        return pr.room;
+      }
+      function renderTripRoom() {
+        if (!els.tripRoomCode) return;
+        var rm = roomOf(P());
+        els.tripRoomCode.textContent = rm.code || '未开启';
         if (!shareReady()) {
-          els.shareInfo.textContent = '共享服务还没配置。你可以先用下面的「同步码」跟同伴对账；想开房间共享，把服务地址填进来即可（见说明）。';
-        } else if (!sh.code) {
-          els.shareInfo.textContent = '已连接共享服务。点「创建房间」生成房间码，发给同伴就能一起记。';
+          els.tripRoomInfo.textContent = '共享服务未配置，房间功能暂不可用。';
+        } else if (!rm.code) {
+          els.tripRoomInfo.textContent = '开启后，同伴输入同一个房间码就能一起记这一段行程；不开启则只保存在本机。';
         } else {
-          els.shareInfo.textContent = '房间码：' + sh.code + '　最后同步：' +
-            (sh.syncedAt ? new Date(sh.syncedAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) : '还没同步');
+          els.tripRoomInfo.textContent = '同伴输入这个房间码即可加入。最后同步：' +
+            (rm.syncedAt ? new Date(rm.syncedAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) : '还没同步');
         }
-        if (els.shareHint) els.shareHint.textContent = sh.code ? '已开启' : '未开启';
-        if (els.shareStatus) {
-          els.shareStatus.textContent = sh.code
-            ? '共享中，房间码 ' + sh.code + '（同伴输入这个码就能加入）'
-            : '未开启。开启后同伴能用同一个房间码一起记账。';
-        }
+        els.tripRoomActions.innerHTML = rm.code
+          ? '<button type="button" class="btn btn-primary btn-block" data-room="sync">立即同步</button>' +
+            '<button type="button" class="btn btn-block btn-sm btn-danger" data-room="leave">退出共享</button>'
+          : '<button type="button" class="btn btn-primary btn-block" data-room="create">创建房间</button>' +
+            '<button type="button" class="btn btn-block" data-room="join">输入房间码加入</button>';
       }
 
       /* 房间共享：客户端加解密 + 推送/拉取（服务端见 共享服务/worker.js） */
       async function roomKey() {
-        var sh = state.share || {};
+        var sh = roomOf(P());
         var enc = new TextEncoder();
         var base = await crypto.subtle.importKey('raw', enc.encode(sh.code || ''), 'PBKDF2', false, ['deriveKey']);
         return crypto.subtle.deriveKey(
@@ -2490,8 +2533,8 @@
         };
       }
       async function roomPush() {
-        var sh = state.share || {};
-        if (!shareReady() || !sh.roomId || !sh.code) return false;
+        var sh = roomOf(P());
+        if (!shareReady() || !sh.id || !sh.code) return false;
         if (!roomCryptoOk()) { toast('同步需要加密连接，请用 https://aa.saikende.cn 打开'); return false; }
         try {
           var key = await roomKey();
@@ -2499,22 +2542,22 @@
           var cipher = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key,
             new TextEncoder().encode(JSON.stringify(sharePayload())));
           var body = bytesToB64(iv) + '.' + bytesToB64(new Uint8Array(cipher));
-          var res = await fetch(SHARE_API + '/room/' + sh.roomId, {
+          var res = await fetch(SHARE_API + '/room/' + sh.id, {
             method: 'PUT', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ payload: body })
           });
           if (!res.ok) throw new Error('push ' + res.status);
-          state.share.syncedAt = Date.now();
-          renderShare();
+          sh.syncedAt = Date.now();
+          renderTripRoom();
           return true;
         } catch (e) { toast('同步失败，检查网络或共享服务'); return false; }
       }
       async function roomPull(silent) {
-        var sh = state.share || {};
-        if (!shareReady() || !sh.roomId || !sh.code) return false;
+        var sh = roomOf(P());
+        if (!shareReady() || !sh.id || !sh.code) return false;
         if (!roomCryptoOk()) { if (!silent) toast('同步需要加密连接，请用 https://aa.saikende.cn 打开'); return false; }
         try {
-          var res = await fetch(SHARE_API + '/room/' + sh.roomId);
+          var res = await fetch(SHARE_API + '/room/' + sh.id);
           if (res.status === 404) { if (!silent) toast('房间里还没有数据，先同步一次吧'); return false; }
           if (!res.ok) throw new Error('pull ' + res.status);
           var data = await res.json();
@@ -2524,128 +2567,128 @@
           var plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64ToBytes(parts[0]) }, key, b64ToBytes(parts[1]));
           var remote = JSON.parse(new TextDecoder().decode(plain));
           var added = mergeProjectInto(P(), remote);
-          state.share.syncedAt = Date.now();
+          sh.syncedAt = Date.now();
           normalizeAll();
           renderAll();
-          renderShare();
+          renderTripRoom();
           if (!silent) toast(added ? ('已合并 ' + added + ' 处更新') : '已经是最新的');
           return true;
         } catch (e) { if (!silent) toast('拉取失败：房间码不对，或同伴还没同步'); return false; }
       }
       var pushTimer = null;
       function scheduleSharePush() {
-        if (!shareReady() || !state.share || !state.share.code) return;
+        if (!shareReady() || !roomOf(P()).code) return;
         if (pushTimer) window.clearTimeout(pushTimer);
         pushTimer = window.setTimeout(function () { roomPush(); }, 2500);
       }
 
       /* ───────── 统计 ───────── */
-      function statCell(label, value) {
-        return '<div class="stat-cell"><div class="sc-label">' + label + '</div><div class="sc-value">' + value + '</div></div>';
+      /* 环形图配色：低饱和、暖调，和主色统一 */
+      var DONUT_COLORS = ['#4a8c82', '#86b5aa', '#c7a15f', '#c1705f', '#8d9db6', '#a89bc0', '#7aa08a', '#b7977f'];
+
+      function collapseItems(items, max) {
+        if (items.length <= max) return items;
+        var head = items.slice(0, max - 1);
+        var rest = items.slice(max - 1).reduce(function (s, x) { return s + x.value; }, 0);
+        if (rest > 0) head.push({ label: '其他', value: rest });
+        return head;
       }
-      function statBar(label, value, width) {
-        return '<div class="stat-row"><div class="stat-top"><span>' + label + '</span><b>' + value + '</b></div>' +
-          '<div class="stat-bar"><i style="width:' + Math.max(2, Math.min(100, Math.round(width))) + '%"></i></div></div>';
+      function donutBlock(title, items, total) {
+        if (!items.length || !total) {
+          return '<div class="stat-card"><h3>' + title + '</h3><div class="share-status">还没有数据</div></div>';
+        }
+        var list = collapseItems(items, 6);
+        var R = 52, C = 2 * Math.PI * R, acc = 0;
+        var segs = list.map(function (it, i) {
+          var frac = it.value / total;
+          it.color = DONUT_COLORS[i % DONUT_COLORS.length];
+          var seg = '<circle cx="60" cy="60" r="' + R + '" fill="none" stroke="' + it.color + '" stroke-width="15" ' +
+            'stroke-dasharray="' + (frac * C).toFixed(2) + ' ' + (C - frac * C).toFixed(2) + '" ' +
+            'stroke-dashoffset="' + (-acc * C).toFixed(2) + '"></circle>';
+          acc += frac;
+          return seg;
+        }).join('');
+        var legend = list.map(function (it) {
+          var pct = Math.round(it.value / total * 100);
+          return '<div class="leg"><span class="leg-dot" style="background:' + it.color + '"></span>' +
+            '<span class="leg-name">' + esc(it.label) + '</span>' +
+            '<span class="leg-val">' + fmt(it.value, base()) + ' · ' + pct + '%</span></div>';
+        }).join('');
+        return '<div class="stat-card"><h3>' + title + '</h3><div class="donut-wrap">' +
+          '<div class="donut"><svg viewBox="0 0 120 120" aria-hidden="true">' +
+            '<circle cx="60" cy="60" r="' + R + '" fill="none" stroke="var(--soft)" stroke-width="15"></circle>' + segs +
+          '</svg><div class="donut-center"><b>' + fmt(total, base()) + '</b><span>总计</span></div></div>' +
+          '<div class="legend">' + legend + '</div></div></div>';
       }
+      /* 选了某一天：只看按分类；选「全部」：按分类 + 按日期 */
       function renderStats() {
-        if (!els.statGrid) return;
+        if (!els.statCats) return;
         var pr = P();
-        var res = compute();
-        var peopleCount = pr.people.length || 1;
-        els.statGrid.innerHTML =
-          statCell('总支出', fmt(res.total, base())) +
-          statCell('人均', fmt(Math.round(res.total / peopleCount / 100) * 100, base())) +
-          statCell('笔数', pr.expenses.length + ' 笔') +
-          statCell('天数', pr.days.length + ' 天');
+        var all = pr.selected === 'all';
+        var list = all ? pr.expenses.slice() : pr.expenses.filter(function (e) { return e.date === pr.selected; });
+        var total = list.reduce(function (s, e) { return s + baseCentsOf(e); }, 0);
+
         var byCat = {};
-        pr.expenses.forEach(function (e) {
+        list.forEach(function (e) {
           var k = e.category || 'other';
           byCat[k] = (byCat[k] || 0) + baseCentsOf(e);
         });
-        var cats = Object.keys(byCat).map(function (k) { return { k: k, v: byCat[k] }; })
-          .sort(function (a, b) { return b.v - a.v; });
-        els.statCats.innerHTML = cats.length ? cats.map(function (c) {
-          var pct = res.total ? (c.v / res.total * 100) : 0;
-          /* 条形长度和右边显示的百分比同源，都是「占总支出的比例」，不再一个按最大值、一个按总额 */
-          return statBar(cat(c.k).label, fmt(c.v, base()) + ' · ' + Math.round(pct) + '%', pct);
-        }).join('') : '<div class="share-status">还没有数据</div>';
-        var days = pr.days.slice().sort();
-        var maxDay = 1;
-        days.forEach(function (d) { maxDay = Math.max(maxDay, dayTotal(d)); });
-        els.statDays.innerHTML = days.length ? days.map(function (d) {
-          return statBar(shortDate(d) + ' ' + weekOf(d), fmt(dayTotal(d), base()), dayTotal(d) / maxDay * 100);
-        }).join('') : '<div class="share-status">还没有数据</div>';
+        var cats = Object.keys(byCat).map(function (k) { return { label: cat(k).label, value: byCat[k] }; })
+          .sort(function (a, b) { return b.value - a.value; });
+        els.statCats.innerHTML = donutBlock(all ? '按分类（全部）' : '按分类（' + shortDate(pr.selected) + '）', cats, total);
+
+        if (all) {
+          var byDay = {};
+          list.forEach(function (e) { byDay[e.date] = (byDay[e.date] || 0) + baseCentsOf(e); });
+          var days = Object.keys(byDay).sort().map(function (d) {
+            return { label: shortDate(d) + ' ' + weekOf(d), value: byDay[d] };
+          }).sort(function (a, b) { return b.value - a.value; });
+          els.statDays.innerHTML = donutBlock('按日期', days, total);
+        } else {
+          els.statDays.innerHTML = '';
+        }
+        if (els.statScope) {
+          els.statScope.textContent = all ? '全部 ' + pr.days.length + ' 天' : shortDate(pr.selected) + ' ' + weekOf(pr.selected);
+        }
       }
 
       /* ───────── 共享按钮 ───────── */
-      document.getElementById('syncExport').addEventListener('click', function () {
-        var code = exportProjectCode();
-        copyText(code, '同步码已复制，直接粘给同伴');
-        els.shareInfo.textContent = '同步码已复制（' + code.length + ' 个字符）。同伴在「设置 → 粘贴同步码合并」里粘进去就行。';
-      });
-      document.getElementById('syncImport').addEventListener('click', function () {
-        var txt = window.prompt('把同伴发来的同步码粘到这里：');
-        if (!txt) return;
-        var data = importProjectCode(txt);
-        if (!data) { toast('这段同步码看不懂，检查有没有复制完整'); return; }
-        var snap = snapshot();
-        var added = mergeProjectInto(P(), data);
-        normalizeAll();
-        renderAll();
-        toast('已合并 ' + added + ' 处更新', '撤销', function () { undo(snap, '已撤销合并'); });
-      });
-      function openShareSheet() {
-        renderShare();
-        els.shareSheet.hidden = false;
-        document.body.style.overflow = 'hidden';
-      }
-      function closeShareSheet() {
-        els.shareSheet.hidden = true;
-        document.body.style.overflow = '';
-      }
-      els.openShare.addEventListener('click', openShareSheet);
-      els.shareClose.addEventListener('click', closeShareSheet);
-      els.shareSheet.addEventListener('click', function (ev) { if (ev.target === els.shareSheet) closeShareSheet(); });
-      els.shareCreate.addEventListener('click', function () {
-        if (!shareReady()) {
-          var url = window.prompt('先填入共享服务地址（部署一次即可，见说明文档）：', SHARE_API || 'https://');
-          if (!url) return;
-          SHARE_API = url.trim().replace(/\/$/, '');
-          try { window.localStorage.setItem('saikende-share-api', SHARE_API); } catch (e) { }
-          renderShare();
-        }
+      /* ── 房间操作（都在「行程设置」里，只作用于当前行程）── */
+      function createRoom() {
+        var pr = P();
+        if (!shareReady()) { toast('共享服务未配置，暂时开不了房间'); return; }
+        if (!roomCryptoOk()) { toast('共享需要加密连接，请用 https://aa.saikende.cn 打开'); return; }
         var code = randomId(8);
-        state.share = { roomId: roomIdFrom(code), code: code, syncedAt: 0, rev: 0 };
-        renderShare();
+        pr.room = { id: roomIdFrom(code), code: code, syncedAt: 0 };
+        renderTripRoom();
         roomPush().then(function (ok) {
           if (ok) { toast('房间已创建，把房间码发给同伴'); copyText(code, '房间码 ' + code + ' 已复制'); }
         });
-      });
-      els.shareJoin.addEventListener('click', function () {
-        if (!shareReady()) {
-          var url2 = window.prompt('先填入共享服务地址（部署一次即可，见说明文档）：', SHARE_API || 'https://');
-          if (!url2) return;
-          SHARE_API = url2.trim().replace(/\/$/, '');
-          try { window.localStorage.setItem('saikende-share-api', SHARE_API); } catch (e) { }
-          renderShare();
-        }
+      }
+      function joinRoom() {
+        var pr = P();
+        if (!roomCryptoOk()) { toast('共享需要加密连接，请用 https://aa.saikende.cn 打开'); return; }
         var code = window.prompt('输入同伴给你的 8 位房间码：');
         if (!code) return;
         code = code.trim().toUpperCase();
-        state.share = { roomId: roomIdFrom(code), code: code, syncedAt: 0, rev: 0 };
-        renderShare();
-        roomPull(false).then(function (ok) {
-          if (ok) { closeShareSheet(); showView('record'); }
-        });
-      });
-      els.shareSync.addEventListener('click', function () {
-        roomPull(false).then(function (ok) { if (ok) roomPush(); });
-      });
-      els.shareLeave.addEventListener('click', function () {
-        if (!window.confirm('退出共享？本地账目会保留，只是不再和同伴同步。')) return;
-        state.share = { roomId: '', code: '', syncedAt: 0, rev: 0 };
-        renderShare();
+        pr.room = { id: roomIdFrom(code), code: code, syncedAt: 0 };
+        renderTripRoom();
+        roomPull(false).then(function (ok) { if (ok) { closeTripSheet(); renderAll(); } });
+      }
+      function leaveRoom() {
+        if (!window.confirm('退出共享？本机的账目保留，只是不再和同伴同步。')) return;
+        P().room = { id: '', code: '', syncedAt: 0 };
+        renderTripRoom();
         toast('已退出共享');
+      }
+      els.tripRoomActions.addEventListener('click', function (ev) {
+        var b = ev.target.closest('[data-room]');
+        if (!b) return;
+        var act = b.getAttribute('data-room');
+        if (act === 'create') createRoom();
+        else if (act === 'join') joinRoom();
+        else if (act === 'sync') roomPull(false).then(function (ok) { if (ok) roomPush(); });
+        else if (act === 'leave') leaveRoom();
       });
 
       document.getElementById('addPerson').addEventListener('click', function () {
@@ -2964,6 +3007,7 @@
           b.classList.toggle('is-on', on);
           b.setAttribute('aria-pressed', on ? 'true' : 'false');
         });
+        els.baseCur.value = P().base;
         els.rateCard.hidden = P().mode === 'cn';
       }
 
@@ -3012,13 +3056,21 @@
       renderAll();
       showView('home');   /* 每次打开都先落在这段行程的列表上 */
       if (P().mode === 'abroad') fetchRates(false);
-      /* 在房间里的话：打开先拉一次，之后每 45 秒静默拉一次 */
-      if (state.share && state.share.code) {
-        roomPull(true);
-        window.setInterval(function () {
-          if (!document.hidden) roomPull(true);
-        }, 45000);
+      /* 老版本把房间记在全局，这里迁到「当前行程」名下：房间从此跟着行程走 */
+      if (state.share && state.share.code && !roomOf(P()).code) {
+        var legacy = state.share;
+        var rm = roomOf(P());
+        rm.id = legacy.roomId || roomIdFrom(legacy.code);
+        rm.code = legacy.code;
+        rm.syncedAt = legacy.syncedAt || 0;
+        delete state.share;
+        save();
       }
+      /* 当前行程开着房间：打开先拉一次，之后每 45 秒静默拉一次 */
+      if (roomOf(P()).code) window.setTimeout(function () { roomPull(true); }, 900);
+      window.setInterval(function () {
+        if (!document.hidden && roomOf(P()).code) roomPull(true);
+      }, 45000);
     })();
   </script>
 </body>
