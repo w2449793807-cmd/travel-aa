@@ -832,9 +832,10 @@
         </div>
         <div class="field">
           <span>共享房间（只共享这一段行程）</span>
-          <div class="room-code" id="tripRoomCode">未开启</div>
-          <div class="share-status" id="tripRoomInfo"></div>
-          <div class="sheet-actions" id="tripRoomActions"></div>
+          <button type="button" class="room-toggle" id="tripRoomOpen" aria-pressed="false">
+            <span class="rt-box" aria-hidden="true"></span>
+            <span class="rt-label" id="tripRoomLabel">创建房间</span>
+          </button>
         </div>
         <div class="sheet-actions">
           <button type="button" class="btn btn-block btn-sm btn-danger" id="deleteTrip">删除这个行程</button>
@@ -872,12 +873,26 @@
           <span>共享房间</span>
           <button type="button" class="room-toggle" id="newTripRoom" aria-pressed="false">
             <span class="rt-box" aria-hidden="true"></span>
-            <span class="rt-label">创建房间</span>
+            <span class="rt-label" id="newTripRoomLabel">创建房间</span>
           </button>
         </div>
         <div class="sheet-actions">
           <button type="button" class="btn btn-primary btn-block" id="newTripCreate">创建行程</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sheet is-top" id="roomSheet" hidden>
+    <div class="sheet-inner">
+      <div class="panel">
+        <div class="sheet-head">
+          <h3>房间设置</h3>
+          <button type="button" class="link-btn" id="roomClose">关闭</button>
+        </div>
+        <div class="room-code" id="roomCode">未开启</div>
+        <div class="share-status" id="roomInfo"></div>
+        <div class="sheet-actions" id="roomActions"></div>
       </div>
     </div>
   </div>
@@ -1188,9 +1203,9 @@
         });
       ['projName', 'backHome', 'openTripMenu', 'appBar', 'tripBar', 'tabbar', 'tripCards', 'newTrip',
         'tripSheet', 'tripClose', 'tripNameInput', 'deleteTrip',
-        'tripRoomCode', 'tripRoomInfo', 'tripRoomActions',
+        'tripRoomOpen', 'tripRoomLabel', 'roomSheet', 'roomClose', 'roomCode', 'roomInfo', 'roomActions',
         'newTripSheet', 'newTripClose', 'newTripName', 'newTripPeople', 'newTripAddPerson', 'newTripCreate',
-        'newTripMode', 'newTripCurField', 'newTripCur', 'newTripRoom',
+        'newTripMode', 'newTripCurField', 'newTripCur', 'newTripRoom', 'newTripRoomLabel',
         'clearTrip', 'clearHint', 'clearTripSel',
         'guideSheet', 'guideClose', 'guideOk', 'openGuide',
         'editSheet', 'editHead', 'editClose', 'editAmount', 'editName', 'editDate',
@@ -2268,7 +2283,7 @@
       function openTripSheet() {
         els.tripNameInput.value = P().name;
         renderPeople();
-        renderTripRoom();
+        renderRoomEntry();
         els.tripSheet.hidden = false;
         document.body.style.overflow = 'hidden';
       }
@@ -2307,12 +2322,6 @@
         }).join('');
       }
       var newTripMode = 'cn';
-      var newTripWantRoom = false;
-      function setRoomToggle(on) {
-        newTripWantRoom = !!on;
-        els.newTripRoom.classList.toggle('is-on', newTripWantRoom);
-        els.newTripRoom.setAttribute('aria-pressed', newTripWantRoom ? 'true' : 'false');
-      }
       function setNewTripMode(m) {
         newTripMode = m;
         Array.prototype.forEach.call(els.newTripMode.querySelectorAll('[data-nt-mode]'), function (b) {
@@ -2326,9 +2335,10 @@
         newTripDraft = ['我', '朋友A'];
         els.newTripName.value = '';
         els.newTripCur.innerHTML = currencyOptions('CNY');
-        setRoomToggle(false);
+        pendingRoom = null;
         setNewTripMode('cn');
         renderNewTripPeople();
+        renderRoomEntry();
         els.newTripSheet.hidden = false;
         document.body.style.overflow = 'hidden';
         window.setTimeout(function () { try { els.newTripName.focus(); } catch (e) { } }, 80);
@@ -2337,7 +2347,6 @@
         var b = ev.target.closest('[data-nt-mode]');
         if (b) setNewTripMode(b.getAttribute('data-nt-mode'));
       });
-      els.newTripRoom.addEventListener('click', function () { setRoomToggle(!newTripWantRoom); });
       function closeNewTrip() {
         els.newTripSheet.hidden = true;
         if (els.tripSheet.hidden) document.body.style.overflow = '';
@@ -2373,11 +2382,13 @@
         state.projects.push(pr);
         state.activeId = pr.id;
         normalizeAll();
-        var wantRoom = newTripWantRoom;
+        var wantRoom = pendingRoom;
+        pendingRoom = null;
         closeNewTrip();
         showView('record');
         renderAll();
-        if (wantRoom) createRoom();
+        if (wantRoom && wantRoom.join) joinRoom(wantRoom.join);
+        else if (wantRoom) createRoom();
         else toast('已新建「' + pr.name + '」');
       });
 
@@ -2503,23 +2514,64 @@
         if (!pr.room) pr.room = { id: '', code: '', syncedAt: 0 };
         return pr.room;
       }
-      function renderTripRoom() {
-        if (!els.tripRoomCode) return;
+      var roomContext = 'trip';      /* 'trip' = 当前行程；'pending' = 新建行程之前 */
+      var pendingRoom = null;        /* 新建行程时预先选好的房间：{create:true} 或 {join:'CODE'} */
+
+      /* 两处入口行：行程设置里一个、新建行程里一个 */
+      function renderRoomEntry() {
         var rm = roomOf(P());
-        els.tripRoomCode.textContent = rm.code || '未开启';
+        var on = !!rm.code;
+        els.tripRoomOpen.classList.toggle('is-on', on);
+        els.tripRoomOpen.setAttribute('aria-pressed', on ? 'true' : 'false');
+        els.tripRoomLabel.textContent = on ? '房间码 ' + rm.code : '创建房间';
+
+        var pending = !!(pendingRoom && (pendingRoom.create || pendingRoom.join));
+        els.newTripRoom.classList.toggle('is-on', pending);
+        els.newTripRoom.setAttribute('aria-pressed', pending ? 'true' : 'false');
+        els.newTripRoomLabel.textContent = !pending ? '创建房间'
+          : (pendingRoom.join ? '加入房间 ' + pendingRoom.join : '创建房间（创建行程时自动开）');
+      }
+      function renderRoomSheet() {
+        if (!els.roomSheet) return;
+        if (roomContext === 'pending') {
+          var pending = !!(pendingRoom && (pendingRoom.create || pendingRoom.join));
+          els.roomCode.textContent = (pendingRoom && pendingRoom.join) ? pendingRoom.join : (pending ? '创建行程后生成' : '未开启');
+          els.roomInfo.textContent = '房间只共享这一段行程。创建行程后把房间码发给同伴，他们输入同一个码就能和你一起记。';
+          els.roomActions.innerHTML =
+            '<button type="button" class="btn btn-primary btn-block" data-room="pick-create">创建房间</button>' +
+            '<button type="button" class="btn btn-block" data-room="pick-join">输入房间码加入</button>' +
+            (pending ? '<button type="button" class="btn btn-block btn-sm btn-danger" data-room="pick-clear">取消这个房间</button>' : '');
+          return;
+        }
+        var rm = roomOf(P());
+        els.roomCode.textContent = rm.code || '未开启';
         if (!shareReady()) {
-          els.tripRoomInfo.textContent = '共享服务未配置，房间功能暂不可用。';
+          els.roomInfo.textContent = '共享服务未配置，房间功能暂不可用。';
         } else if (!rm.code) {
-          els.tripRoomInfo.textContent = '开启后，同伴输入同一个房间码就能一起记这一段行程；不开启则只保存在本机。';
+          els.roomInfo.textContent = '开启后，同伴输入同一个房间码就能一起记这一段行程；不开启则只保存在本机。';
         } else {
-          els.tripRoomInfo.textContent = '同伴输入这个房间码即可加入。最后同步：' +
+          els.roomInfo.textContent = '同伴输入这个房间码即可加入。最后同步：' +
             (rm.syncedAt ? new Date(rm.syncedAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) : '还没同步');
         }
-        els.tripRoomActions.innerHTML = rm.code
+        els.roomActions.innerHTML = rm.code
           ? '<button type="button" class="btn btn-primary btn-block" data-room="sync">立即同步</button>' +
             '<button type="button" class="btn btn-block btn-sm btn-danger" data-room="leave">退出共享</button>'
           : '<button type="button" class="btn btn-primary btn-block" data-room="create">创建房间</button>' +
             '<button type="button" class="btn btn-block" data-room="join">输入房间码加入</button>';
+      }
+      function openRoomSheet(context) {
+        roomContext = context || 'trip';
+        renderRoomSheet();
+        els.roomSheet.hidden = false;
+        document.body.style.overflow = 'hidden';
+      }
+      function closeRoomSheet() {
+        els.roomSheet.hidden = true;
+        if (els.tripSheet.hidden && els.newTripSheet.hidden) document.body.style.overflow = '';
+      }
+      function refreshRoomUI() {
+        renderRoomEntry();
+        if (!els.roomSheet.hidden) renderRoomSheet();
       }
 
       /* 房间共享：客户端加解密 + 推送/拉取（服务端见 共享服务/worker.js） */
@@ -2570,7 +2622,7 @@
           });
           if (!res.ok) throw new Error('push ' + res.status);
           sh.syncedAt = Date.now();
-          renderTripRoom();
+          refreshRoomUI();
           return true;
         } catch (e) { toast('同步失败，检查网络或共享服务'); return false; }
       }
@@ -2592,7 +2644,7 @@
           sh.syncedAt = Date.now();
           normalizeAll();
           renderAll();
-          renderTripRoom();
+          refreshRoomUI();
           if (!silent) toast(added ? ('已合并 ' + added + ' 处更新') : '已经是最新的');
           return true;
         } catch (e) { if (!silent) toast('拉取失败：房间码不对，或同伴还没同步'); return false; }
@@ -2700,28 +2752,30 @@
         if (!roomCryptoOk()) { toast('共享需要加密连接，请用 https://aa.saikende.cn 打开'); return; }
         var code = randomId(8);
         pr.room = { id: roomIdFrom(code), code: code, syncedAt: 0 };
-        renderTripRoom();
+        refreshRoomUI();
         roomPush().then(function (ok) {
           if (ok) { toast('房间已创建，把房间码发给同伴'); copyText(code, '房间码 ' + code + ' 已复制'); }
         });
       }
-      function joinRoom() {
+      function joinRoom(preset) {
         var pr = P();
         if (!roomCryptoOk()) { toast('共享需要加密连接，请用 https://aa.saikende.cn 打开'); return; }
-        var code = window.prompt('输入同伴给你的 8 位房间码：');
+        var code = preset || window.prompt('输入同伴给你的 8 位房间码：');
         if (!code) return;
-        code = code.trim().toUpperCase();
+        code = String(code).trim().toUpperCase();
         pr.room = { id: roomIdFrom(code), code: code, syncedAt: 0 };
-        renderTripRoom();
-        roomPull(false).then(function (ok) { if (ok) { closeTripSheet(); renderAll(); } });
+        refreshRoomUI();
+        roomPull(false).then(function (ok) {
+          if (ok) { closeRoomSheet(); if (!els.tripSheet.hidden) closeTripSheet(); renderAll(); }
+        });
       }
       function leaveRoom() {
         if (!window.confirm('退出共享？本机的账目保留，只是不再和同伴同步。')) return;
         P().room = { id: '', code: '', syncedAt: 0 };
-        renderTripRoom();
+        refreshRoomUI();
         toast('已退出共享');
       }
-      els.tripRoomActions.addEventListener('click', function (ev) {
+      els.roomActions.addEventListener('click', function (ev) {
         var b = ev.target.closest('[data-room]');
         if (!b) return;
         var act = b.getAttribute('data-room');
@@ -2729,7 +2783,20 @@
         else if (act === 'join') joinRoom();
         else if (act === 'sync') roomPull(false).then(function (ok) { if (ok) roomPush(); });
         else if (act === 'leave') leaveRoom();
+        else if (act === 'pick-create') { pendingRoom = { create: true }; closeRoomSheet(); renderRoomEntry(); }
+        else if (act === 'pick-join') {
+          var pc = window.prompt('输入同伴给你的 8 位房间码：');
+          if (!pc) return;
+          pendingRoom = { join: String(pc).trim().toUpperCase() };
+          closeRoomSheet();
+          renderRoomEntry();
+        }
+        else if (act === 'pick-clear') { pendingRoom = null; closeRoomSheet(); renderRoomEntry(); }
       });
+      els.roomClose.addEventListener('click', closeRoomSheet);
+      els.roomSheet.addEventListener('click', function (ev) { if (ev.target === els.roomSheet) closeRoomSheet(); });
+      els.tripRoomOpen.addEventListener('click', function () { openRoomSheet('trip'); });
+      els.newTripRoom.addEventListener('click', function () { openRoomSheet('pending'); });
 
       document.getElementById('addPerson').addEventListener('click', function () {
         P().people.push({ id: nid('p'), name: '朋友' + String.fromCharCode(64 + P().people.length + 1) });
