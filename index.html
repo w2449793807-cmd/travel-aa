@@ -109,6 +109,26 @@
   .quick-actions .btn { min-height: var(--btn-lg); font-size: var(--fs-title); }
   .check-row { display: flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-sub); color: var(--text); cursor: pointer; }
   .check-row input { width: 20px; height: 20px; min-height: 0; padding: 0; flex: none; }
+  .field-hint { font-size: var(--fs-cap); color: var(--muted); line-height: 1.5; }
+  /* 新建行程里的「创建房间」：整行可点，明显比小勾选框大 */
+  .room-toggle {
+    display: flex; align-items: center; gap: var(--sp-3); width: 100%; text-align: left;
+    min-height: var(--btn-lg); padding: 0 var(--sp-3);
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r-control);
+    font: inherit; font-size: var(--fs-body); color: var(--text); cursor: pointer;
+    transition: background .14s ease, border-color .14s ease, transform .12s ease;
+  }
+  .room-toggle:active { transform: scale(.99); }
+  .rt-box {
+    width: 24px; height: 24px; flex: none; border-radius: 8px; position: relative;
+    border: 1.5px solid var(--line); background: var(--surface);
+  }
+  .room-toggle.is-on { border-color: var(--accent); background: var(--accent-soft); }
+  .room-toggle.is-on .rt-box { background: var(--accent); border-color: var(--accent); }
+  .room-toggle.is-on .rt-box::after {
+    content: "✓"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    color: var(--accent-ink); font-size: var(--fs-body); line-height: 1;
+  }
   /* 统计：环状图 + 图例 */
   .stat-donut { display: flex; flex-direction: column; gap: var(--sp-3); }
   .stat-card {
@@ -325,14 +345,15 @@
   .rate-note { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: var(--fs-cap); color: var(--muted); }
   .rate-note span { line-height: 1.5; }
   .guide-note { margin: 8px 0 0; font-size: var(--fs-cap); color: var(--muted); }
-  .people { display: flex; flex-wrap: wrap; gap: 7px; }
+  .people { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
   .person {
-    display: grid; grid-template-columns: minmax(0, 1fr) 32px; gap: 2px; align-items: center;
-    background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-control); padding: 2px 3px 2px 5px;
-    width: 148px; box-shadow: var(--shadow-sm); transition: border-color .14s ease;
+    display: grid; grid-template-columns: minmax(0, 1fr) 28px; gap: 2px; align-items: center;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-control); padding: 1px 2px 1px 8px;
+    width: 112px; box-shadow: var(--shadow-sm); transition: border-color .14s ease;
   }
   .person:focus-within { border-color: var(--accent); }
-  .person input { border: 0; background: transparent; padding: 9px 6px; font-size: var(--fs-body); min-height: var(--btn-md); box-shadow: none; }
+  .person input { border: 0; background: transparent; padding: 7px 2px; min-height: 38px; box-shadow: none; }
+  .person .x { min-height: 32px; padding: 2px 4px; font-size: var(--fs-body); }
   .x {
     font: inherit; font-size: var(--fs-title); line-height: 1; color: var(--muted); cursor: pointer;
     background: transparent; border: 0; border-radius: var(--r-control); min-height: var(--btn-sm); padding: 4px 8px;
@@ -841,15 +862,16 @@
           </div>
         </div>
         <label class="field" id="newTripCurField" hidden>
-          <span>结算币种（进行程后也能改）</span>
-          <select id="newTripCur" aria-label="结算币种"></select>
+          <span>记录货币（这一趟主要花什么钱）</span>
+          <select id="newTripCur" aria-label="记录货币"></select>
+          <span class="field-hint">结算货币默认人民币，之后可在行程的结算页修改。</span>
         </label>
         <div class="field">
           <span>共享房间</span>
-          <label class="check-row">
-            <input type="checkbox" id="newTripRoom" />
-            <span>现在就开一个房间，和同伴一起记这段行程</span>
-          </label>
+          <button type="button" class="room-toggle" id="newTripRoom" aria-pressed="false">
+            <span class="rt-box" aria-hidden="true"></span>
+            <span class="rt-label">创建房间</span>
+          </button>
         </div>
         <div class="sheet-actions">
           <button type="button" class="btn btn-primary btn-block" id="newTripCreate">创建行程</button>
@@ -1108,6 +1130,7 @@
           base: 'CNY',
           mode: 'cn',
           manualRates: {},
+          recordCur: 'CNY',
           room: { id: '', code: '', syncedAt: 0 }
         };
         return p;
@@ -1239,6 +1262,8 @@
           if (!pr.people || !pr.people.length) pr.people = [{ id: nid('p'), name: '我' }];
           if (!pr.expenses) pr.expenses = [];
           if (!pr.base) pr.base = 'CNY';
+          /* 老数据没有「记录货币」：境外行程沿用原来的结算货币作为默认记录币种 */
+          if (!pr.recordCur) pr.recordCur = (pr.mode === 'abroad' || (pr.expenses || []).some(function (e) { return e.currency && e.currency !== 'CNY'; })) ? (pr.base || 'CNY') : 'CNY';
           if (!pr.manualRates) pr.manualRates = {};
           roomOf(pr);
           if (pr.mode !== 'cn' && pr.mode !== 'abroad') {
@@ -1868,7 +1893,7 @@
             id: nid('e'),
             title: '',
             amount: '',
-            currency: pr.base || 'CNY',
+            currency: pr.recordCur || pr.base || 'CNY',
             category: 'other',
             date: (pr.selected !== 'all' ? pr.selected : (pr.days[pr.days.length - 1] || today())),
             shares: null,
@@ -1901,9 +1926,9 @@
         els.editCat.innerHTML = CATEGORIES.map(function (c) {
           return '<option value="' + c.key + '"' + ((draft.category || 'other') === c.key ? ' selected' : '') + '>' + c.label + '</option>';
         }).join('');
-        els.editCurrency.innerHTML = currencyOptions(draft.currency || pr.base || 'CNY');
+        els.editCurrency.innerHTML = currencyOptions(draft.currency || pr.recordCur || pr.base || 'CNY');
         els.editCurField.hidden = !abroad;
-        els.editCur.textContent = abroad ? cur(draft.currency || pr.base).code : '¥';
+        els.editCur.textContent = abroad ? cur(draft.currency || pr.recordCur || pr.base).code : '¥';
         els.editPayers.innerHTML = pr.people.map(function (p) {
           var on = (draft.payers || []).some(function (x) { return x.id === p.id; });
           return '<button type="button" class="chip' + (on ? ' is-on' : '') + '" data-payer="' + p.id + '" aria-pressed="' + (on ? 'true' : 'false') + '">' + esc(p.name) + '</button>';
@@ -1944,7 +1969,7 @@
           id: draft.id,
           title: (els.editName.value || '').trim() || '未命名支出',
           amount: total,
-          currency: (pr.mode === 'abroad') ? (draft.currency || pr.base || 'CNY') : 'CNY',
+          currency: (pr.mode === 'abroad') ? (draft.currency || pr.recordCur || pr.base || 'CNY') : 'CNY',
           category: draft.category || 'other',
           date: (els.editDate.value && els.editDate.value !== '__new') ? els.editDate.value : (draft.date || today()),
           payer: payers[0].id,
@@ -2294,6 +2319,12 @@
         }).join('');
       }
       var newTripMode = 'cn';
+      var newTripWantRoom = false;
+      function setRoomToggle(on) {
+        newTripWantRoom = !!on;
+        els.newTripRoom.classList.toggle('is-on', newTripWantRoom);
+        els.newTripRoom.setAttribute('aria-pressed', newTripWantRoom ? 'true' : 'false');
+      }
       function setNewTripMode(m) {
         newTripMode = m;
         Array.prototype.forEach.call(els.newTripMode.querySelectorAll('[data-nt-mode]'), function (b) {
@@ -2307,7 +2338,7 @@
         newTripDraft = ['我', '朋友A'];
         els.newTripName.value = '';
         els.newTripCur.innerHTML = currencyOptions('CNY');
-        els.newTripRoom.checked = false;
+        setRoomToggle(false);
         setNewTripMode('cn');
         renderNewTripPeople();
         els.newTripSheet.hidden = false;
@@ -2318,6 +2349,7 @@
         var b = ev.target.closest('[data-nt-mode]');
         if (b) setNewTripMode(b.getAttribute('data-nt-mode'));
       });
+      els.newTripRoom.addEventListener('click', function () { setRoomToggle(!newTripWantRoom); });
       function closeNewTrip() {
         els.newTripSheet.hidden = true;
         if (els.tripSheet.hidden) document.body.style.overflow = '';
@@ -2347,11 +2379,13 @@
         if (!names.length) names = ['我'];
         var pr = newProject(name, { people: names.map(function (n) { return { id: nid('p'), name: n }; }) });
         pr.mode = newTripMode;
-        pr.base = newTripMode === 'abroad' ? (els.newTripCur.value || 'CNY') : 'CNY';
+        /* 新建时选的是「记录货币」；结算货币统一默认人民币，之后可在结算页改 */
+        pr.recordCur = newTripMode === 'abroad' ? (els.newTripCur.value || 'CNY') : 'CNY';
+        pr.base = 'CNY';
         state.projects.push(pr);
         state.activeId = pr.id;
         normalizeAll();
-        var wantRoom = els.newTripRoom.checked;
+        var wantRoom = newTripWantRoom;
         closeNewTrip();
         showView('record');
         renderAll();
