@@ -2452,7 +2452,40 @@
         }
         Object.keys(remote.tomb || {}).forEach(function (id) { if (!tomb[id]) tomb[id] = remote.tomb[id]; });
         local.tomb = tomb;
+        /* 两台设备各自的成员编号不同，同一个"朋友A"会被当成两个人加进来。
+           这里按名字把「跟同伴重名」的成员并成一个人，并把账目里的引用改过去。 */
+        var remoteIds = {};
+        (remote.people || []).forEach(function (p) { if (p && p.id) remoteIds[p.id] = 1; });
+        added -= dedupePeople(local, remoteIds);
         return added;
+      }
+
+      function dedupePeople(pr, remoteIds) {
+        var seen = {}, keep = [], map = {};
+        (pr.people || []).forEach(function (p) {
+          if (!p || !p.id) return;
+          var name = String(p.name || '').trim();
+          var first = name ? seen[name] : null;
+          if (first && (!remoteIds || remoteIds[p.id])) { map[p.id] = first; return; }
+          if (name) seen[name] = p.id;
+          keep.push(p);
+        });
+        var merged = Object.keys(map).length;
+        if (!merged) return 0;
+        (pr.expenses || []).forEach(function (e) {
+          if (e.payer && map[e.payer]) e.payer = map[e.payer];
+          if (e.payers) e.payers.forEach(function (x) { if (x && map[x.id]) x.id = map[x.id]; });
+          if (e.shares) {
+            var out = [];
+            e.shares.forEach(function (id) {
+              var v = map[id] || id;
+              if (out.indexOf(v) === -1) out.push(v);
+            });
+            e.shares = out;
+          }
+        });
+        pr.people = keep;
+        return merged;
       }
 
       function copyText(text, okMsg) {
