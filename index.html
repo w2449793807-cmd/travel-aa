@@ -108,6 +108,7 @@
   .quick-actions { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: var(--sp-3); }
   .quick-actions .btn { min-height: var(--btn-lg); font-size: var(--fs-title); }
   .check-row { display: flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-sub); color: var(--text); cursor: pointer; }
+  .sync-note { margin: 0; font-size: var(--fs-cap); color: var(--muted); line-height: 1.5; }
   .check-row input { width: 20px; height: 20px; min-height: 0; padding: 0; flex: none; }
   .field-hint { font-size: var(--fs-cap); color: var(--muted); line-height: 1.5; }
   /* 新建行程里的「创建房间」：整行可点，明显比小勾选框大 */
@@ -657,6 +658,7 @@
         <button type="button" class="btn btn-primary" id="addExpense">+ 记一笔</button>
         <button type="button" class="btn" id="refreshNow">刷新</button>
       </div>
+      <p class="sync-note" id="syncNote"></p>
       <div class="banner" id="foreignBanner" hidden>
         <span id="foreignText"></span>
       </div>
@@ -1187,7 +1189,7 @@
         'editSheet', 'editHead', 'editClose', 'editAmount', 'editName', 'editDate',
         'editCat', 'editCurrency', 'editCur', 'editCurField', 'editPayers', 'editPayerAmounts', 'editShares',
         'editSave', 'editDelete',
-        'expCount', 'statScope', 'statCats', 'statDays', 'statPeople', 'refreshNow',
+        'expCount', 'statScope', 'statCats', 'statDays', 'statPeople', 'refreshNow', 'syncNote',
         'daySheet', 'dayClose', 'dayQuick', 'calPrev', 'calNext', 'calLabel', 'calGrid'].forEach(function (id) {
         els[id] = document.getElementById(id);
       });
@@ -1780,6 +1782,7 @@
 
         renderCard(res);
         renderStats();
+        renderSyncNote();
         renderRateStatus();
         els.expCount.textContent = visibleExpenses().length + ' 笔';
         save();
@@ -2383,18 +2386,23 @@
         var now = Date.now();
         if (!pr.tomb) pr.tomb = {};
         var alive = {};
+        var prefix = pr.id + ':';
         ['people', 'expenses'].forEach(function (key) {
           (pr[key] || []).forEach(function (it) {
             if (!it || !it.id) return;
-            alive[it.id] = 1;
+            alive[prefix + it.id] = 1;
             var j = JSON.stringify(it);
-            if (itemCache[it.id] !== j) { it.mtime = now; }
-            itemCache[it.id] = JSON.stringify(it);
+            if (itemCache[prefix + it.id] !== j) { it.mtime = now; }
+            itemCache[prefix + it.id] = j;
           });
         });
-        /* 本地删掉的条目留个墓碑，合并时不会从同伴那边"复活" */
-        Object.keys(itemCache).forEach(function (id) {
-          if (!alive[id] && !pr.tomb[id]) pr.tomb[id] = now;
+        /* 本地删掉的条目留个墓碑，合并时不会从同伴那边"复活"。
+           只处理「本行程」的条目：缓存按行程分开存，切换行程不会误伤别的行程 */
+        Object.keys(itemCache).forEach(function (k) {
+          if (k.indexOf(prefix) !== 0) return;
+          if (alive[k]) return;
+          var id = k.slice(prefix.length);
+          if (!pr.tomb[id]) pr.tomb[id] = now;
         });
         pr.mtime = now;
       }
@@ -2425,7 +2433,7 @@
             if (tomb[it.id] && tomb[it.id] >= (Number(it.mtime) || 0)) return;
             var cur = map[it.id];
             if (!cur) { map[it.id] = it; added++; }
-            else if (newer(cur, it)) { map[it.id] = it; added++; }
+            else if (newer(cur, it)) { map[it.id] = it; }
           });
           local[key] = Object.keys(map).map(function (k) { return map[k]; })
             .filter(function (it) { return !(tomb[it.id] && tomb[it.id] >= (Number(it.mtime) || 0)); });
@@ -2492,6 +2500,16 @@
       }
       var roomContext = 'trip';      /* 'trip' = 当前行程；'pending' = 新建行程之前 */
       var pendingRoom = null;        /* 新建行程时预先选好的房间：{create:true} 或 {join:'CODE'} */
+      var lastAdded = 0;             /* 上一次拉取合并了多少处 */
+      function renderSyncNote(text) {
+        if (!els.syncNote) return;
+        if (text) { els.syncNote.textContent = text; return; }
+        var rm = roomOf(P());
+        els.syncNote.textContent = rm.code
+          ? '房间码 ' + rm.code + '　上次同步 ' +
+            (rm.syncedAt ? new Date(rm.syncedAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) : '还没同步')
+          : '这段行程还没有房间，点「刷新」可以创建或加入';
+      }
 
       /* 两处入口行：行程设置里一个、新建行程里一个 */
       function renderRoomEntry() {
@@ -2616,11 +2634,12 @@
           var plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64ToBytes(parts[0]) }, key, b64ToBytes(parts[1]));
           var remote = JSON.parse(new TextDecoder().decode(plain));
           var added = mergeProjectInto(P(), remote);
+          lastAdded = added;
           sh.syncedAt = Date.now();
           normalizeAll();
           renderAll();
           refreshRoomUI();
-          if (!silent) toast(added ? ('已合并 ' + added + ' 处更新') : '已经是最新的');
+          if (!silent) toast(added ? ('已合并 ' + added + ' 条新记录') : '已经是最新的');
           return true;
         } catch (e) { return false; }
       }
@@ -2783,13 +2802,17 @@
         if (!shareReady()) { toast('共享服务未配置，暂时同步不了'); return; }
         if (!rm.code) { toast('这段行程还没有房间，先创建或加入一个'); openRoomSheet('trip'); return; }
         if (!roomCryptoOk()) { toast('同步需要加密连接，请用 https://aa.saikende.cn 打开'); return; }
+        renderSyncNote('正在同步…');
         var r = await roomPull(true);
-        if (r === false) { toast('连不上共享服务，过一会儿再试'); return; }
+        if (r === false) { renderSyncNote('同步失败：连不上共享服务'); toast('连不上共享服务，过一会儿再试'); return; }
         var pushed = await roomPush();
         renderAll();
         refreshRoomUI();
-        if (!pushed) { toast('同步失败，检查网络后重试'); return; }
-        toast(r === 'empty' ? '房间已建立，把房间码发给同伴' : '已同步到最新');
+        if (!pushed) { renderSyncNote('同步失败：没能上传，检查网络'); toast('同步失败，检查网络后重试'); return; }
+        var msg = r === 'empty' ? '房间已建立，把房间码发给同伴'
+          : (lastAdded ? '已同步，新增 ' + lastAdded + ' 条' : '已同步，没有新内容');
+        renderSyncNote(msg + ' · ' + new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }));
+        toast(msg);
       }
       els.refreshNow.addEventListener('click', function () { syncNow(); });
 
@@ -2959,6 +2982,10 @@
       window.setInterval(function () {
         if (!document.hidden && roomOf(P()).code) roomPull(true);
       }, 45000);
+      /* 切到后台/退出前，尽量把本地改动推一次，免得没等到防抖就关掉了 */
+      document.addEventListener('visibilitychange', function () {
+        if (document.hidden && roomOf(P()).code) roomPush();
+      });
     })();
   </script>
 </body>
