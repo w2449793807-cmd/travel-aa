@@ -280,7 +280,7 @@
   .guide summary::after { content: "收起"; font-size: var(--fs-cap); font-weight: 400; color: var(--muted); }
   .guide:not([open]) summary::after { content: "展开"; }
   .guide ul { margin: 9px 0 0; padding-left: 0; list-style: none; }
-  .guide li { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 8px; margin-bottom: 5px; color: var(--muted); }
+  .guide li { display: grid; grid-template-columns: 68px minmax(0, 1fr); gap: 8px; margin-bottom: 7px; color: var(--muted); }
   .guide li b { color: var(--accent); font-weight: 600; }
   .guide li span { color: var(--text); }
   .guide-note { margin: 8px 0 0; font-size: var(--fs-cap); color: var(--muted); }
@@ -337,8 +337,34 @@
     display: flex; align-items: center; justify-content: center; position: relative;
     border: 1.5px dashed var(--line); background: var(--surface-2); color: var(--accent);
     border-radius: var(--r-card); min-width: 84px; padding: 9px 12px; font-size: var(--fs-sub); font-weight: 600; cursor: pointer;
+    font-family: inherit; -webkit-appearance: none;
   }
-  .day-add input { position: absolute; inset: 0; opacity: 0; cursor: pointer; min-height: 0; padding: 0; border: 0; }
+  .day-add:active { transform: scale(.96); }
+  /* ── 日期选择器：自带日历，不依赖系统控件，手机上点得准 ── */
+  .day-quick { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+  .cal-head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); }
+  .cal-head span { font-size: var(--fs-body); font-weight: var(--fw-medium); font-variant-numeric: tabular-nums; }
+  .cal-nav {
+    width: var(--tap-min); height: var(--tap-min); border-radius: var(--r-pill); border: 1px solid var(--line);
+    background: var(--surface); color: var(--text); font-family: inherit; font-size: 18px; line-height: 1;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  .cal-nav:active { transform: scale(.94); }
+  .cal-week, .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+  .cal-week span { text-align: center; font-size: var(--fs-cap); color: var(--muted); padding: 2px 0; }
+  .cal-cell {
+    position: relative; min-height: var(--tap-min); border: 1px solid transparent; border-radius: var(--r-control);
+    background: var(--surface-2); color: var(--text); font-family: inherit; font-size: var(--fs-sub);
+    cursor: pointer; display: flex; align-items: center; justify-content: center; font-variant-numeric: tabular-nums;
+  }
+  .cal-cell:active { transform: scale(.94); }
+  .cal-cell.is-blank { background: transparent; pointer-events: none; }
+  .cal-cell.is-today { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+  .cal-cell.has-exp { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  .cal-cell.has-exp::after {
+    content: ""; position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%);
+    width: 4px; height: 4px; border-radius: 50%; background: currentColor;
+  }
   .expenses { display: flex; flex-direction: column; gap: 10px; }
   .ex {
     background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); padding: 12px;
@@ -449,8 +475,12 @@
     position: fixed; inset: 0; background: rgba(8, 13, 20, .72); z-index: 20; overflow: auto;
     -webkit-overflow-scrolling: touch; padding: 18px 14px calc(22px + env(safe-area-inset-bottom));
     animation: fadeIn .18s ease;
+    /* 让记录面板垂直居中；内容比屏幕高时自动退回顶部滚动，不会切掉上半截 */
+    display: flex; flex-direction: column;
   }
-  .sheet-inner { max-width: 430px; margin: 0 auto; display: flex; flex-direction: column; gap: 11px; animation: riseIn .26s cubic-bezier(.2, .8, .2, 1); }
+  .sheet-inner { width: 100%; max-width: 430px; margin: auto; display: flex; flex-direction: column; gap: 11px; animation: riseIn .26s cubic-bezier(.2, .8, .2, 1); }
+  .sheet.is-top { z-index: 30; }
+  .sheet[hidden] { display: none; }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   @keyframes riseIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
   @media (prefers-reduced-motion: reduce) {
@@ -620,14 +650,18 @@
       </div>
 
       <details class="guide">
-        <summary>怎么用 · 30 秒学会</summary>
+        <summary>功能介绍</summary>
         <ul>
-          <li><b>1</b><span>国内模式：只用人民币，没有换算和汇率，记完直接看结果。</span></li>
-          <li><b>2</b><span>境外模式：每笔可选币种，自动折算成结算货币，出图时同时显示原币。</span></li>
-          <li><b>3</b><span>加日期：按天记，像日历一样一天天往下走。</span></li>
-          <li><b>4</b><span>出结果：在「结算」页看每人应付和转账方案，再生成结算图发群。</span></li>
+          <li><b>记一笔</b><span>填金额、写项目、挑日期和分类就完事。垫钱的人可以只勾一个，也可以勾几个，勾多了各自填自己垫了多少。</span></li>
+          <li><b>按天记</b><span>顶上是一排日期卡，点哪张就只看那天的账。要加新的一天，点最右边的「添加日期」，日历里直接选，也有今天、明天、后天的快捷键。</span></li>
+          <li><b>两种模式</b><span>国内游只用人民币，没有汇率这回事，页面也不联网。出国玩就切到境外，每一笔自己选币种，自动折成你设定的结算货币；汇率每天更新一次，跟实际刷卡不一样时可以手动改。</span></li>
+          <li><b>多行程</b><span>点最上面的行程名就能新建、切换、重命名。这次旅行和上次互不干扰，想翻旧账随时切回去。</span></li>
+          <li><b>统计</b><span>总额、人均、笔数、天数一眼看完，还能看钱花在哪些分类、哪一天花得最多、每个人垫了多少。</span></li>
+          <li><b>结算图</b><span>算出谁该收、谁该付，给出笔数最少的转账方案，再生成一张结算图，长按保存就能发群里。</span></li>
+          <li><b>一起记</b><span>可选。建个房间，把 8 位房间码发给同伴，大家记的账会自动汇总到一起。账目先在手机上加密再上传，房间码就是唯一的钥匙；不建房间就完全不上传。</span></li>
+          <li><b>不用网络</b><span>账目只存在你这台设备上。同伴暂时不方便加房间，就用「设置」里的同步码把账目复制给对方，粘过去自动合并。</span></li>
         </ul>
-        <p class="guide-note">账目只存在这台设备上；境外模式查汇率时会联网一次。</p>
+        <p class="guide-note">换手机或清空浏览器数据会把账目一起清掉，重要的行程顺手导出一份同步码存着更稳妥。</p>
       </details>
 
       <div class="view-head">
@@ -700,7 +734,7 @@
           <input type="text" id="editName" placeholder="比如：民宿 3 晚" />
         </label>
         <div class="edit-row three">
-          <label class="field"><span>日期</span><input type="date" id="editDate" /></label>
+          <label class="field"><span>日期</span><select id="editDate"></select></label>
           <label class="field"><span>分类</span><select id="editCat"></select></label>
           <label class="field" id="editCurField"><span>币种</span><select id="editCurrency"></select></label>
         </div>
@@ -755,6 +789,30 @@
           <button type="button" class="btn btn-block" id="shareSync">立即同步</button>
           <button type="button" class="btn btn-block btn-danger" id="shareLeave">退出共享</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sheet is-top" id="daySheet" hidden>
+    <div class="sheet-inner">
+      <div class="panel">
+        <div class="sheet-head">
+          <h3>添加日期</h3>
+          <button type="button" class="link-btn" id="dayClose">关闭</button>
+        </div>
+        <div class="day-quick" id="dayQuick">
+          <button type="button" class="chip" data-quick="0">今天</button>
+          <button type="button" class="chip" data-quick="1">明天</button>
+          <button type="button" class="chip" data-quick="2">后天</button>
+        </div>
+        <div class="cal-head">
+          <button type="button" class="cal-nav" id="calPrev" aria-label="上个月">‹</button>
+          <span id="calLabel"></span>
+          <button type="button" class="cal-nav" id="calNext" aria-label="下个月">›</button>
+        </div>
+        <div class="cal-week"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
+        <div class="cal-grid" id="calGrid"></div>
+        <p class="panel-hint">浅色底的日子已经在本行程里，点一下直接跳到那天；点其他日子就新增一天。</p>
       </div>
     </div>
   </div>
@@ -1017,7 +1075,8 @@
         'editCat', 'editCurrency', 'editCur', 'editCurField', 'editPayers', 'editPayerAmounts', 'editShares',
         'editSave', 'editCopy', 'editDelete', 'projSheet', 'projClose', 'projList', 'projNew', 'projRename',
         'shareSheet', 'shareClose', 'shareCode', 'shareInfo', 'shareCreate', 'shareJoin', 'shareSync', 'shareLeave',
-        'openShare', 'shareStatus', 'shareHint', 'statGrid', 'statCats', 'statDays', 'statPeople'].forEach(function (id) {
+        'openShare', 'shareStatus', 'shareHint', 'statGrid', 'statCats', 'statDays', 'statPeople',
+        'daySheet', 'dayClose', 'dayQuick', 'calPrev', 'calNext', 'calLabel', 'calGrid'].forEach(function (id) {
         els[id] = document.getElementById(id);
       });
 
@@ -1452,8 +1511,7 @@
             '<button type="button" class="day-del" data-del-day="' + d + '" aria-label="删除' + shortDate(d) + '">×</button></div>';
         }).join('');
 
-        html += '<label class="day-add">+ 加一天<input type="date" id="dayPicker" value="' +
-          addDays(P().days[P().days.length - 1] || today(), 1) + '" aria-label="选择日期" /></label>';
+        html += '<button type="button" class="day-add" id="dayAddBtn" aria-label="添加日期">＋ 添加日期</button>';
         els.dayStrip.innerHTML = html;
       }
 
@@ -1737,7 +1795,13 @@
         els.editHead.textContent = draft.isNew ? '记一笔' : '修改这一笔';
         els.editAmount.value = (draft.amount === '' || draft.amount === null || draft.amount === undefined) ? '' : draft.amount;
         els.editName.value = draft.title || '';
-        els.editDate.value = draft.date || today();
+        /* 日期改成选择列表：直接挑行程里的某一天，不用再和手机自带日历控件打交道 */
+        var curDay = draft.date || pr.days[pr.days.length - 1] || today();
+        var dayList = pr.days.slice().sort();
+        if (dayList.indexOf(curDay) === -1) { dayList.push(curDay); dayList.sort(); }
+        els.editDate.innerHTML = dayList.map(function (d) {
+          return '<option value="' + d + '"' + (d === curDay ? ' selected' : '') + '>' + shortDate(d) + ' ' + weekOf(d) + '</option>';
+        }).join('') + '<option value="__new">＋ 添加新日期…</option>';
         els.editCat.innerHTML = CATEGORIES.map(function (c) {
           return '<option value="' + c.key + '"' + ((draft.category || 'other') === c.key ? ' selected' : '') + '>' + c.label + '</option>';
         }).join('');
@@ -1786,7 +1850,7 @@
           amount: total,
           currency: (pr.mode === 'abroad') ? (draft.currency || pr.base || 'CNY') : 'CNY',
           category: draft.category || 'other',
-          date: els.editDate.value || draft.date || today(),
+          date: (els.editDate.value && els.editDate.value !== '__new') ? els.editDate.value : (draft.date || today()),
           payer: payers[0].id,
           payers: payers,
           shares: shares
@@ -1843,7 +1907,78 @@
       });
       document.getElementById('refreshRates').addEventListener('click', function () { fetchRates(true); });
 
+      /* ───────── 添加日期：自带一个日历，不再依赖手机系统的日期控件 ───────── */
+      var dayPickCb = null;
+      var calCursor = '';
+
+      function openDayPicker(cb, baseDay) {
+        dayPickCb = cb || null;
+        var base = baseDay || (P().selected && P().selected !== 'all'
+          ? P().selected
+          : (P().days[P().days.length - 1] || today()));
+        calCursor = String(base).slice(0, 7);
+        renderCal();
+        els.daySheet.hidden = false;
+        document.body.style.overflow = 'hidden';
+      }
+      function closeDayPicker() {
+        els.daySheet.hidden = true;
+        dayPickCb = null;
+        if (els.editSheet.hidden) document.body.style.overflow = '';
+      }
+      function shiftCal(n) {
+        var p = calCursor.split('-');
+        var dt = new Date(Number(p[0]), Number(p[1]) - 1 + n, 1);
+        calCursor = dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0');
+        renderCal();
+      }
+      function renderCal() {
+        var p = calCursor.split('-');
+        var y = Number(p[0]), m = Number(p[1]);
+        els.calLabel.textContent = y + ' 年 ' + m + ' 月';
+        var pad = new Date(y, m - 1, 1).getDay();
+        var last = new Date(y, m, 0).getDate();
+        var t = today();
+        var html = '';
+        for (var i = 0; i < pad; i++) html += '<span class="cal-cell is-blank"></span>';
+        for (var d = 1; d <= last; d++) {
+          var iso = y + '-' + String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+          var cls = 'cal-cell';
+          if (iso === t) cls += ' is-today';
+          if (P().days.indexOf(iso) !== -1) cls += ' has-exp';
+          html += '<button type="button" class="' + cls + '" data-cal="' + iso + '">' + d + '</button>';
+        }
+        els.calGrid.innerHTML = html;
+      }
+      function pickDay(iso) {
+        if (!iso) return;
+        if (P().days.indexOf(iso) === -1) { P().days.push(iso); P().days.sort(); }
+        var cb = dayPickCb;
+        dayPickCb = null;
+        if (cb) {
+          closeDayPicker();
+          renderAll();
+          cb(iso);
+        } else {
+          P().selected = iso;
+          closeDayPicker();
+          renderAll();
+        }
+        toast('已选中 ' + shortDate(iso));
+      }
+      els.daySheet.addEventListener('click', function (ev) {
+        if (ev.target === els.daySheet) { closeDayPicker(); return; }
+        var q = ev.target.closest('[data-quick]');
+        if (q) { pickDay(addDays(today(), Number(q.getAttribute('data-quick')))); return; }
+        var cell = ev.target.closest('[data-cal]');
+        if (cell) { pickDay(cell.getAttribute('data-cal')); return; }
+      });
+      els.dayClose.addEventListener('click', closeDayPicker);
+      els.calPrev.addEventListener('click', function () { shiftCal(-1); });
+      els.calNext.addEventListener('click', function () { shiftCal(1); });
+
       els.dayStrip.addEventListener('click', function (ev) {
+        if (ev.target.closest('#dayAddBtn')) { openDayPicker(); return; }
         var del = ev.target.closest('[data-del-day]');
         if (del) {
           var day = del.getAttribute('data-del-day');
@@ -1865,16 +2000,6 @@
         renderExpenses();
         pulse(els.expenses, 'fade');
         render();
-      });
-      els.dayStrip.addEventListener('change', function (ev) {
-        if (ev.target.id !== 'dayPicker') return;
-        var day = ev.target.value;
-        if (!day) return;
-        if (P().days.indexOf(day) === -1) P().days.push(day);
-        P().days.sort();
-        P().selected = day;
-        renderAll();
-        toast('已选中 ' + shortDate(day));
       });
 
       els.people.addEventListener('input', function (ev) {
@@ -1918,7 +2043,13 @@
         renderPayerAmounts();
       });
       els.editName.addEventListener('input', function () { draft.title = els.editName.value; });
-      els.editDate.addEventListener('change', function () { draft.date = els.editDate.value; });
+      els.editDate.addEventListener('change', function () {
+        if (els.editDate.value === '__new') {
+          openDayPicker(function (day) { draft.date = day; renderEdit(); }, draft.date || today());
+          return;
+        }
+        draft.date = els.editDate.value;
+      });
       els.editCat.addEventListener('change', function () { draft.category = els.editCat.value; });
       els.editCurrency.addEventListener('change', function () {
         draft.currency = els.editCurrency.value;
@@ -2146,9 +2277,22 @@
 
       /* 房间共享（客户端；服务端地址配置后可跨设备实时同步） */
       var SHARE_DEFAULT = 'https://share.saikende.cn';
-      var SHARE_API = window.localStorage ? (window.localStorage.getItem('saikende-share-api') || SHARE_DEFAULT) : SHARE_DEFAULT;
+      /* 旧版把临时地址（*.workers.dev，国内直连打不开）写进过本地存储，这里统一作废，免得老设备一直连不上 */
+      var SHARE_API = (function () {
+        var saved = null;
+        try { saved = window.localStorage ? window.localStorage.getItem('saikende-share-api') : null; } catch (e) { saved = null; }
+        if (saved) {
+          saved = String(saved).trim().replace(/\/+$/, '');
+          if (/workers\.dev/i.test(saved) || /^http:\/\//i.test(saved)) saved = '';
+        }
+        var api = saved || SHARE_DEFAULT;
+        try { if (window.localStorage) window.localStorage.setItem('saikende-share-api', api); } catch (e) { }
+        return api;
+      })();
 
       function shareReady() { return !!SHARE_API; }
+      /* 浏览器只在加密连接（https）下允许加密同步；用 http 打开时这里会直接给提示，而不是静默失败 */
+      function roomCryptoOk() { return !!(window.crypto && window.crypto.subtle && window.crypto.getRandomValues); }
       function randomId(n) {
         var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
         var out = '';
@@ -2210,6 +2354,7 @@
       async function roomPush() {
         var sh = state.share || {};
         if (!shareReady() || !sh.roomId || !sh.code) return false;
+        if (!roomCryptoOk()) { toast('同步需要加密连接，请用 https://saikende.cn 打开'); return false; }
         try {
           var key = await roomKey();
           var iv = crypto.getRandomValues(new Uint8Array(12));
@@ -2229,6 +2374,7 @@
       async function roomPull(silent) {
         var sh = state.share || {};
         if (!shareReady() || !sh.roomId || !sh.code) return false;
+        if (!roomCryptoOk()) { if (!silent) toast('同步需要加密连接，请用 https://saikende.cn 打开'); return false; }
         try {
           var res = await fetch(SHARE_API + '/room/' + sh.roomId);
           if (res.status === 404) { if (!silent) toast('房间里还没有数据，先同步一次吧'); return false; }
@@ -2280,10 +2426,10 @@
         });
         var cats = Object.keys(byCat).map(function (k) { return { k: k, v: byCat[k] }; })
           .sort(function (a, b) { return b.v - a.v; });
-        var maxCat = cats.length ? cats[0].v : 1;
         els.statCats.innerHTML = cats.length ? cats.map(function (c) {
           var pct = res.total ? (c.v / res.total * 100) : 0;
-          return statBar(cat(c.k).label, fmt(c.v, base()) + ' · ' + Math.round(pct) + '%', c.v / maxCat * 100);
+          /* 条形长度和右边显示的百分比同源，都是「占总支出的比例」，不再一个按最大值、一个按总额 */
+          return statBar(cat(c.k).label, fmt(c.v, base()) + ' · ' + Math.round(pct) + '%', pct);
         }).join('') : '<div class="share-status">还没有数据</div>';
         var days = pr.days.slice().sort();
         var maxDay = 1;
