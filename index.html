@@ -2742,16 +2742,26 @@
 
       /* ───────── 共享按钮 ───────── */
       /* ── 房间操作（都在「行程设置」里，只作用于当前行程）── */
-      function createRoom() {
+      async function createRoom() {
         var pr = P();
         if (!shareReady()) { toast('共享服务未配置，暂时开不了房间'); return; }
         if (!roomCryptoOk()) { toast('共享需要加密连接，请用 https://aa.saikende.cn 打开'); return; }
-        var code = randomId(8);
+        /* 先问服务端这个房间码有没有被用过；用过就再抽一个，避免两段行程撞进同一个房间 */
+        var code = '';
+        for (var i = 0; i < 5 && !code; i++) {
+          var cand = randomId(8);
+          try {
+            var res = await fetch(SHARE_API + '/room/' + roomIdFrom(cand));
+            if (res.status === 404) code = cand;
+          } catch (e) { code = cand; }   /* 网络异常时不卡住，直接用新抽到的码 */
+        }
+        if (!code) code = randomId(8);
         pr.room = { id: roomIdFrom(code), code: code, syncedAt: 0 };
         refreshRoomUI();
-        roomPush().then(function (ok) {
-          if (ok) { toast('房间已创建，把房间码发给同伴'); copyText(code, '房间码 ' + code + ' 已复制'); }
-        });
+        if (!els.roomSheet.hidden) renderRoomSheet();
+        var ok = await roomPush();
+        if (ok) { toast('房间已创建，把房间码发给同伴'); copyText(code, '房间码 ' + code + ' 已复制'); }
+        else toast('房间号已生成，但没传上去，点「刷新」再试一次');
       }
       function joinRoom(preset) {
         var pr = P();
@@ -2763,7 +2773,12 @@
         refreshRoomUI();
         roomPull(false).then(function (r) {
           if (r === false) { toast('没连上这个房间，检查房间码和网络'); return; }
-          if (r === 'empty') { roomPush(); toast('房间里还没有数据，已把你的账目放进去'); }
+          if (r === 'empty') {
+            if (!window.confirm('房间「' + code + '」里还没有数据。\n\n房间码没填错的话，你的账目会先放进去，同伴之后能看到；' +
+              '如果填错了，就会变成一个只有你自己的空房间。要继续吗？')) return;
+            roomPush();
+            toast('房间里还没有数据，已把你的账目放进去');
+          }
           else toast('已加入，同步到最新');
           closeRoomSheet();
           if (!els.tripSheet.hidden) closeTripSheet();
