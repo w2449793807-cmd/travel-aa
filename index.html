@@ -653,10 +653,6 @@
         <div class="tb-total" id="total">¥0</div>
         <div class="tb-sub" id="heroSub"></div>
       </div>
-      <div class="mode-switch" role="group" aria-label="使用场景">
-        <button type="button" class="mode is-on" data-mode="cn" aria-pressed="true">国内</button>
-        <button type="button" class="mode" data-mode="abroad" aria-pressed="false">境外</button>
-      </div>
     </header>
 
     <section class="view" data-view="home">
@@ -675,7 +671,6 @@
       </div>
       <div class="banner" id="foreignBanner" hidden>
         <span id="foreignText"></span>
-        <button type="button" class="link-btn" id="switchAbroad">切到境外模式</button>
       </div>
       <div class="view-head">
         <h2>支出</h2>
@@ -823,6 +818,13 @@
           <button type="button" class="link-btn" id="tripClose">关闭</button>
         </div>
         <label class="field"><span>行程名字</span><input type="text" id="tripNameInput" placeholder="比如：2026 云南 7 天" /></label>
+        <div class="field">
+          <span>去哪玩（新建时选的，这里可改）</span>
+          <div class="mode-switch" role="group" aria-label="行程类型">
+            <button type="button" class="mode" data-mode="cn" aria-pressed="false">国内</button>
+            <button type="button" class="mode" data-mode="abroad" aria-pressed="false">境外</button>
+          </div>
+        </div>
         <div class="field">
           <span>同行的人</span>
           <div class="people" id="people"></div>
@@ -1779,7 +1781,7 @@
         els.rateCard.hidden = P().mode === 'cn';
         var foreign = P().expenses.filter(function (e) { return e.currency && e.currency !== 'CNY'; });
         if (P().mode === 'cn' && foreign.length) {
-          els.foreignText.textContent = '有 ' + foreign.length + ' 笔是外币，需要按汇率折算';
+          els.foreignText.textContent = '有 ' + foreign.length + ' 笔外币支出，已按汇率折算';
           els.foreignBanner.hidden = false;
         } else {
           els.foreignBanner.hidden = true;
@@ -3082,7 +3084,6 @@
       Array.prototype.forEach.call(document.querySelectorAll('[data-mode]'), function (b) {
         b.addEventListener('click', function () { setMode(b.getAttribute('data-mode')); });
       });
-      document.getElementById('switchAbroad').addEventListener('click', function () { setMode('abroad'); });
 
       load();
       els.baseCur.value = P().base;
