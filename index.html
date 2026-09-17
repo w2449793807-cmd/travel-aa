@@ -2354,7 +2354,7 @@
       async function roomPush() {
         var sh = state.share || {};
         if (!shareReady() || !sh.roomId || !sh.code) return false;
-        if (!roomCryptoOk()) { toast('同步需要加密连接，请用 https://saikende.cn 打开'); return false; }
+        if (!roomCryptoOk()) { toast('同步需要加密连接，请用 https://aa.saikende.cn 打开'); return false; }
         try {
           var key = await roomKey();
           var iv = crypto.getRandomValues(new Uint8Array(12));
@@ -2374,7 +2374,7 @@
       async function roomPull(silent) {
         var sh = state.share || {};
         if (!shareReady() || !sh.roomId || !sh.code) return false;
-        if (!roomCryptoOk()) { if (!silent) toast('同步需要加密连接，请用 https://saikende.cn 打开'); return false; }
+        if (!roomCryptoOk()) { if (!silent) toast('同步需要加密连接，请用 https://aa.saikende.cn 打开'); return false; }
         try {
           var res = await fetch(SHARE_API + '/room/' + sh.roomId);
           if (res.status === 404) { if (!silent) toast('房间里还没有数据，先同步一次吧'); return false; }
