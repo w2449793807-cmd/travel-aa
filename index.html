@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>旅行 AA 分摊器 · 赛肯德工具箱</title>
+<title>旅行 AA 小工具</title>
 <meta name="description" content="出国玩也好、国内玩也好，谁垫的钱、这笔怎么分、最后谁转给谁多少，自动算汇率，还能生成一张能直接发群的结算图。" />
 <meta name="theme-color" content="#4a8c82" media="(prefers-color-scheme: light)" />
 <meta name="theme-color" content="#171917" media="(prefers-color-scheme: dark)" />
@@ -638,7 +638,7 @@
 <body>
   <div class="app">
     <header class="appbar" id="appBar">
-      <h1 class="app-title">旅行 AA 分摊器</h1>
+      <h1 class="app-title">旅行 AA 小工具</h1>
       <p class="app-sub">一次旅行一份账，几个人的钱分开算</p>
     </header>
 
@@ -740,7 +740,7 @@
       <footer class="ft">
         <div id="saveState">数据存在这台设备上，退出也不丢。</div>
         <div class="ft-row">
-          <span>© 2026 赛肯德工具箱 · 保留所有权利</span>
+          <span>© 2026 赛肯德小工具 · 保留所有权利</span>
           <button type="button" class="link-btn" id="openLegal">版权与隐私</button>
         </div>
       </footer>
@@ -754,7 +754,7 @@
       <div class="panel legal">
         <h3>版权与隐私</h3>
         <h4>版权</h4>
-        <p>本工具（页面、文案、界面与结算图样式）由「赛肯德工具箱」独立开发，著作权归开发方所有。未经许可，不得复制、转售、二次分发，或去除页面与结算图上的署名。</p>
+        <p>本工具（页面、文案、界面与结算图样式）由「赛肯德小工具」独立开发，著作权归开发方所有。未经许可，不得复制、转售、二次分发，或去除页面与结算图上的署名。</p>
         <p>你购买后获得的使用授权是：在自己的一次旅行或自己的团队内使用，并按需要修改成员、金额与日期。</p>
         <h4>隐私</h4>
         <ul>
@@ -804,7 +804,6 @@
         </div>
         <div class="sheet-actions">
           <button type="button" class="btn btn-primary btn-block" id="editSave">完成</button>
-          <button type="button" class="btn btn-block" id="editCopy" hidden>再记一笔一样的</button>
           <button type="button" class="btn btn-block btn-danger" id="editDelete" hidden>删除这笔</button>
         </div>
       </div>
@@ -1196,7 +1195,7 @@
         'guideSheet', 'guideClose', 'guideOk', 'openGuide',
         'editSheet', 'editHead', 'editClose', 'editAmount', 'editName', 'editDate',
         'editCat', 'editCurrency', 'editCur', 'editCurField', 'editPayers', 'editPayerAmounts', 'editShares',
-        'editSave', 'editCopy', 'editDelete',
+        'editSave', 'editDelete',
         'expCount', 'statScope', 'statCats', 'statDays', 'statPeople',
         'daySheet', 'dayClose', 'dayQuick', 'calPrev', 'calNext', 'calLabel', 'calGrid'].forEach(function (id) {
         els[id] = document.getElementById(id);
@@ -1733,7 +1732,7 @@
         var note = P().mode === 'abroad' ? rateFootnote() : '';
         els.card.innerHTML =
           '<div class="card-hero">' +
-            '<div class="card-brand">赛肯德工具箱</div>' +
+            '<div class="card-brand">赛肯德小工具</div>' +
             '<div class="card-title">旅行 AA 结算</div>' +
             '<div class="card-total">' + fmt(res.total, base()) + '</div>' +
             '<div class="card-meta">' + esc(dateRange()) + ' · ' + peopleCount + ' 人 · ' + P().expenses.length + ' 笔</div>' +
@@ -1744,7 +1743,7 @@
             '<div class="card-sec">' + (res.transfers.length ? '转账方案 · ' + res.transfers.length + ' 笔结清' : '转账方案 · 已结清') + '</div>' + transfers +
             (note ? '<div class="card-item-note" style="margin-top:3px">' + esc(note) + '</div>' : '') +
           '</div>' +
-          '<div class="card-foot"><span>同款工具看主页</span><span>@赛肯德工具箱</span></div>';
+          '<div class="card-foot"><span>同款工具看主页</span><span>@赛肯德小工具</span></div>';
       }
 
       function render() {
@@ -1805,7 +1804,7 @@
             ? '转账：' + lines.join('；') + '。麻烦大家按这个转一下，有问题随时说～'
             : '大家出的钱刚好平了，不用转账。') +
           (note ? '（' + note + '）' : '') +
-          '赛肯德工具箱 · 旅行 AA 分摊器';
+          '赛肯德小工具 · 旅行 AA 小工具';
       }
 
       function copySummary() {
@@ -1942,7 +1941,6 @@
           return '<button type="button" class="chip' + (on ? ' is-on' : '') + '" data-share="' + p.id + '" aria-pressed="' + (on ? 'true' : 'false') + '">' + esc(p.name) + '</button>';
         }).join('');
         els.editDelete.hidden = draft.isNew;
-        els.editCopy.hidden = draft.isNew;
       }
       function renderPayerAmounts() {
         var payers = draft.payers || [];
@@ -1987,18 +1985,6 @@
         closeEdit();
         renderAll();
         toast(isNew ? '已记一笔' : '已修改');
-      }
-      function copyEdit() {
-        if (!draft || draft.isNew) return;
-        var pr = P();
-        var copy = JSON.parse(JSON.stringify(draft));
-        copy.id = nid('e');
-        copy.isNew = false;
-        pr.expenses.push(copy);
-        animateId = copy.id;
-        closeEdit();
-        renderAll();
-        toast('已复制这一笔，改改就行');
       }
       function deleteEdit() {
         if (!draft || draft.isNew) return;
@@ -2160,7 +2146,6 @@
       /* 记账弹层交互 */
       els.editClose.addEventListener('click', closeEdit);
       els.editSave.addEventListener('click', saveEdit);
-      els.editCopy.addEventListener('click', copyEdit);
       els.editDelete.addEventListener('click', deleteEdit);
       els.editSheet.addEventListener('click', function (ev) { if (ev.target === els.editSheet) closeEdit(); });
       els.editAmount.addEventListener('input', function () {
