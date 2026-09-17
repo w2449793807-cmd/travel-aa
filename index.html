@@ -590,6 +590,16 @@
   }
   .toast button { font: inherit; font-size: var(--fs-sub); font-weight: 600; color: #9cc0ff; background: transparent; border: 0; padding: 2px 2px; cursor: pointer; }
   @media (min-width: 560px) { .title { font-size: var(--fs-hero); } .hero-value { font-size: var(--fs-hero); } }
+  /* ── 手机端"点一下就放大且不还原"的两个来源，一起修掉 ──
+     1) iOS 对字号小于 16px 的输入框会自动放大整页，聚焦后不再缩回 → 表单控件统一不低于 16px
+     2) 连点两下会触发双击缩放 → manipulation 保留滚动与双指缩放，只关掉双击缩放 */
+  html, body { touch-action: manipulation; }
+  .field input, .field select,
+  .person input, .pa-row input,
+  .rate-row select,
+  .panel textarea,
+  .ocr-row input[type="text"], .ocr-row input[type="number"], .ocr-row select,
+  input, select, textarea { font-size: 16px; }
 </style>
 </head>
 <body>
