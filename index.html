@@ -2282,7 +2282,11 @@
       });
       els.deleteTrip.addEventListener('click', function () {
         var pr = P();
-        if (!window.confirm('删除行程「' + pr.name + '」和里面的 ' + (pr.expenses || []).length + ' 笔账？其他行程不受影响。')) return;
+        var shared = roomOf(pr).code
+          ? '\n\n这段行程正和同伴共享：删除只影响你这台设备，同伴那边的账目会保留，房间里的数据也不会被删掉——' +
+            '之后用同一个房间码加入，还能把这本账找回来。'
+          : '';
+        if (!window.confirm('删除行程「' + pr.name + '」和里面的 ' + (pr.expenses || []).length + ' 笔账？其他行程不受影响。' + shared)) return;
         var snap = snapshot();
         state.projects = state.projects.filter(function (x) { return x.id !== pr.id; });
         if (!state.projects.length) state.projects.push(newProject('我的行程'));
@@ -2603,8 +2607,8 @@
       }
 
       /* 房间共享：客户端加解密 + 推送/拉取（服务端见 共享服务/worker.js） */
-      async function roomKey() {
-        var sh = roomOf(P());
+      async function roomKey(pr) {
+        var sh = roomOf(pr || P());
         var enc = new TextEncoder();
         var base = await crypto.subtle.importKey('raw', enc.encode(sh.code || ''), 'PBKDF2', false, ['deriveKey']);
         return crypto.subtle.deriveKey(
@@ -2627,22 +2631,24 @@
         for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
         return out;
       }
-      function sharePayload() {
-        var pr = P();
+      function sharePayload(pr) {
+        pr = pr || P();
         return {
           name: pr.name, people: pr.people, days: pr.days, expenses: pr.expenses,
           base: pr.base, mode: pr.mode, manualRates: pr.manualRates, mtime: pr.mtime, tomb: pr.tomb || {}
         };
       }
-      async function roomPush() {
-        var sh = roomOf(P());
+      async function roomPush(targetId) {
+        var pr = targetId ? projectById(targetId) : P();
+        if (!pr) return false;                 /* 这段行程已经不在本机了（例如刚被删除） */
+        var sh = roomOf(pr);
         if (!shareReady() || !sh.id || !sh.code) return false;
         if (!roomCryptoOk()) { toast('同步需要加密连接，请用 https://aa.saikende.cn 打开'); return false; }
         try {
-          var key = await roomKey();
+          var key = await roomKey(pr);
           var iv = crypto.getRandomValues(new Uint8Array(12));
           var cipher = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key,
-            new TextEncoder().encode(JSON.stringify(sharePayload())));
+            new TextEncoder().encode(JSON.stringify(sharePayload(pr))));
           var body = bytesToB64(iv) + '.' + bytesToB64(new Uint8Array(cipher));
           var res = await fetch(SHARE_API + '/room/' + sh.id, {
             method: 'PUT', headers: { 'Content-Type': 'application/json' },
@@ -2679,10 +2685,18 @@
         } catch (e) { return false; }
       }
       var pushTimer = null;
+      var pushTarget = null;
+      function projectById(id) {
+        var found = null;
+        (state.projects || []).forEach(function (x) { if (x.id === id) found = x; });
+        return found;
+      }
       function scheduleSharePush() {
-        if (!shareReady() || !roomOf(P()).code) return;
+        var pr = P();
+        if (!shareReady() || !roomOf(pr).code) return;
+        pushTarget = pr.id;          /* 记住这次要推的是哪段行程：中途切走也不会推错 */
         if (pushTimer) window.clearTimeout(pushTimer);
-        pushTimer = window.setTimeout(function () { roomPush(); }, 2500);
+        pushTimer = window.setTimeout(function () { roomPush(pushTarget); pushTarget = null; }, 2500);
       }
 
       /* ───────── 统计 ───────── */
