@@ -2476,6 +2476,22 @@
         });
         var merged = Object.keys(map).length;
         if (!merged) return 0;
+        remapMemberRefs(pr, map);
+        pr.people = keep;
+        return merged;
+      }
+
+      function memberReferenced(pr, id) {
+        var hit = false;
+        (pr.expenses || []).forEach(function (e) {
+          if (hit) return;
+          if (e.payer === id) { hit = true; return; }
+          if ((e.payers || []).some(function (x) { return x && x.id === id; })) { hit = true; return; }
+          if ((e.shares || []).indexOf(id) !== -1) hit = true;
+        });
+        return hit;
+      }
+      function remapMemberRefs(pr, map) {
         (pr.expenses || []).forEach(function (e) {
           if (e.payer && map[e.payer]) e.payer = map[e.payer];
           if (e.payers) e.payers.forEach(function (x) { if (x && map[x.id]) x.id = map[x.id]; });
@@ -2488,8 +2504,29 @@
             e.shares = out;
           }
         });
-        pr.people = keep;
-        return merged;
+      }
+      /* 加入房间时：直接采用房间里的成员表。
+         本机那份（通常是新建行程自带的「我 / 朋友A」）如果没有任何账目引用，就直接丢掉；
+         已经记过账、引用到的成员才跟着带进来。加入之后想加人，自己再加即可。 */
+      function adoptRoomPeople(pr, remotePeople) {
+        if (!remotePeople || !remotePeople.length) return 0;
+        var inRoom = {}, byName = {};
+        remotePeople.forEach(function (p) {
+          if (!p || !p.id) return;
+          inRoom[p.id] = 1;
+          byName[String(p.name || '').trim()] = p.id;
+        });
+        var map = {}, extra = [], dropped = 0;
+        (pr.people || []).forEach(function (p) {
+          if (!p || !p.id || inRoom[p.id]) return;
+          var target = byName[String(p.name || '').trim()];
+          if (target) { map[p.id] = target; return; }
+          if (memberReferenced(pr, p.id)) { extra.push(p); return; }
+          dropped++;
+        });
+        remapMemberRefs(pr, map);
+        pr.people = remotePeople.concat(extra);
+        return dropped;
       }
 
       function copyText(text, okMsg) {
@@ -2660,7 +2697,7 @@
           return true;
         } catch (e) { toast('同步失败，检查网络或共享服务'); return false; }
       }
-      async function roomPull(silent) {
+      async function roomPull(silent, adoptPeople) {
         var sh = roomOf(P());
         if (!shareReady() || !sh.id || !sh.code) return false;
         if (!roomCryptoOk()) { if (!silent) toast('同步需要加密连接，请用 https://aa.saikende.cn 打开'); return false; }
@@ -2674,6 +2711,7 @@
           var key = await roomKey();
           var plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64ToBytes(parts[0]) }, key, b64ToBytes(parts[1]));
           var remote = JSON.parse(new TextDecoder().decode(plain));
+          if (adoptPeople) adoptRoomPeople(P(), remote.people);
           var added = mergeProjectInto(P(), remote);
           lastAdded = added;
           sh.syncedAt = Date.now();
@@ -2818,7 +2856,7 @@
         code = String(code).trim().toUpperCase();
         pr.room = { id: roomIdFrom(code), code: code, syncedAt: 0 };
         refreshRoomUI();
-        roomPull(false).then(function (r) {
+        roomPull(false, true).then(function (r) {
           if (r === false) { toast('没连上这个房间，检查房间码和网络'); return; }
           if (r === 'empty') {
             if (!window.confirm('房间「' + code + '」里还没有数据。\n\n房间码没填错的话，你的账目会先放进去，同伴之后能看到；' +
